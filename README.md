@@ -1,3 +1,7 @@
+# Build status
+
+[![Build Status](https://travis-ci.com/akustik/topscores.svg?branch=master)](https://travis-ci.com/akustik/topscores)
+
 # kotlin-getting-started
 
 A barebones Kotlin app, which can easily be deployed to Heroku.
