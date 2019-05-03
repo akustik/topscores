@@ -4,6 +4,7 @@ branches:
   only:
     - master
     - /^release.*$/ 
+    - /^feature.*$/
   
 jdk:
   - oraclejdk8
