@@ -30,7 +30,7 @@ class Controller {
     @RequestMapping("/hello")
     internal fun hello(model: MutableMap<String, Any>): String {
         val energy = System.getenv().get("SAMPLE");
-        model.put("science", "is hard, " + energy)
+        model.put("science", "is very hard, " + energy)
         return "hello"
     }
 
