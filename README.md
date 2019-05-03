@@ -1,3 +1,8 @@
+# Resources
+* [Heroku (Kotling based)](https://devcenter.heroku.com/articles/getting-started-with-kotlin)
+* [Github](https://devcenter.heroku.com/articles/github-integration) 
+* Travis CI
+
 # Build status
 
 [![Build Status](https://travis-ci.com/akustik/topscores.svg?branch=master)](https://travis-ci.com/akustik/topscores)
