@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.ResponseBody
 import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
@@ -62,6 +63,7 @@ class Controller {
     }
 
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
+    @ResponseBody
     internal fun addGame(@RequestBody game: Game): Game = game
 
     @Bean
