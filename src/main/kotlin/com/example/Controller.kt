@@ -1,5 +1,6 @@
 package com.example
 
+import com.example.model.Game
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,7 +9,9 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
 import java.sql.SQLException
 import java.util.*
 import javax.sql.DataSource
@@ -57,6 +60,9 @@ class Controller {
         }
 
     }
+
+    @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
+    internal fun addGame(@RequestBody game: Game): Game = game
 
     @Bean
     @Throws(SQLException::class)

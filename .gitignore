@@ -26,3 +26,4 @@ build/
 .env
 .idea/
 *.iml
+out/
