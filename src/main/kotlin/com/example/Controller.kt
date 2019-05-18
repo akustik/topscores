@@ -30,13 +30,13 @@ class Controller {
     @ResponseBody
     internal fun addGame(@RequestBody game: Game): Game {
         game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
-        return game
+        return repository.addGame(game)
     }
 
     @RequestMapping("/games/list")
     internal fun listGames(model: MutableMap<String, Any>): String {
-        val ticks = repository.listTicks()
-        val output = ticks.map { t -> "Read from DB: " + t }
+        val games = repository.listGames()
+        val output = games.map { t -> "Read from DB: " + t.account + ", " + t.timestamp }
         model.put("records", output)
         print(model)
         return "db"

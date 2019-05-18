@@ -1,5 +1,7 @@
-package com.example
+package com.example.jdbc
 
+import com.example.GameRepository
+import com.example.model.Game
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,12 +10,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
 import java.sql.SQLException
-import java.sql.Timestamp
 import javax.sql.DataSource
 
 @Component
-class JdbcGameRepository: GameRepository {
-
+class JdbcGameRepository : GameRepository {
 
     @Value("\${spring.datasource.url}")
     private var dbUrl: String? = null
@@ -33,8 +33,16 @@ class JdbcGameRepository: GameRepository {
     @Autowired
     lateinit private var jdbcTemplate: JdbcTemplate
 
-    override fun listTicks(): List<Timestamp> {
-        return jdbcTemplate.queryForList("select tick from ticks", Timestamp::class.java)
+    override fun listGames(): List<Game> {
+        return jdbcTemplate.queryForList("select content from games", 
+                ByteArray::class.java).map { bytes -> Game.fromJsonBytes(bytes) }
     }
+
+    override fun addGame(game: Game): Game {
+        jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS games (account TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), content bytea NOT NULL)")
+        jdbcTemplate.update("INSERT INTO games(account, content) VALUES (?,?)", game.account, game.toJsonBytes())
+        return game
+    }
+
 
 }

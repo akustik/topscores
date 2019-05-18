@@ -1,8 +1,10 @@
 package com.example
 
-import java.sql.Timestamp
+import com.example.model.Game
 
 interface GameRepository {
 
-    fun listTicks(): List<Timestamp>
+    fun listGames(): List<Game>
+    
+    fun addGame(game: Game): Game
 }
