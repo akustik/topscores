@@ -4,7 +4,7 @@ package com.example.model
 class Game() {
     lateinit var account: String
     lateinit var parties: List<Party>
-    var timestamp: Long = System.currentTimeMillis()
+    var timestamp: Long? = null
 
     constructor(
             account: String,
