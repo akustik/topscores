@@ -64,7 +64,10 @@ class Controller {
 
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun addGame(@RequestBody game: Game): Game = game
+    internal fun addGame(@RequestBody game: Game): Game {
+        game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
+        return game
+    }
 
     @Bean
     @Throws(SQLException::class)

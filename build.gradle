@@ -33,11 +33,13 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-thymeleaf') {
         exclude group: 'nz.net.ultraq.thymeleaf', module: 'thymeleaf-layout-dialect'
     }
-
+    
     compile 'org.postgresql:postgresql:9.4.1212'
     compile 'com.zaxxer:HikariCP:2.6.0'
     compile 'org.webjars:webjars-locator'
     compile 'org.webjars:jquery:2.2.4'
     compile 'org.webjars:jquery-ui:1.11.4'
     compile 'org.webjars:bootstrap:3.3.6'
+
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
 }

@@ -1,0 +1,48 @@
+{
+  "account": "patxanga",
+  "timestamp": 1558211897715,
+  "parties": [
+    {
+      "team": {
+        "name": "blaus"
+      },
+      "members": [
+        {
+          "name": "Guillem"
+        },
+        {
+          "name": "Uri"
+        }
+      ],
+      "metrics": [
+        {
+          "name": "gols",
+          "value": "3",
+          "type": "Integer"
+        }
+      ],
+      "position": 1
+    },
+    {
+      "team": {
+        "name": "grocs"
+      },
+      "members": [
+        {
+          "name": "Ramon"
+        },
+        {
+          "name": "Arnau"
+        }
+      ],
+      "metrics": [
+        {
+          "name": "gols",
+          "value": "1",
+          "type": "Integer"
+        }
+      ],
+      "position": 2
+    }
+  ]
+}
