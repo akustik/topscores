@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.ResponseBody
 import java.sql.SQLException
+import java.sql.Timestamp
 import java.util.*
 import javax.sql.DataSource
 
@@ -25,6 +27,9 @@ class Controller {
 
     @Autowired
     lateinit private var dataSource: DataSource
+    
+    @Autowired
+    lateinit private var jdbcTemplate : JdbcTemplate
 
     @RequestMapping("/")
     internal fun index(): String {
@@ -67,6 +72,15 @@ class Controller {
     internal fun addGame(@RequestBody game: Game): Game {
         game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
         return game
+    }
+
+    @RequestMapping("/games/list")
+    internal fun listGames(model: MutableMap<String, Any>): String {
+        val ticks = jdbcTemplate.queryForList("select tick from ticks", Timestamp::class.java)
+        val output = ticks.map { t -> "Read from DB: " + t }
+        model.put("records", output)
+        print(model)
+        return "db"
     }
 
     @Bean
