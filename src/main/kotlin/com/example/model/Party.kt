@@ -5,13 +5,13 @@ class Party() {
     lateinit var team: Team
     lateinit var members: List<TeamMember>
     lateinit var metrics: List<Metric>
-    lateinit var position: Integer
+    var position: Int = 1
 
     constructor(
             team: Team,
             members: List<TeamMember>,
             metrics: List<Metric>,
-            position: Integer
+            position: Int
             ): this() {
         this.team = team
         this.members = members
