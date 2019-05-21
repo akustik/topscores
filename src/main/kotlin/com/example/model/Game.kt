@@ -1,5 +1,7 @@
 package com.example.model
 
+import com.fasterxml.jackson.databind.ObjectMapper
+
 
 class Game() {
     lateinit var account: String
@@ -13,5 +15,15 @@ class Game() {
         this.account = account
         this.parties = parties
         this.timestamp = timestamp
+    }
+    
+    fun toJsonBytes(): ByteArray {
+        return ObjectMapper().writeValueAsBytes(this)
+    }
+
+    companion object {
+        fun fromJsonBytes(bytes : ByteArray): Game {
+            return ObjectMapper().readValue(bytes, Game::class.java)
+        }
     }
 }
