@@ -8,13 +8,9 @@
 
 [![Build Status](https://travis-ci.com/akustik/topscores.svg?branch=master)](https://travis-ci.com/akustik/topscores)
 
-# kotlin-getting-started
+# Continuous deployment
 
-A barebones Kotlin app, which can easily be deployed to Heroku.
-
-This application supports the [Getting Started with Kotlin on Heroku](https://devcenter.heroku.com/articles/getting-started-with-kotlin) article - check it out.
-
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
+Master changes are automatically grabbed by Heroku and deployed.
 
 ## Running Locally
 
