@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.stereotype.Component
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -38,8 +37,8 @@ open class JdbcGameRepository : GameRepository {
     }
 
     override fun listGames(account: String): List<Game> {
-        val response: List<ByteArray> = jdbcTemplate.queryForList("select content from games where account = :account",
-                ByteArray::class.java, MapSqlParameterSource("account", account))
+        val response: List<ByteArray> = jdbcTemplate.queryForList("select content from games where account = ?",
+                arrayOf(account), ByteArray::class.java)
         return response.map { bytes -> Game.Companion.fromJsonBytes(bytes) }
     }
 
