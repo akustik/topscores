@@ -1,8 +1,7 @@
-package org.gmd.jdbc
+package org.gmd.repository.jdbc
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.gmd.GameRepository
 import org.gmd.model.Game
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value

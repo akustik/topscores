@@ -1,4 +1,4 @@
-package org.gmd
+package org.gmd.repository.jdbc
 
 import org.gmd.model.Game
 
