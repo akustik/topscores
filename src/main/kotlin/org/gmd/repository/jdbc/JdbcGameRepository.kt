@@ -13,7 +13,7 @@ import java.sql.SQLException
 import javax.sql.DataSource
 
 @Component
-class JdbcGameRepository : GameRepository {
+open class JdbcGameRepository : GameRepository {
     @Value("\${spring.datasource.url}")
     private var dbUrl: String? = null
 

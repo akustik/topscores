@@ -4,9 +4,11 @@ import org.gmd.model.Game
 import org.gmd.model.Score
 import org.gmd.repository.jdbc.GameRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.SortedSet
 
-class GameServiceImpl: GameService {
+@Component
+open class GameServiceImpl: GameService {
 
     //FIXME: Use private
     @Autowired
