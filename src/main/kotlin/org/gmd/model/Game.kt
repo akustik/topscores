@@ -1,4 +1,4 @@
-package com.example.model
+package org.gmd.model
 
 import com.fasterxml.jackson.databind.ObjectMapper
 

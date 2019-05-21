@@ -1,4 +1,4 @@
-package com.example.model
+package org.gmd.model
 
 class Metric() {
     lateinit var name: String

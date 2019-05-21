@@ -1,6 +1,6 @@
-package com.example.model
+package org.gmd.model
 
-class TeamMember() {
+class Team() {
     lateinit var name: String
 
     constructor(

@@ -1,7 +1,7 @@
-package com.example.jdbc
+package org.gmd.jdbc
 
-import com.example.GameRepository
-import com.example.model.Game
+import org.gmd.GameRepository
+import org.gmd.model.Game
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,7 +35,7 @@ class JdbcGameRepository : GameRepository {
 
     override fun listGames(): List<Game> {
         return jdbcTemplate.queryForList("select content from games", 
-                ByteArray::class.java).map { bytes -> Game.fromJsonBytes(bytes) }
+                ByteArray::class.java).map { bytes -> Game.Companion.fromJsonBytes(bytes) }
     }
 
     override fun addGame(game: Game): Game {

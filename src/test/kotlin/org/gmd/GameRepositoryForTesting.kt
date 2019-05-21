@@ -1,6 +1,6 @@
-package com.example
+package org.gmd
 
-import com.example.model.Game
+import org.gmd.model.Game
 
 class GameRepositoryForTesting: GameRepository {
     override fun addGame(game: Game): Game {
