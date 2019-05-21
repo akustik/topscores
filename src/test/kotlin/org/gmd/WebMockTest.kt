@@ -1,6 +1,6 @@
-package com.example
+package org.gmd
 
-import com.example.model.Game
+import org.gmd.model.Game
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
