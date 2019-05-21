@@ -1,20 +1,19 @@
-package org.gmd.jdbc
+package org.gmd.repository.jdbc
 
-import org.gmd.GameRepository
-import org.gmd.model.Game
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import org.gmd.model.Game
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.stereotype.Component
 import java.sql.SQLException
 import javax.sql.DataSource
 
 @Component
 class JdbcGameRepository : GameRepository {
-
     @Value("\${spring.datasource.url}")
     private var dbUrl: String? = null
 
@@ -34,8 +33,14 @@ class JdbcGameRepository : GameRepository {
     lateinit private var jdbcTemplate: JdbcTemplate
 
     override fun listGames(): List<Game> {
-        return jdbcTemplate.queryForList("select content from games", 
+        return jdbcTemplate.queryForList("select content from games",
                 ByteArray::class.java).map { bytes -> Game.Companion.fromJsonBytes(bytes) }
+    }
+
+    override fun listGames(account: String): List<Game> {
+        val response: List<ByteArray> = jdbcTemplate.queryForList("select content from games where account = :account",
+                ByteArray::class.java, MapSqlParameterSource("account", account))
+        return response.map { bytes -> Game.Companion.fromJsonBytes(bytes) }
     }
 
     override fun addGame(game: Game): Game {
