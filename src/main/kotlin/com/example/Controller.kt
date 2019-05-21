@@ -36,9 +36,8 @@ class Controller {
     @RequestMapping("/games/list")
     internal fun listGames(model: MutableMap<String, Any>): String {
         val games = repository.listGames()
-        val output = games.map { t -> "Read from DB: " + t.account + ", " + t.timestamp }
+        val output = games.map { t -> "Read from DB: " + t.account + ", " + t.timestamp + ", " + t.toJsonBytes().size}
         model.put("records", output)
-        print(model)
         return "db"
     }
 }
