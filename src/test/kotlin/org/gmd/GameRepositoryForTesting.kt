@@ -2,12 +2,16 @@ package org.gmd
 
 import org.gmd.model.Game
 
-class GameRepositoryForTesting: GameRepository {
+class GameRepositoryForTesting(val games: List<Game>): GameRepository {
+    override fun listGames(account: String): List<Game> {
+        return games.filter { g -> g.account.equals(account) }
+    }
+
     override fun addGame(game: Game): Game {
         return game
     }
     
     override fun listGames(): List<Game> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return games
     }
 }

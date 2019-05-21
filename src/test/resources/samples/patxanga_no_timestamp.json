@@ -20,7 +20,7 @@
           "type": "Integer"
         }
       ],
-      "position": 1
+      "score": 1
     },
     {
       "team": {
@@ -41,7 +41,7 @@
           "type": "Integer"
         }
       ],
-      "position": 2
+      "score": 2
     }
   ]
 }
