@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
 import org.gmd.model.Score
 import org.gmd.repository.GameRepositoryForTesting
-import org.gmd.repository.jdbc.GameRepository
+import org.gmd.repository.GameRepository
 import org.gmd.service.GameService
 import org.gmd.service.GameServiceImpl
 import org.hamcrest.BaseMatcher

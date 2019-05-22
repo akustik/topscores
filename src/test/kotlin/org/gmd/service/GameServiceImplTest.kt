@@ -2,7 +2,7 @@ package org.gmd.service
 
 import org.gmd.TestData
 import org.gmd.model.Score
-import org.gmd.repository.jdbc.GameRepository
+import org.gmd.repository.GameRepository
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
