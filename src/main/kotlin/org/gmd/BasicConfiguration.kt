@@ -6,18 +6,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 
+
 @Configuration
 @EnableWebSecurity
-open class BasicConfiguration : WebSecurityConfigurerAdapter(false) {
+open class BasicConfiguration(private val env: EnvProvider) : WebSecurityConfigurerAdapter(false) {
 
     companion object {
-        private val TOKEN_CONFIGURATION = Regex("token_(\\w+)")
+        private val TOKEN_CONFIGURATION = Regex("token:(\\w+)")
     }
 
     @Throws(Exception::class)
     override fun configure(auth: AuthenticationManagerBuilder?) {
         val inMemoryBuilder = auth!!.inMemoryAuthentication()
-        System.getenv()
+        env.getEnv()
                 .filter { entry -> TOKEN_CONFIGURATION.matches(entry.key) }
                 .forEach { key, token ->
                     run {
@@ -35,5 +36,7 @@ open class BasicConfiguration : WebSecurityConfigurerAdapter(false) {
                 .authenticated()
                 .and()
                 .httpBasic()
+                .and()
+                .csrf().disable()
     }
 }

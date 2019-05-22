@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.nio.charset.Charset
+import java.util.*
 
 
 @WebMvcTest(Controller::class)
@@ -49,6 +51,11 @@ class ControllerTest {
         private val repository = GameRepositoryForTesting(listOf(TestData.patxanga()))
 
         @Bean
+        open fun authentication(): BasicConfiguration {
+            return BasicConfiguration(EnvProviderForTesting(mapOf("token:user" to "pwd")))
+        }
+        
+        @Bean
         open fun gameRepository(): GameRepository {
             return repository
         }
@@ -69,7 +76,11 @@ class ControllerTest {
     @Test
     @Throws(Exception::class)
     fun addGameShouldReturnTheSameJson() {
-        val request = post("/account/games/add").content(TestData.patxanga).contentType("application/json")
+        val request = post("/games/add")
+                .content(TestData.patxanga)
+                .contentType("application/json")
+                .header("Authorization", basicAuthHeader("user", "pwd"))
+        
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(TestData.patxanga, true))
     }
@@ -77,7 +88,11 @@ class ControllerTest {
     @Test
     @Throws(Exception::class)
     fun addGameShouldCreateTimestampForGame() {
-        val request = post("/account/games/add").content(TestData.patxanga_no_timestamp).contentType("application/json")
+        val request = post("/games/add")
+                .content(TestData.patxanga_no_timestamp)
+                .contentType("application/json")
+                .header("Authorization", basicAuthHeader("user", "pwd"))
+        
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().string(TimestampExists()))
     }
@@ -88,9 +103,15 @@ class ControllerTest {
         val expected = listOf(
                 Score("Ramon", 2), Score("Arnau", 2), Score("Uri", 1), Score("Guillem", 1)
         )
-        val request = get("/account/scores/patxanga")
+        val request = get("/scores/patxanga")
+                .header("Authorization", basicAuthHeader("user", "pwd"))
+        
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(ObjectMapper().writeValueAsString(expected)))
+    }
+    
+    private fun basicAuthHeader(user: String, password: String): String {
+        return "Basic " + Base64.getEncoder().encodeToString("$user:$password".toByteArray(Charset.defaultCharset()))
     }
 }
 
