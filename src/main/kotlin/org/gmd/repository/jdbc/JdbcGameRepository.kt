@@ -3,6 +3,7 @@ package org.gmd.repository.jdbc
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.gmd.model.Game
+import org.gmd.repository.GameRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
