@@ -5,12 +5,14 @@ import org.gmd.model.Game
 import org.gmd.model.Score
 import org.gmd.repository.GameRepositoryForTesting
 import org.gmd.repository.jdbc.GameRepository
+import org.gmd.service.AuthorizationService
 import org.gmd.service.GameService
 import org.gmd.service.GameServiceImpl
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Bean
@@ -58,6 +60,11 @@ class ControllerTest {
             val gameService = GameServiceImpl()
             gameService.repository = repository
             return gameService
+        }
+        
+        @Bean
+        open fun auth(): AuthorizationService {
+            return Mockito.mock(AuthorizationService::class.java)
         }
 
         @Bean

@@ -2,6 +2,7 @@ package org.gmd
 
 import org.gmd.model.Game
 import org.gmd.model.Score
+import org.gmd.service.AuthorizationService
 import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Controller
@@ -24,10 +25,14 @@ class Controller {
 
     @Autowired
     lateinit private var service: GameService
+    
+    @Autowired
+    lateinit private var auth: AuthorizationService
 
     @RequestMapping("/{account}/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
     internal fun addGame(@PathVariable("account") account: String, @RequestBody game: Game): Game {
+        auth.withAutorization(account = account, providedToken = "none")
         return service.addGame(account, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
@@ -35,11 +40,13 @@ class Controller {
     @ResponseBody
     internal fun scores(@PathVariable("account") account: String,
                         @PathVariable("tournament") tournament: String): List<Score> {
+        auth.withAutorization(account = account, providedToken = "none")
         return service.computeTournamentScores(account = account, tournament = tournament)
     }
 
     @RequestMapping("/{account}/games/list")
     internal fun listGames(@PathVariable("account") account: String, model: MutableMap<String, Any>): String {
+        auth.withAutorization(account = account, providedToken = "none")
         val games = service.listGames(account)
         val output = games.map { t -> "Read from DB: " + t.tournament + ", " + t.timestamp + ", " + t.toJsonBytes().size }
         model.put("records", output)
