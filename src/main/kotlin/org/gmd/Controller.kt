@@ -25,24 +25,29 @@ class Controller {
     @Autowired
     lateinit private var service: GameService
 
-    @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
+    @RequestMapping("/{account}/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun addGame(@RequestBody game: Game): Game {
-        game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
-        return service.addGame(game)
+    internal fun addGame(@PathVariable("account") account: String, @RequestBody game: Game): Game {
+        return service.addGame(account, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
-    @RequestMapping("/scores/{account}")
+    @RequestMapping("/{account}/scores/{tournament}")
     @ResponseBody
-    internal fun scores(@PathVariable("account") account: String): List<Score> {
-        return service.getAccountScores(account)
+    internal fun scores(@PathVariable("account") account: String,
+                        @PathVariable("tournament") tournament: String): List<Score> {
+        return service.computeTournamentScores(account = account, tournament = tournament)
     }
 
-    @RequestMapping("/games/list")
-    internal fun listGames(model: MutableMap<String, Any>): String {
-        val games = service.listGames()
-        val output = games.map { t -> "Read from DB: " + t.account + ", " + t.timestamp + ", " + t.toJsonBytes().size }
+    @RequestMapping("/{account}/games/list")
+    internal fun listGames(@PathVariable("account") account: String, model: MutableMap<String, Any>): String {
+        val games = service.listGames(account)
+        val output = games.map { t -> "Read from DB: " + t.tournament + ", " + t.timestamp + ", " + t.toJsonBytes().size }
         model.put("records", output)
         return "db"
+    }
+
+    private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {
+        game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
+        return game
     }
 }

@@ -4,15 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 
 class Game() {
-    lateinit var account: String
+    lateinit var tournament: String
     lateinit var parties: List<Party>
     var timestamp: Long? = null
 
     constructor(
-            account: String,
+            tournament: String,
             parties: List<Party>,
             timestamp: Long): this() {
-        this.account = account
+        this.tournament = tournament
         this.parties = parties
         this.timestamp = timestamp
     }

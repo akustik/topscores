@@ -69,7 +69,7 @@ class ControllerTest {
     @Test
     @Throws(Exception::class)
     fun addGameShouldReturnTheSameJson() {
-        val request = post("/games/add").content(TestData.patxanga).contentType("application/json")
+        val request = post("/account/games/add").content(TestData.patxanga).contentType("application/json")
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(TestData.patxanga, true))
     }
@@ -77,7 +77,7 @@ class ControllerTest {
     @Test
     @Throws(Exception::class)
     fun addGameShouldCreateTimestampForGame() {
-        val request = post("/games/add").content(TestData.patxanga_no_timestamp).contentType("application/json")
+        val request = post("/account/games/add").content(TestData.patxanga_no_timestamp).contentType("application/json")
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().string(TimestampExists()))
     }
@@ -88,7 +88,7 @@ class ControllerTest {
         val expected = listOf(
                 Score("Ramon", 2), Score("Arnau", 2), Score("Uri", 1), Score("Guillem", 1)
         )
-        val request = get("/scores/patxanga")
+        val request = get("/account/scores/patxanga")
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(ObjectMapper().writeValueAsString(expected)))
     }

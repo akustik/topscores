@@ -6,9 +6,9 @@ import org.gmd.model.Score
 
 interface GameService {
 
-    fun listGames(): List<Game>
+    fun listGames(account: String): List<Game>
     
-    fun addGame(game: Game): Game
+    fun addGame(account: String, game: Game): Game
     
-    fun getAccountScores(account: String): List<Score>
+    fun computeTournamentScores(account: String, tournament: String): List<Score>
 }
