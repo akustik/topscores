@@ -2,9 +2,9 @@ package org.gmd
 
 import org.gmd.model.Game
 import org.gmd.model.Score
-import org.gmd.service.AuthorizationService
 import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
@@ -25,29 +25,23 @@ class Controller {
 
     @Autowired
     lateinit private var service: GameService
-    
-    @Autowired
-    lateinit private var auth: AuthorizationService
 
-    @RequestMapping("/{account}/games/add", method = arrayOf(RequestMethod.POST))
+    @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun addGame(@PathVariable("account") account: String, @RequestBody game: Game): Game {
-        auth.withAutorization(account = account, providedToken = "none")
-        return service.addGame(account, withCollectionTimeIfTimestampIsNotPresent(game))
+    internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
+        return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
-    @RequestMapping("/{account}/scores/{tournament}")
+    @RequestMapping("/scores/{tournament}")
     @ResponseBody
-    internal fun scores(@PathVariable("account") account: String,
+    internal fun scores(authentication: Authentication,
                         @PathVariable("tournament") tournament: String): List<Score> {
-        auth.withAutorization(account = account, providedToken = "none")
-        return service.computeTournamentScores(account = account, tournament = tournament)
+        return service.computeTournamentScores(account = authentication.name, tournament = tournament)
     }
 
-    @RequestMapping("/{account}/games/list")
-    internal fun listGames(@PathVariable("account") account: String, model: MutableMap<String, Any>): String {
-        auth.withAutorization(account = account, providedToken = "none")
-        val games = service.listGames(account)
+    @RequestMapping("/games/list")
+    internal fun listGames(authentication: Authentication, model: MutableMap<String, Any>): String {
+        val games = service.listGames(authentication.name)
         val output = games.map { t -> "Read from DB: " + t.tournament + ", " + t.timestamp + ", " + t.toJsonBytes().size }
         model.put("records", output)
         return "db"
