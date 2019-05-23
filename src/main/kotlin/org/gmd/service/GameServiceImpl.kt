@@ -2,24 +2,24 @@ package org.gmd.service
 
 import org.gmd.model.Game
 import org.gmd.model.Score
-import org.gmd.repository.jdbc.GameRepository
+import org.gmd.repository.GameRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.SortedSet
 
 @Component
 open class GameServiceImpl: GameService {
-
+    
     //FIXME: Use private
     @Autowired
     lateinit var repository: GameRepository
     
-    override fun listGames(): List<Game> = repository.listGames()
+    override fun listGames(account: String): List<Game> = repository.listGames(account)
 
-    override fun addGame(game: Game): Game = repository.addGame(game)
+    override fun addGame(account: String, game: Game): Game = repository.addGame(account, game)
 
-    override fun getAccountScores(account: String): List<Score> {
-        val scores: List<Pair<String, Int>> = repository.listGames(account)
+    override fun computeTournamentScores(account: String, tournament: String): List<Score> {
+        val scores: List<Pair<String, Int>> = repository.listGames(account = account, tournament = tournament)
                 .flatMap { game -> game.parties }
                 .flatMap {
                     party ->

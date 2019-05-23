@@ -2,7 +2,7 @@ package org.gmd.service
 
 import org.gmd.TestData
 import org.gmd.model.Score
-import org.gmd.repository.jdbc.GameRepository
+import org.gmd.repository.GameRepository
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -34,14 +34,15 @@ class GameServiceImplTest {
 
     @Test
     @Throws(Exception::class)
-    fun getAccountScoresShouldAddUpScoresForAllTeamMembers() {
+    fun computeTournamentScoresShouldAddUpScoresForAllTeamMembers() {
         val expected = listOf(
                 Score("Ramon", 2), Score("Arnau", 2), Score("Uri", 1), Score("Guillem", 1)
         )
-        val account = "patxanga"
-        Mockito.`when`(gameRepository.listGames(account)).thenReturn(listOf(TestData.patxanga()))
+        val account = "test"
+        val tournament = "patxanga"
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(TestData.patxanga()))
 
-        val scores = gameService.getAccountScores(account)
+        val scores = gameService.computeTournamentScores(account = account, tournament = tournament)
         
         Assert.assertEquals(expected, scores)
     }

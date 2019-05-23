@@ -4,6 +4,7 @@ import org.gmd.model.Game
 import org.gmd.model.Score
 import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
@@ -27,22 +28,27 @@ class Controller {
 
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun addGame(@RequestBody game: Game): Game {
-        game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
-        return service.addGame(game)
+    internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
+        return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
-    @RequestMapping("/scores/{account}")
+    @RequestMapping("/scores/{tournament}")
     @ResponseBody
-    internal fun scores(@PathVariable("account") account: String): List<Score> {
-        return service.getAccountScores(account)
+    internal fun scores(authentication: Authentication,
+                        @PathVariable("tournament") tournament: String): List<Score> {
+        return service.computeTournamentScores(account = authentication.name, tournament = tournament)
     }
 
     @RequestMapping("/games/list")
-    internal fun listGames(model: MutableMap<String, Any>): String {
-        val games = service.listGames()
-        val output = games.map { t -> "Read from DB: " + t.account + ", " + t.timestamp + ", " + t.toJsonBytes().size }
+    internal fun listGames(authentication: Authentication, model: MutableMap<String, Any>): String {
+        val games = service.listGames(authentication.name)
+        val output = games.map { t -> "Read from DB: " + t.tournament + ", " + t.timestamp + ", " + t.toJsonBytes().size }
         model.put("records", output)
         return "db"
+    }
+
+    private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {
+        game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
+        return game
     }
 }
