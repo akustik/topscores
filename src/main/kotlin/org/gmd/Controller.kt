@@ -11,28 +11,28 @@ import org.springframework.web.bind.annotation.*
 @Controller
 class Controller {
 
-    @RequestMapping("/")
+    @Autowired
+    lateinit private var service: GameService
+    
+    @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(): String {
         return "index"
     }
 
-    @RequestMapping("/hello")
+    @RequestMapping("/hello", method = arrayOf(RequestMethod.GET))
     internal fun hello(model: MutableMap<String, Any>): String {
         val energy = System.getenv().get("SAMPLE")
         model.put("science", "is very hard, " + energy)
         return "hello"
     }
-
-    @Autowired
-    lateinit private var service: GameService
-
+    
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
     internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
         return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
-    @RequestMapping("/scores/{tournament}")
+    @RequestMapping("/scores/{tournament}", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun scores(authentication: Authentication,
                         @PathVariable("tournament") tournament: String,
@@ -45,7 +45,7 @@ class Controller {
         )
     }
 
-    @RequestMapping("/games/list")
+    @RequestMapping("/games/list", method = arrayOf(RequestMethod.GET))
     internal fun listGames(authentication: Authentication, model: MutableMap<String, Any>): String {
         val games = service.listGames(authentication.name)
         val output = games.map { t -> "Read from DB: " + t.tournament + ", " + t.timestamp + ", " + t.toJsonBytes().size }
