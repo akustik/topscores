@@ -18,7 +18,7 @@ open class AdderMemberRatingAlgorithm : MemberRatingAlgorithm {
                     }
                 }
         return scores.groupBy({ it.first }, { it.second })
-                .mapValues { (k, v) -> v.sum() }
+                .mapValues { (_, v) -> v.sum() }
                 .map { (k, v) -> Score(k, v) }
     }
 }
