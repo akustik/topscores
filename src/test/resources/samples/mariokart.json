@@ -10,8 +10,6 @@
           "name": "Guillem"
         }
       ],
-      "metrics": [],
-      "tags": [],
       "score": 4
     },
     {
@@ -23,8 +21,6 @@
           "name": "Ciriano"
         }
       ],
-      "metrics": [],
-      "tags": [],
       "score": 3
     },
     {
@@ -36,8 +32,6 @@
           "name": "Gerard"
         }
       ],
-      "metrics": [],
-      "tags": [],
       "score": 2
     },
     {
@@ -49,8 +43,6 @@
           "name": "Christian"
         }
       ],
-      "metrics": [],
-      "tags": [],
       "score": 1
     }
   ]

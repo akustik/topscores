@@ -102,6 +102,18 @@ class TopscoresTest {
 
     @Test
     @Throws(Exception::class)
+    fun addGameShouldSupportOptionalMetricsAndTags() {
+        val request = post("/games/add")
+                .content(TestData.mariokart)
+                .contentType("application/json")
+                .header("Authorization", basicAuthHeader("user", "pwd"))
+
+        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
+                .andExpect(content().json(TestData.mariokart, false))
+    }
+    
+    @Test
+    @Throws(Exception::class)
     fun scoresShouldReturnAggregatedDataByAccount() {
         val expected = """
         {
