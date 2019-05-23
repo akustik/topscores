@@ -26,7 +26,7 @@ open class JdbcGameRepository : GameRepository {
     override fun listGames(account: String, tournament: String): List<Game> {
         val tableName = createTableName(account)
         val response: List<ByteArray> = jdbcTemplate.queryForList("select content from $tableName where tournament = ?",
-                arrayOf(account), ByteArray::class.java)
+                arrayOf(tournament), ByteArray::class.java)
         return response.map { bytes -> Game.Companion.fromJsonBytes(bytes) }
     }
 
