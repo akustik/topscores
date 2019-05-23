@@ -1,0 +1,53 @@
+{
+  "tournament": "patxanga",
+  "parties": [
+    {
+      "team": {
+        "name": "Villager"
+      },
+      "members": [
+        {
+          "name": "Guillem"
+        }
+      ],
+      "metrics": [],
+      "score": 4
+    },
+    {
+      "team": {
+        "name": "Luigi"
+      },
+      "members": [
+        {
+          "name": "Ciriano"
+        }
+      ],
+      "metrics": [],
+      "score": 3
+    },
+    {
+      "team": {
+        "name": "Player"
+      },
+      "members": [
+        {
+          "name": "Gerard"
+        }
+      ],
+      "metrics": [],
+      "score": 2
+    },
+    {
+      "team": {
+        "name": "Wario"
+      },
+      "members": [
+        {
+          "name": "Christian"
+        }
+      ],
+      "metrics": [],
+      "score": 1
+    }
+  ]
+}
