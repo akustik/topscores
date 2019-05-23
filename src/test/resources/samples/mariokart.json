@@ -1,0 +1,49 @@
+{
+  "tournament": "mariokart",
+  "parties": [
+    {
+      "team": {
+        "name": "Villager"
+      },
+      "members": [
+        {
+          "name": "Guillem"
+        }
+      ],
+      "score": 4
+    },
+    {
+      "team": {
+        "name": "Luigi"
+      },
+      "members": [
+        {
+          "name": "Ciriano"
+        }
+      ],
+      "score": 3
+    },
+    {
+      "team": {
+        "name": "Player"
+      },
+      "members": [
+        {
+          "name": "Gerard"
+        }
+      ],
+      "score": 2
+    },
+    {
+      "team": {
+        "name": "Wario"
+      },
+      "members": [
+        {
+          "name": "Christian"
+        }
+      ],
+      "score": 1
+    }
+  ]
+}

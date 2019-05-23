@@ -2,7 +2,9 @@ package org.gmd
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
+import org.gmd.model.Metric
 import org.gmd.model.Score
+import org.gmd.model.TournamentStatus
 import org.gmd.repository.GameRepository
 import org.gmd.repository.GameRepositoryForTesting
 import org.gmd.service.GameService
@@ -28,9 +30,9 @@ import java.nio.charset.Charset
 import java.util.*
 
 
-@WebMvcTest(Controller::class)
+@WebMvcTest(Topscores::class)
 @RunWith(SpringRunner::class)
-class ControllerTest {
+class TopscoresTest {
 
     @Autowired
     private val mockMvc: MockMvc? = null
@@ -69,8 +71,8 @@ class ControllerTest {
         }
 
         @Bean
-        open fun controller(): Controller {
-            return Controller()
+        open fun controller(): Topscores {
+            return Topscores()
         }
     }
 
@@ -100,15 +102,75 @@ class ControllerTest {
 
     @Test
     @Throws(Exception::class)
-    fun scoresShouldReturnAggregatedDataByAccount() {
-        val expected = listOf(
-                Score("Ramon", 1), Score("Arnau", 1), Score("Uri", 0), Score("Guillem", 0)
-        )
-        val request = get("/scores/patxanga")
+    fun addGameShouldSupportOptionalMetricsAndTags() {
+        val request = post("/games/add")
+                .content(TestData.mariokart)
+                .contentType("application/json")
                 .header("Authorization", basicAuthHeader("user", "pwd"))
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().json(ObjectMapper().writeValueAsString(expected)))
+                .andExpect(content().json(TestData.mariokart, false))
+    }
+    
+    @Test
+    @Throws(Exception::class)
+    fun scoresShouldReturnAggregatedDataByAccount() {
+        val expected = """
+        {
+            "metrics": [
+                {
+                    "member": "Arnau",
+                    "metrics": [
+                        {
+                            "name": "gols",
+                            "value": 1
+                        }
+                    ]
+                },
+                {
+                    "member": "Guillem",
+                    "metrics": [
+                        {
+                            "name": "gols",
+                            "value": 2
+                        }
+                    ]
+                },
+                {
+                    "member": "Ramon",
+                    "metrics": [
+                        {
+                            "name": "gols",
+                            "value": 2
+                        }
+                    ]
+                }
+            ],
+            "scores": [
+                {
+                    "member": "Ramon",
+                    "score": 1
+                },
+                {
+                    "member": "Arnau",
+                    "score": 1
+                },
+                {
+                    "member": "Uri",
+                    "score": 0
+                },
+                {
+                    "member": "Guillem",
+                    "score": 0
+                }
+            ]
+        }
+        """
+        val request = get("/scores/patxanga/players")
+                .header("Authorization", basicAuthHeader("user", "pwd"))
+
+        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
+                .andExpect(content().json(expected))
     }
 
     private fun basicAuthHeader(user: String, password: String): String {
