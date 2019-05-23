@@ -1,5 +1,8 @@
 package org.gmd
 
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
 import org.gmd.model.Game
 import org.gmd.model.Score
 import org.gmd.service.GameService
@@ -8,6 +11,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
+@Api(value="Main API", description = "Game & rating operations")
 @Controller
 class Controller {
 
@@ -25,17 +29,20 @@ class Controller {
         model.put("science", "is very hard, " + energy)
         return "hello"
     }
-    
+
+    @ApiOperation(value = "Stores a game into the system")
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
     internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
         return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
+    @ApiOperation(value = "Ranks the players of a given tournament")
     @RequestMapping("/scores/{tournament}", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun scores(authentication: Authentication,
                         @PathVariable("tournament") tournament: String,
+                        @ApiParam(value = "Algorithm to be used in the ranking", required = false, allowableValues = "SUM, ELO")
                         @RequestParam(name = "alg", defaultValue = "SUM") algorithm: String): List<Score> {
 
         return service.computeTournamentScores(
