@@ -1,5 +1,6 @@
 package org.gmd.service
 
+import org.gmd.Algorithm
 import org.gmd.model.Game
 import org.gmd.model.Score
 
@@ -10,5 +11,5 @@ interface GameService {
     
     fun addGame(account: String, game: Game): Game
     
-    fun computeTournamentScores(account: String, tournament: String): List<Score>
+    fun computeTournamentScores(account: String, tournament: String, alg: Algorithm = Algorithm.SUM): List<Score>
 }

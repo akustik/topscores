@@ -35,8 +35,14 @@ class Controller {
     @RequestMapping("/scores/{tournament}")
     @ResponseBody
     internal fun scores(authentication: Authentication,
-                        @PathVariable("tournament") tournament: String): List<Score> {
-        return service.computeTournamentScores(account = authentication.name, tournament = tournament)
+                        @PathVariable("tournament") tournament: String,
+                        @RequestParam(name = "alg", defaultValue = "SUM") algorithm: String): List<Score> {
+
+        return service.computeTournamentScores(
+                account = authentication.name, 
+                tournament = tournament, 
+                alg = Algorithm.valueOf(algorithm.toUpperCase())
+        )
     }
 
     @RequestMapping("/games/list")

@@ -3,10 +3,12 @@ package org.gmd
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
 import org.gmd.model.Score
-import org.gmd.repository.GameRepositoryForTesting
 import org.gmd.repository.GameRepository
+import org.gmd.repository.GameRepositoryForTesting
 import org.gmd.service.GameService
 import org.gmd.service.GameServiceImpl
+import org.gmd.service.alg.AdderMemberRatingAlgorithm
+import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.junit.Test
@@ -54,7 +56,7 @@ class ControllerTest {
         open fun authentication(): BasicConfiguration {
             return BasicConfiguration(EnvProviderForTesting(mapOf("token:user" to "pwd")))
         }
-        
+
         @Bean
         open fun gameRepository(): GameRepository {
             return repository
@@ -62,8 +64,7 @@ class ControllerTest {
 
         @Bean
         open fun gameService(): GameService {
-            val gameService = GameServiceImpl()
-            gameService.repository = repository
+            val gameService = GameServiceImpl(repository, AdderMemberRatingAlgorithm(), ELOMemberRatingAlgorithm())
             return gameService
         }
 
@@ -80,7 +81,7 @@ class ControllerTest {
                 .content(TestData.patxanga)
                 .contentType("application/json")
                 .header("Authorization", basicAuthHeader("user", "pwd"))
-        
+
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(TestData.patxanga, true))
     }
@@ -92,7 +93,7 @@ class ControllerTest {
                 .content(TestData.patxanga_no_timestamp)
                 .contentType("application/json")
                 .header("Authorization", basicAuthHeader("user", "pwd"))
-        
+
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().string(TimestampExists()))
     }
@@ -105,11 +106,11 @@ class ControllerTest {
         )
         val request = get("/scores/patxanga")
                 .header("Authorization", basicAuthHeader("user", "pwd"))
-        
+
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(ObjectMapper().writeValueAsString(expected)))
     }
-    
+
     private fun basicAuthHeader(user: String, password: String): String {
         return "Basic " + Base64.getEncoder().encodeToString("$user:$password".toByteArray(Charset.defaultCharset()))
     }
