@@ -102,7 +102,7 @@ class ControllerTest {
     @Throws(Exception::class)
     fun scoresShouldReturnAggregatedDataByAccount() {
         val expected = listOf(
-                Score("Ramon", 2), Score("Arnau", 2), Score("Uri", 1), Score("Guillem", 1)
+                Score("Ramon", 1), Score("Arnau", 1), Score("Uri", 0), Score("Guillem", 0)
         )
         val request = get("/scores/patxanga")
                 .header("Authorization", basicAuthHeader("user", "pwd"))

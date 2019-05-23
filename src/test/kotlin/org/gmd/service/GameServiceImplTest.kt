@@ -30,7 +30,7 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentScoresShouldAddUpScoresForAllTeamMembers() {
         val expected = listOf(
-                Score("Ramon", 2), Score("Arnau", 2), Score("Uri", 1), Score("Guillem", 1)
+                Score("Ramon", 1), Score("Arnau", 1), Score("Uri", 0), Score("Guillem", 0)
         )
         val account = "test"
         val tournament = "patxanga"
