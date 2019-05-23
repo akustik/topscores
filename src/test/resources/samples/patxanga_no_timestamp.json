@@ -15,9 +15,14 @@
       ],
       "metrics": [
         {
-          "name": "gols",
-          "value": "3",
-          "type": "Integer"
+          "name": "gols:Guillem",
+          "value": 2
+        }
+      ],
+      "tags": [
+        {
+          "name": "Targeta",
+          "value": "Vermella"
         }
       ],
       "score": 0
@@ -36,9 +41,18 @@
       ],
       "metrics": [
         {
-          "name": "gols",
-          "value": "1",
-          "type": "Integer"
+          "name": "gols:Ramon",
+          "value": 2
+        },
+        {
+          "name": "gols:Arnau",
+          "value": 1
+        }
+      ],
+      "tags": [
+        {
+          "name": "Targeta",
+          "value": "Groga"
         }
       ],
       "score": 1

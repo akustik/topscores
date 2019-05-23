@@ -2,20 +2,20 @@ package org.gmd.model
 
 import io.swagger.annotations.ApiModelProperty
 
-class Metric() {
-    @ApiModelProperty(notes = "Use format name:<player_name> to indicate an individual metric")
+class Tag() {
+    @ApiModelProperty(notes = "Use format name:<player_name> to indicate an individual tag")
     lateinit var name: String
-    var value: Int = 0
+    lateinit var value: String
     
     constructor(
             name: String,
-            value: Int): this() {
+            value: String): this() {
         this.name = name
         this.value = value
     }
 
     override fun toString(): String {
-        return "Metric(name='$name', value=$value)"
+        return "Tag(name='$name', value='$value')"
     }
 
 

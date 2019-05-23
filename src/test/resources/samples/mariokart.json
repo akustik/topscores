@@ -23,6 +23,7 @@
         }
       ],
       "metrics": [],
+      "tags": [],
       "score": 3
     },
     {
@@ -47,6 +48,7 @@
         }
       ],
       "metrics": [],
+      "tags": [],
       "score": 1
     }
   ]
