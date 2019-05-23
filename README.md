@@ -12,6 +12,15 @@
 
 Master changes are automatically grabbed by Heroku and deployed.
 
+# Settings
+
+Use token:account=pwd as an env variable to enable a new account
+
+```
+$ heroku config
+$ heroku config:set token:account=pwd
+```
+
 ## Running Locally
 
 Make sure you have Java and Maven installed.  Also, install the [Heroku CLI](https://cli.heroku.com/).
