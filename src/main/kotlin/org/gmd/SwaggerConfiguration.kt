@@ -14,11 +14,22 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 open class SwaggerConfiguration {
     
     @Bean
-    open fun api(): Docket {
+    open fun gamesApi(): Docket {
         return Docket(DocumentationType.SWAGGER_2)
+                .groupName("Games")
                 .select()
                 .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any())
+                .paths(PathSelectors.ant("/games/**"))
+                .build()
+    }
+
+    @Bean
+    open fun scoresApi(): Docket {
+        return Docket(DocumentationType.SWAGGER_2)
+                .groupName("Scores")
+                .select()
+                .apis(RequestHandlerSelectors.any())
+                .paths(PathSelectors.ant("/scores/**"))
                 .build()
     }
 }
