@@ -12,6 +12,10 @@
 
 Master changes are automatically grabbed by Heroku and deployed.
 
+# Documentation
+
+Rest API documentation can be found at http://<host>/swagger-ui.html
+
 # Settings
 
 Use token:account=pwd as an env variable to enable a new account
