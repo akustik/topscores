@@ -20,12 +20,11 @@ class Topscores {
     @Autowired
     lateinit private var service: GameService
     
-    private val JSON = ObjectMapper()
-    
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
         val games = service.listGames(authentication.name)
         model.put("games", games)
+        model.put("account", authentication.name)
         return "index"
     }
 
