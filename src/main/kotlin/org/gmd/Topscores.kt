@@ -1,5 +1,6 @@
 package org.gmd
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -20,15 +21,11 @@ class Topscores {
     lateinit private var service: GameService
     
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
-    internal fun index(): String {
+    internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
+        val games = service.listGames(authentication.name)
+        model.put("games", games)
+        model.put("account", authentication.name)
         return "index"
-    }
-
-    @RequestMapping("/hello", method = arrayOf(RequestMethod.GET))
-    internal fun hello(model: MutableMap<String, Any>): String {
-        val energy = System.getenv().get("SAMPLE")
-        model.put("science", "is very hard, " + energy)
-        return "hello"
     }
 
     @ApiOperation(value = "Stores a game into the system")
@@ -38,12 +35,11 @@ class Topscores {
         return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
+    @ApiOperation(value = "List all the games for a given account")
     @RequestMapping("/games/list", method = arrayOf(RequestMethod.GET))
-    internal fun listGames(authentication: Authentication, model: MutableMap<String, Any>): String {
-        val games = service.listGames(authentication.name)
-        val output = games.map { t -> "Read from DB: " + t.tournament + ", " + t.timestamp + ", " + t.toJsonBytes().size }
-        model.put("records", output)
-        return "db"
+    @ResponseBody
+    internal fun listGames(authentication: Authentication): List<Game> {
+        return service.listGames(authentication.name)
     }
     
     @ApiOperation(value = "Ranks the players of a given tournament")
