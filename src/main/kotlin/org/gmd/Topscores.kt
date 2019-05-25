@@ -1,5 +1,6 @@
 package org.gmd
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -17,6 +18,8 @@ class Topscores {
 
     @Autowired
     lateinit private var service: GameService
+    
+    private val mapper = ObjectMapper()
 
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
@@ -26,6 +29,7 @@ class Topscores {
         model.put("games", games)
         model.put("account", account)
         model.put("tournaments", tournaments)
+        model.put("schema", mapper.writeValueAsString(mapper.generateJsonSchema(Game::class.java)))
         return "index"
     }
 

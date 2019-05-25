@@ -7,44 +7,75 @@ import ReactDOM from 'react-dom';
 import Form from "react-jsonschema-form";
 
 const schema = {
-  "title": "Game creator",
-  "type": "object",
-  "properties": {
-    "tournament": {
-      "type": "string",
-      "title": "Tournament",
-      "enum": ["2018-2019"]
-    },
-    "teams": {
-      "type": "array",
-      "title": "Teams",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name",
-            "enum": ["blaus", "grocs"]
-          },
-          "players": {
-            "type": "array",
-            "title": "Players",
-            "items": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "title": "Name",
-                  "enum": ["Guillem", "Ramon"]
-                }
+      "properties": {
+        "parties": {
+          "items": {
+            "properties": {
+              "members": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "metrics": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "score": {
+                "type": "integer"
+              },
+              "tags": {
+                "items": {
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "team": {
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               }
-            }
-          }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "timestamp": {
+          "type": "number"
+        },
+        "tournament": {
+          "type": "string"
         }
-      }
+      },
+      "type": "object"
     }
-  }
-};
+;
 
 const onSubmit = ({formData}, e) => console.log("Data submitted: ",  formData);
 const log = (type) => console.log.bind(console, type);
