@@ -28,7 +28,7 @@ class Topscores {
         return "index"
     }
 
-    @ApiOperation(value = "Stores a game into the system")
+    @ApiOperation(value = "Stores a new game into the system")
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
     internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
