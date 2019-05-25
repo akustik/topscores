@@ -46,22 +46,33 @@ const schema = {
   }
 };
 
+const onSubmit = ({formData}, e) => console.log("Data submitted: ",  formData);
 const log = (type) => console.log.bind(console, type);
 
-function App() {
-  return (
-      <div className="App">
-        <div className="container-fluid">
-          <div className="col-sm-5">
-            <Form schema={schema}
-                  onChange={log("changed")}
-                  onSubmit={log("submitted")}
-                  onError={log("errors")} />
-          </div>
+class App extends React.Component {
+  
+  render() {
+    return (
+    <div className="App">
+      <div className="container-fluid">
+        <div className="col-sm-5">
+          <Form schema={schema}
+                onChange={log("changed")}
+                onSubmit={log("submitted")}
+                onError={log("errors")}/>
         </div>
       </div>
-  );
+    </div>);
+  }
+
+  componentDidMount() {
+    fetch('/games/list')
+    .then(response => response.json())
+    .then(log("obtained"));
+  }
 }
+
+export default App;
 
 ReactDOM.render(<App />, document.getElementById('react'));
 
