@@ -18,18 +18,29 @@
 </div>
 <div class="container">
   <div class="alert alert-info text-center" role="alert">
-    This application is still under construction.
+    Find below the most recent games. Click on the tournament to see the ranked players.
   </div>
   <hr />
-  <div class="row">
-    <div class="col-md-12" th:each="game : ${games}">
+  <div class="row" th:each="game : ${games}">
+    <div class="col-md-12">
       <h5>
-        <span class="glyphicon glyphicon-info-sign"></span> 
-        <span class="text-uppercase" th:text="${game.tournament + ': ' + #dates.format(game.timestamp, 'dd-MMM-yyyy')}"></span>
+        <a th:href="@{'/web/' + ${game.tournament} + '/elo'}">
+          <span class="glyphicon glyphicon-triangle-right"></span>
+          <span class="text-uppercase" th:text="${game.tournament + ' // ' + #dates.format(game.timestamp, 'dd-MMM-yyyy HH:mm')}"></span>
+        </a>
       </h5>
-      <div>
-        <div th:each="party : ${game.parties}">
-          <span th:text="${party.team.name + ' (' + party.score + ')'}"></span>
+    </div>
+    <div class="col-md-3" th:each="party : ${game.parties}">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <b th:text="${party.team.name + ' - ' + party.score}"></b>
+        </div>
+        <div class="panel-body">
+          <ul>
+            <li th:each="member : ${party.members}">
+              <span th:text="${member.name}"></span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

@@ -21,7 +21,7 @@ class Topscores {
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
-        val games = service.listGames(account)
+        val games = service.listGames(account).sortedByDescending { it.timestamp }.take(5)
         val tournaments = service.listTournaments(account)
         model.put("games", games)
         model.put("account", account)
