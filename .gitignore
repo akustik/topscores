@@ -27,3 +27,5 @@ build/
 .idea/
 *.iml
 out/
+node_modules/
+dist/
