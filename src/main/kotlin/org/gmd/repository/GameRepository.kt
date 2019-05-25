@@ -9,4 +9,6 @@ interface GameRepository {
     fun listGames(account: String, tournament: String): List<Game>
     
     fun addGame(account: String, game: Game): Game
+    
+    fun listTournaments(account: String): List<String>
 }

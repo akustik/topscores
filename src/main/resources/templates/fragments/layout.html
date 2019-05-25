@@ -13,11 +13,11 @@
             <li class="active">
                 <a href="/"><span class="glyphicon glyphicon-home"></span> <span th:text="${account}"></span></a>
             </li>
-            <li>
-                <a href="/web/scores/sum"><span class="glyphicon glyphicon-user"></span> Stats</a>
-            </li>
-            <li>
-                <a href="/web/scores/elo"><span class="glyphicon glyphicon-user"></span> ELO</a>
+            <li th:each="tournament : ${tournaments}">
+                <a th:href="@{'/web/' + ${tournament} + '/elo'}">
+                    <span class="glyphicon glyphicon-user"></span> 
+                    <span th:text="${tournament}"></span>
+                </a>
             </li>
         </ul>
         <ul class="nav navbar-nav navbar-right">

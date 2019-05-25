@@ -3,7 +3,7 @@ package org.gmd.model
 import io.swagger.annotations.ApiModelProperty
 
 class Metric() {
-    @ApiModelProperty(notes = "Use format name:<player_name> to indicate an individual metric")
+    @ApiModelProperty(notes = "Use format name:<player_name> to indicate an individual metric.")
     lateinit var name: String
     var value: Int = 0
     
