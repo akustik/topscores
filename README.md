@@ -5,6 +5,7 @@
 * [RestFul API](https://medium.com/@dime.kotevski/writing-a-restful-backend-using-kotlin-and-spring-boot-9f162c96e428)
 * [Create a react app](https://developer.okta.com/blog/2018/07/19/simple-crud-react-and-spring-boot)
 * [Create dynamic forms](https://react-jsonschema-form.readthedocs.io/en/latest/)
+* [Spring + react](https://spring.io/guides/tutorials/react-and-spring-data-rest/)
 
 # Build status
 
