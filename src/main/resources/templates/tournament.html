@@ -18,27 +18,36 @@
 </div>
 <div class="container">
   <div class="alert alert-info text-center" role="alert">
-    This application is still under construction.
+    Ranking is using an ELO with starting value of 1200 and k with value 30.
   </div>
   <hr />
   <div class="row">
-    <div class="col-md-12">
-      <h4> Scores </h4>
-      <div>
-        <div th:each="score : ${status.scores}">
-          <span th:text="${score.member + ': ' + score.score}"></span>
+    <div class="col-md-3">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <b>Ranking</b>
+        </div>
+        <div class="panel-body">
+          <ol>
+            <li th:each="score : ${status.scores}">
+              <span th:text="${score.member + ': ' + score.score}"></span>
+            </li>
+          </ol>
         </div>
       </div>
     </div>
-  </div> <!-- row -->
-  <div class="row">
-    <div class="col-md-12">
-      <h4> Stats </h4>
-    </div>
-    <div class="col-md-4" th:each="stats : ${status.metrics}">
-      <h5 th:text="${stats.member}"> </h5>
-      <div th:each="metric : ${stats.metrics}">
-        <span th:text="${metric.name + ': ' + metric.value}"></span>
+    <div class="col-md-3" th:each="stats : ${status.metrics}">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <b th:text="${stats.member}"></b>
+        </div>
+        <div class="panel-body">
+          <ul>
+            <li th:each="metric : ${stats.metrics}">
+              <span th:text="${metric.name + ': ' + metric.value}"></span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div> <!-- row -->
