@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Topscores</title>
+  <div th:replace="fragments/layout :: css"/>
+</head>
+<body>
+
+<div th:replace="fragments/layout :: header"/>
+
+<div class="jumbotron text-center">
+  <div class="container">
+    <a href="/" class="lang-logo">
+      <img src="/lang-logo.png" />
+    </a>
+    <h1>Welcome to topscores</h1>
+  </div>
+</div>
+<div class="container">
+  <div class="alert alert-info text-center" role="alert">
+    This application is still under construction.
+  </div>
+  <hr />
+  <div class="row">
+    <div class="col-md-6">
+      <h5> Scores </h5>
+      <div>
+        <div th:each="score : ${status.scores}">
+          <span th:text="${score.member + ': ' + score.score}"></span>
+        </div>
+      </div>
+    </div>
+  </div> <!-- row -->
+</div>
+
+<div th:replace="fragments/layout :: footer"/>
+
+</body>
+</html>

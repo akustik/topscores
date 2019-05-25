@@ -16,4 +16,6 @@ interface GameService {
     fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm = Algorithm.SUM): List<Score>
 
     fun computeTournamentMemberMetrics(account: String, tournament: String): List<MemberMetrics>
+    
+    fun listTournaments(account: String): List<String>
 }

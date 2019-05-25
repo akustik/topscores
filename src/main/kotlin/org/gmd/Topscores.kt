@@ -1,11 +1,9 @@
 package org.gmd
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.gmd.model.Game
-import org.gmd.model.Score
 import org.gmd.model.TournamentStatus
 import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,19 +11,36 @@ import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 
-@Api(value="Main API", description = "Game & rating operations")
+@Api(value = "Main API", description = "Game & rating operations")
 @Controller
 class Topscores {
 
     @Autowired
     lateinit private var service: GameService
-    
+
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
-        val games = service.listGames(authentication.name)
+        val account = authentication.name
+        val games = service.listGames(account)
+        val tournaments = service.listTournaments(account)
         model.put("games", games)
-        model.put("account", authentication.name)
+        model.put("account", account)
+        model.put("tournaments", tournaments)
         return "index"
+    }
+
+    @RequestMapping("/web/{tournament}/{alg}", method = arrayOf(RequestMethod.GET))
+    internal fun tournament(authentication: Authentication,
+                            @PathVariable("tournament") tournament: String,
+                            @PathVariable("alg") alg: String,
+                            model: MutableMap<String, Any>): String {
+        val account = authentication.name
+        val status = tournamentStatus(account, tournament, alg)
+        val tournaments = service.listTournaments(account)
+        model.put("status", status)
+        model.put("account", account)
+        model.put("tournaments", tournaments)
+        return "tournament"
     }
 
     @ApiOperation(value = "Stores a new game into the system")
@@ -41,7 +56,7 @@ class Topscores {
     internal fun listGames(authentication: Authentication): List<Game> {
         return service.listGames(authentication.name)
     }
-    
+
     @ApiOperation(value = "Ranks the players of a given tournament")
     @RequestMapping("/scores/{tournament}/players", method = arrayOf(RequestMethod.GET))
     @ResponseBody
@@ -49,21 +64,24 @@ class Topscores {
                         @PathVariable("tournament") tournament: String,
                         @ApiParam(value = "Algorithm to be used in the ranking", required = false, allowableValues = "SUM, ELO")
                         @RequestParam(name = "alg", defaultValue = "SUM") algorithm: String): TournamentStatus {
-
-        val scores = service.computeTournamentMemberScores(
-                account = authentication.name, 
-                tournament = tournament, 
-                alg = Algorithm.valueOf(algorithm.toUpperCase())
-        )
-        
-        val metrics = service.computeTournamentMemberMetrics(
-                account = authentication.name,
-                tournament = tournament
-        )
-        
-        return TournamentStatus(scores, metrics)
+        return tournamentStatus(authentication.name, tournament, algorithm)
     }
     
+    private fun tournamentStatus(account: String, tournament: String, algorithm: String): TournamentStatus {
+        val scores = service.computeTournamentMemberScores(
+                account = account,
+                tournament = tournament,
+                alg = Algorithm.valueOf(algorithm.toUpperCase())
+        )
+
+        val metrics = service.computeTournamentMemberMetrics(
+                account = account,
+                tournament = tournament
+        )
+
+        return TournamentStatus(scores, metrics)
+    }
+
     private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {
         game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
         return game

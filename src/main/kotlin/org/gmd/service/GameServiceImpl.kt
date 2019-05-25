@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component
 open class GameServiceImpl(val repository: GameRepository,
                            val adderAlg: AdderMemberRatingAlgorithm,
                            val eloAlg: ELOMemberRatingAlgorithm) : GameService {
-
     override fun addGame(account: String, game: Game): Game = repository.addGame(account, game)
 
     override fun listGames(account: String): List<Game> = repository.listGames(account)
@@ -48,4 +47,9 @@ open class GameServiceImpl(val repository: GameRepository,
             Pair(it.key.substringAfter(":"), Metric(it.key.substringBefore(":"), it.value.value))
         }.groupBy({ it.first }, { it.second }).map { MemberMetrics(it.key, it.value.sortedBy { it.name }) }.sortedBy { it.member }
     }
+
+    override fun listTournaments(account: String): List<String> {
+        return repository.listTournaments(account).sorted()
+    }
+
 }
