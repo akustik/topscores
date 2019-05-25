@@ -17,6 +17,7 @@
   </div>
 </div>
 <div class="container">
+  <div id="like_button_container"></div>
   <div class="alert alert-info text-center" role="alert">
     Find below the most recent games. Click on the tournament to see the ranked players.
   </div>
@@ -48,6 +49,14 @@
 </div>
 
 <div th:replace="fragments/layout :: footer"/>
+
+<!-- Load React. -->
+<!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+<script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin="anonymous"></script>
+
+<!-- Load our React component. -->
+<script src="/js/like_button.js"></script>
 
 </body>
 </html>
