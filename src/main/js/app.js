@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Redirect } from 'react-router';
 import Form from "react-jsonschema-form";
 
 const schema = {
@@ -41,29 +42,41 @@ const schema = {
   }
 };
 
-const onSubmit = ({formData}, e) =>  {
-  fetch('/games/simple/add', {
-    method: 'POST',
-    body: JSON.stringify(formData),
-    headers:{
-      'Content-Type': 'application/json'
-    }
-  }).then(res => res.json())
-  .catch(error => console.error('Error:', error))
-  .then(response => console.log('Success:', response));
-};
 const log = (type) => console.log.bind(console, type);
 
 class App extends React.Component {
+
+  state = {
+    toMainPage: false,
+  };
+  
+  submit = ({formData}, e) =>  {
+    fetch('/games/simple/add', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+      headers:{
+        'Content-Type': 'application/json'
+      }
+    }).then(res => res.json())
+    .catch(error => console.error('Error:', error))
+    .then(response => this.setState(() => ({
+          toMainPage: true
+        }))
+    );
+  };
   
   render() {
+    if (this.state.toMainPage === true) {
+      return <Redirect to='/' />
+    }
+    
     return (
     <div className="App">
       <div className="container-fluid">
         <div className="col-sm-5">
           <Form schema={schema}
                 onChange={log("changed")}
-                onSubmit={ onSubmit }
+                onSubmit={this.submit}
                 onError={log("errors")}/>
         </div>
       </div>
