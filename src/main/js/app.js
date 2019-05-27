@@ -42,7 +42,7 @@ const schema = {
 };
 
 const onSubmit = ({formData}, e) =>  {
-  fetch('/web/create/simple', {
+  fetch('/games/simple/add', {
     method: 'POST',
     body: JSON.stringify(formData),
     headers:{

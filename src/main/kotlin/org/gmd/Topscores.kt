@@ -29,7 +29,7 @@ class Topscores {
         return "index"
     }
 
-    @RequestMapping("/web/{tournament}/{alg}", method = arrayOf(RequestMethod.GET))
+    @RequestMapping("/web/status/{tournament}/{alg}", method = arrayOf(RequestMethod.GET))
     internal fun tournament(authentication: Authentication,
                             @PathVariable("tournament") tournament: String,
                             @PathVariable("alg") alg: String,
@@ -43,10 +43,27 @@ class Topscores {
         return "tournament"
     }
 
-    @RequestMapping("/web/create/simple", method = arrayOf(RequestMethod.POST))
+    @RequestMapping("/web/create", method = arrayOf(RequestMethod.GET))
+    internal fun create(authentication: Authentication, model: MutableMap<String, Any>): String {
+        val account = authentication.name
+        val tournaments = service.listTournaments(account)
+        model.put("account", account)
+        model.put("tournaments", tournaments)
+        return account
+    }
+    
+    @ApiOperation(value = "Stores a new game into the system")
+    @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun createSimple(authentication: Authentication,
-                              @RequestBody game: SimpleGame): Game {
+    internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
+        return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
+    }
+
+    @ApiOperation(value = "Stores a new game into the system with simpler syntax")
+    @RequestMapping("/games/simple/add", method = arrayOf(RequestMethod.POST))
+    @ResponseBody
+    internal fun addSimpleGame(authentication: Authentication,
+                               @RequestBody game: SimpleGame): Game {
         val parties = game.teams.map { t ->
             Party(
                     team = Team(name = t.team),
@@ -62,13 +79,6 @@ class Topscores {
                 timestamp = System.currentTimeMillis()
         )
         return addGame(authentication, createdGame)
-    }
-
-    @ApiOperation(value = "Stores a new game into the system")
-    @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
-    @ResponseBody
-    internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
-        return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
     }
 
     @ApiOperation(value = "List all the games for a given account")
