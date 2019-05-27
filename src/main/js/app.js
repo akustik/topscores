@@ -67,7 +67,9 @@ class App extends React.Component {
   
   render() {
     if (this.state.toMainPage === true) {
-      return <Redirect to='/' />
+        //FIXME: Use <Redirect> and a <Router> instead. Learn how to work 
+        //with single page applications
+        window.location.href = '/';
     }
     
     return (
