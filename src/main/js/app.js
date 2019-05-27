@@ -7,77 +7,51 @@ import ReactDOM from 'react-dom';
 import Form from "react-jsonschema-form";
 
 const schema = {
-      "properties": {
-        "parties": {
-          "items": {
-            "properties": {
-              "members": {
-                "items": {
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "metrics": {
-                "items": {
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "integer"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "score": {
-                "type": "integer"
-              },
-              "tags": {
-                "items": {
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              "team": {
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              }
-            },
-            "type": "object"
+  "title": "Game creator",
+  "type": "object",
+  "properties": {
+    "tournament": {
+      "type": "string",
+      "title": "Tournament",
+      "enum": ["2018-2019"]
+    },
+    "teams": {
+      "type": "array",
+      "title": "Teams",
+      "items": {
+        "type": "object",
+        "properties": {
+          "team": {
+            "type": "string",
+            "enum": ["blaus", "grocs"]
           },
-          "type": "array"
-        },
-        "timestamp": {
-          "type": "number"
-        },
-        "tournament": {
-          "type": "string"
+          "score": {
+            "type": "integer"
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["Guillem", "Ramon"]
+            }
+          }
         }
-      },
-      "type": "object"
+      }
     }
-;
+  }
+};
 
-const onSubmit = ({formData}, e) => console.log("Data submitted: ",  formData);
+const onSubmit = ({formData}, e) =>  {
+  fetch('/web/create/simple', {
+    method: 'POST',
+    body: JSON.stringify(formData),
+    headers:{
+      'Content-Type': 'application/json'
+    }
+  }).then(res => res.json())
+  .catch(error => console.error('Error:', error))
+  .then(response => console.log('Success:', response));
+};
 const log = (type) => console.log.bind(console, type);
 
 class App extends React.Component {
@@ -89,21 +63,13 @@ class App extends React.Component {
         <div className="col-sm-5">
           <Form schema={schema}
                 onChange={log("changed")}
-                onSubmit={log("submitted")}
+                onSubmit={ onSubmit }
                 onError={log("errors")}/>
         </div>
       </div>
     </div>);
   }
-
-  componentDidMount() {
-    fetch('/games/list')
-    .then(response => response.json())
-    .then(log("obtained"));
-  }
 }
-
-export default App;
 
 ReactDOM.render(<App />, document.getElementById('react'));
 
