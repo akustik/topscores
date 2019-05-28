@@ -13,10 +13,16 @@
             <li th:classappend="${#httpServletRequest.getRequestURI() == '/' ? 'active':''}">
                 <a href="/"><span class="glyphicon glyphicon-home"></span> <span th:text="${account}"></span></a>
             </li>
-            <li th:each="tournament : ${tournaments}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/' + tournament + '/elo' ? 'active':''}">
-                <a th:href="@{'/web/' + ${tournament} + '/elo'}">
+            <li th:each="tournament : ${tournaments}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/status/' + tournament + '/elo' ? 'active':''}">
+                <a th:href="@{'/web/status/' + ${tournament} + '/elo'}">
                     <span class="glyphicon glyphicon-th-list"></span> 
                     <span th:text="${tournament}"></span>
+                </a>
+            </li>
+            <li>
+                <a th:href="@{'/web/create'}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/create' ? 'active':''}">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    <span>Create</span>
                 </a>
             </li>
         </ul>

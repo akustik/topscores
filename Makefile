@@ -1,5 +1,5 @@
 start-local:
-	./gradlew build; heroku local
+	./gradlew -x test build; heroku local
 
 show-local-tables:
 	psql -c "\dt"
