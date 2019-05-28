@@ -64,3 +64,5 @@ task npmRunBuild(type: NpmTask) {
 npmRunBuild.dependsOn npmInstall
 classes.dependsOn npmRunBuild
 
+nodeSetup.onlyIf = { true }
+
