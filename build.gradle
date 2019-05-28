@@ -28,6 +28,7 @@ jar {
 node {
     version = '8.16.0'
     npmVersion = '6.4.1'
+    download = true
 }
 
 repositories {
