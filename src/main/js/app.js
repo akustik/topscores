@@ -33,7 +33,10 @@ const schema = {
             "type": "array",
             "items": {
               "type": "string",
-              "enum": ["Guillem", "Ramon"]
+              "enum": [
+                  "Guillem", "Ramon", "Erikko", "Jordi", "Arnau",
+                  "Marc", "Ricard", "Albert", "Toni", "Uri", "Sergi"
+              ]
             }
           }
         }
