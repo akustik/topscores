@@ -37,11 +37,18 @@ const schema = {
                   "Guillem", "Ramon", "Erikko", "Jordi", "Arnau",
                   "Marc", "Ricard", "Albert", "Toni", "Uri", "Sergi"
               ]
-            }
+            },
+            "uniqueItems": true
           }
         }
       }
     }
+  }
+};
+
+const uiSchema = {
+  "score": {
+    "ui:widget": "updown"
   }
 };
 
@@ -80,6 +87,7 @@ class App extends React.Component {
       <div className="container-fluid">
         <div className="col-xs-12 col-sm-12 col-md-12">
           <Form schema={schema}
+                uiSchema={uiSchema}
                 onChange={log("changed")}
                 onSubmit={this.submit}
                 onError={log("errors")}/>
