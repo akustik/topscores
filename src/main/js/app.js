@@ -78,7 +78,7 @@ class App extends React.Component {
     return (
     <div className="App">
       <div className="container-fluid">
-        <div className="col-sm-5">
+        <div className="col-xs-12 col-sm-4 col-md-4">
           <Form schema={schema}
                 onChange={log("changed")}
                 onSubmit={this.submit}
