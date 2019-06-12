@@ -40,7 +40,23 @@ class Topscores {
         model.put("status", status)
         model.put("account", account)
         model.put("tournaments", tournaments)
+        model.put("tournament", tournament)
         return "tournament"
+    }
+
+    @RequestMapping("/web/status/{tournament}/player/{player}/{alg}", method = arrayOf(RequestMethod.GET))
+    internal fun tournament(authentication: Authentication,
+                            @PathVariable("tournament") tournament: String,
+                            @PathVariable("player") player: String,
+                            @PathVariable("alg") alg: String,
+                            model: MutableMap<String, Any>): String {
+        val account = authentication.name
+        val status = playerStatus(account, tournament, player, alg)
+        val tournaments = service.listTournaments(account)
+        model.put("status", status)
+        model.put("account", account)
+        model.put("tournaments", tournaments)
+        return "player"
     }
 
     @RequestMapping("/web/create", method = arrayOf(RequestMethod.GET))
@@ -98,6 +114,17 @@ class Topscores {
         return tournamentStatus(authentication.name, tournament, algorithm)
     }
 
+    @ApiOperation(value = "Shows the evolution for a player of a given tournament")
+    @RequestMapping("/scores/{tournament}/player/{player}", method = arrayOf(RequestMethod.GET))
+    @ResponseBody
+    internal fun evolution(authentication: Authentication,
+                        @PathVariable("tournament") tournament: String,
+                        @PathVariable("player") player: String,
+                        @ApiParam(value = "Algorithm to be used in the ranking", required = false, allowableValues = "SUM, ELO")
+                        @RequestParam(name = "alg", defaultValue = "SUM") algorithm: String): PlayerStatus {
+        return playerStatus(authentication.name, tournament, player, algorithm)
+    }
+
     private fun tournamentStatus(account: String, tournament: String, algorithm: String): TournamentStatus {
         val scores = service.computeTournamentMemberScores(
                 account = account,
@@ -111,6 +138,22 @@ class Topscores {
         )
 
         return TournamentStatus(scores, metrics)
+    }
+    
+    private fun playerStatus(account: String, tournament: String, player: String, algorithm: String): PlayerStatus {
+        val scores = service.computeTournamentMemberScoreEvolution(
+                account = account,
+                tournament = tournament,
+                player = player,
+                alg = Algorithm.valueOf(algorithm.toUpperCase())
+        )
+
+        val metrics = service.computeTournamentMemberMetrics(
+                account = account,
+                tournament = tournament
+        ).filter { metric -> metric.member.equals(player) }
+
+        return PlayerStatus(scores, metrics)
     }
 
     private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {

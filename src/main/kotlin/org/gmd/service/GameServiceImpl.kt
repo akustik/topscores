@@ -8,22 +8,37 @@ import org.gmd.model.Score
 import org.gmd.repository.GameRepository
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
+import org.gmd.service.alg.MemberRatingAlgorithm
 import org.springframework.stereotype.Component
 
 @Component
 open class GameServiceImpl(val repository: GameRepository,
                            val adderAlg: AdderMemberRatingAlgorithm,
                            val eloAlg: ELOMemberRatingAlgorithm) : GameService {
+    
     override fun addGame(account: String, game: Game): Game = repository.addGame(account, game)
 
     override fun listGames(account: String): List<Game> = repository.listGames(account)
 
     override fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm): List<Score> {
         val games = repository.listGames(account = account, tournament = tournament)
+        return descendent(raterFor(alg).rate(games))
+    }
+
+    override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: String, alg: Algorithm): List<Score> {
+        val games = repository.listGames(account = account, tournament = tournament)
+        val rater = raterFor(alg) 
+        
+        return (1..games.size).flatMap { 
+            i -> rater.rate(games.subList(0, i)).filter { s -> s.member.equals(player)  }
+        }
+    }
+    
+    private fun raterFor(alg: Algorithm): MemberRatingAlgorithm {
         return when (alg) {
-            Algorithm.SUM -> descendent(adderAlg.rate(games))
-            Algorithm.ELO -> descendent(eloAlg.rate(games))
-            else -> adderAlg.rate(games)
+            Algorithm.SUM -> adderAlg
+            Algorithm.ELO -> eloAlg
+            else -> adderAlg
         }
     }
 

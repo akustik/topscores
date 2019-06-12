@@ -22,9 +22,7 @@
         <div class="panel-body">
           <ol>
             <li th:each="score : ${status.scores}">
-              <a th:href="@{'/web/status/' + ${tournament} + '/player/' + ${score.member} + '/elo'}">
-                <span th:text="${score.member + ': ' + score.score}"></span>
-              </a>
+              <span th:text="${score.member + ': ' + score.score}"></span>
             </li>
           </ol>
         </div>
