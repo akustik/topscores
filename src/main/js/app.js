@@ -8,6 +8,42 @@ import { Redirect } from 'react-router';
 import Form from "react-jsonschema-form";
 
 const schema = {
+  "definitions": {
+    "players": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Albert",
+          "Alvaro",
+          "Arnau",
+          "Arturo",
+          "Cristian",
+          "Enric",
+          "Erik",
+          "Fran",
+          "Guillem",
+          "Jordi",
+          "Jose",
+          "Marc",
+          "Pau",
+          "Ramon",
+          "Ricard",
+          "Sergi",
+          "Toni"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "teams": {
+      "type": "string",
+      "enum": ["blaus", "grocs"]
+    },
+    "metrics": {
+      "type": "string",
+      "enum": ["gols", "assistències"]
+    }
+  },
   "title": "Game creator",
   "type": "object",
   "properties": {
@@ -23,37 +59,31 @@ const schema = {
         "type": "object",
         "properties": {
           "team": {
-            "type": "string",
-            "enum": ["blaus", "grocs"]
+            "$ref": "#/definitions/teams"
           },
           "score": {
             "type": "integer"
           },
           "players": {
+            "$ref": "#/definitions/players"
+          },
+          "metrics": {
             "type": "array",
+            "title": "Metrics",
             "items": {
-              "type": "string",
-              "enum": [
-                  "Albert",
-                  "Alvaro",
-                  "Arnau",
-                  "Arturo",
-                  "Cristian",
-                  "Enric",
-                  "Erik",
-                  "Fran",
-                  "Guillem",
-                  "Jordi",
-                  "Jose",
-                  "Marc",
-                  "Pau",
-                  "Ramon",
-                  "Ricard",
-                  "Sergi",
-                  "Toni"
-              ]
-            },
-            "uniqueItems": true
+              "type": "object",
+              "properties": {
+                "metric": {
+                  "$ref": "#/definitions/metrics"
+                },
+                "value": {
+                  "type": "integer"
+                },
+                "players": {
+                  "$ref": "#/definitions/players"
+                }
+              }
+            }
           }
         }
       }

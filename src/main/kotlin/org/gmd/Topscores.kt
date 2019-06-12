@@ -1,9 +1,9 @@
 package org.gmd
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
+import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +17,7 @@ class Topscores {
 
     @Autowired
     lateinit private var service: GameService
-    
+
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
@@ -51,7 +51,7 @@ class Topscores {
         model.put("tournaments", tournaments)
         return account
     }
-    
+
     @ApiOperation(value = "Stores a new game into the system")
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
@@ -69,7 +69,7 @@ class Topscores {
                     team = Team(name = t.team),
                     members = t.players.map { player -> TeamMember(name = player) },
                     score = t.score,
-                    metrics = emptyList(),
+                    metrics = t.metrics.flatMap { metric -> metric.players.map { player -> Metric("${metric.metric}:${player}", metric.value) } },
                     tags = emptyList()
             )
         }
