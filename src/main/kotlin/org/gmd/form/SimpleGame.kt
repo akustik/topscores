@@ -1,4 +1,4 @@
-package org.gmd.model
+package org.gmd.form
 
 
 class SimpleGame() {

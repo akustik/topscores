@@ -7,4 +7,4 @@ branches:
     - /^feature.*$/
   
 jdk:
-  - oraclejdk8
+  - openjdk8

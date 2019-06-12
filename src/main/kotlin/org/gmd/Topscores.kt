@@ -1,9 +1,9 @@
 package org.gmd
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
+import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,7 +17,7 @@ class Topscores {
 
     @Autowired
     lateinit private var service: GameService
-    
+
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
@@ -40,7 +40,23 @@ class Topscores {
         model.put("status", status)
         model.put("account", account)
         model.put("tournaments", tournaments)
+        model.put("tournament", tournament)
         return "tournament"
+    }
+
+    @RequestMapping("/web/status/{tournament}/player/{player}/{alg}", method = arrayOf(RequestMethod.GET))
+    internal fun tournament(authentication: Authentication,
+                            @PathVariable("tournament") tournament: String,
+                            @PathVariable("player") player: String,
+                            @PathVariable("alg") alg: String,
+                            model: MutableMap<String, Any>): String {
+        val account = authentication.name
+        val status = playerStatus(account, tournament, player, alg)
+        val tournaments = service.listTournaments(account)
+        model.put("status", status)
+        model.put("account", account)
+        model.put("tournaments", tournaments)
+        return "player"
     }
 
     @RequestMapping("/web/create", method = arrayOf(RequestMethod.GET))
@@ -51,7 +67,7 @@ class Topscores {
         model.put("tournaments", tournaments)
         return account
     }
-    
+
     @ApiOperation(value = "Stores a new game into the system")
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
@@ -69,7 +85,7 @@ class Topscores {
                     team = Team(name = t.team),
                     members = t.players.map { player -> TeamMember(name = player) },
                     score = t.score,
-                    metrics = emptyList(),
+                    metrics = t.metrics.flatMap { metric -> metric.players.map { player -> Metric("${metric.metric}:${player}", metric.value) } },
                     tags = emptyList()
             )
         }
@@ -98,6 +114,17 @@ class Topscores {
         return tournamentStatus(authentication.name, tournament, algorithm)
     }
 
+    @ApiOperation(value = "Shows the evolution for a player of a given tournament")
+    @RequestMapping("/scores/{tournament}/player/{player}", method = arrayOf(RequestMethod.GET))
+    @ResponseBody
+    internal fun evolution(authentication: Authentication,
+                        @PathVariable("tournament") tournament: String,
+                        @PathVariable("player") player: String,
+                        @ApiParam(value = "Algorithm to be used in the ranking", required = false, allowableValues = "SUM, ELO")
+                        @RequestParam(name = "alg", defaultValue = "SUM") algorithm: String): PlayerStatus {
+        return playerStatus(authentication.name, tournament, player, algorithm)
+    }
+
     private fun tournamentStatus(account: String, tournament: String, algorithm: String): TournamentStatus {
         val scores = service.computeTournamentMemberScores(
                 account = account,
@@ -111,6 +138,22 @@ class Topscores {
         )
 
         return TournamentStatus(scores, metrics)
+    }
+    
+    private fun playerStatus(account: String, tournament: String, player: String, algorithm: String): PlayerStatus {
+        val scores = service.computeTournamentMemberScoreEvolution(
+                account = account,
+                tournament = tournament,
+                player = player,
+                alg = Algorithm.valueOf(algorithm.toUpperCase())
+        )
+
+        val metrics = service.computeTournamentMemberMetrics(
+                account = account,
+                tournament = tournament
+        ).filter { metric -> metric.member.equals(player) }
+
+        return PlayerStatus(scores, metrics)
     }
 
     private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {

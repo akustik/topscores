@@ -9,7 +9,7 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
     
     override fun rate(games: List<Game>): List<Score> {
         val ratedPlayers = mutableMapOf<String, Double>()
-        ratePlayersInGame(ratedPlayers, games.sortedBy { game -> game.timestamp })
+        ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
         return ratedPlayers.map {
             rating ->
             Score(rating.key, Math.round(rating.value).toInt())

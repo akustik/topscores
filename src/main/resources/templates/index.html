@@ -8,22 +8,14 @@
 
 <div th:replace="fragments/layout :: header"/>
 
-<div class="jumbotron text-center">
-  <div class="container">
-    <a href="/" class="lang-logo">
-      <img src="/lang-logo.png" />
-    </a>
-    <h1>Welcome to topscores</h1>
-  </div>
-</div>
 <div class="container">
   <div class="alert alert-info text-center" role="alert">
     Find below the most recent games. Click on the tournament to see the ranked players.
   </div>
   <hr />
-  <div class="col-xs-12 col-sm-12 col-md-6" th:each="game : ${games}" style="height: 200px; overflow: scroll;">
+  <div class="col-xs-12 col-sm-12 col-md-12" th:each="game : ${games}">
     <h5>
-      <a th:href="@{'/web/' + ${game.tournament} + '/elo'}">
+      <a th:href="@{'/web/status/' + ${game.tournament} + '/elo'}">
         <span class="glyphicon glyphicon-triangle-right"></span>
         <span class="text-uppercase" th:text="${game.tournament + ' // ' + #dates.format(game.timestamp, 'dd-MMM-yyyy HH:mm')}"></span>
       </a>
