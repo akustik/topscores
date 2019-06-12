@@ -34,8 +34,23 @@ const schema = {
             "items": {
               "type": "string",
               "enum": [
-                  "Guillem", "Ramon", "Erikko", "Jordi", "Arnau",
-                  "Marc", "Ricard", "Albert", "Toni", "Uri", "Sergi"
+                  "Albert",
+                  "Alvaro",
+                  "Arnau",
+                  "Arturo",
+                  "Cristian",
+                  "Enric",
+                  "Erik",
+                  "Fran",
+                  "Guillem",
+                  "Jordi",
+                  "Jose",
+                  "Marc",
+                  "Pau",
+                  "Ramon",
+                  "Ricard",
+                  "Sergi",
+                  "Toni"
               ]
             },
             "uniqueItems": true
