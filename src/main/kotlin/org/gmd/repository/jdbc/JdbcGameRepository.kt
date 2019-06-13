@@ -15,7 +15,7 @@ open class JdbcGameRepository : GameRepository {
     }
 
     @Autowired
-    lateinit private var jdbcTemplate: JdbcTemplate
+    private lateinit var jdbcTemplate: JdbcTemplate
 
     override fun listGames(account: String): List<Game> {
         val tableName = withTableForAccount(account)
