@@ -30,7 +30,8 @@ const schema = {
           "Ramon",
           "Ricard",
           "Sergi",
-          "Toni"
+          "Toni",
+          "Uri"
         ]
       },
       "uniqueItems": true
@@ -41,7 +42,7 @@ const schema = {
     },
     "metrics": {
       "type": "string",
-      "enum": ["gols", "assistències"]
+      "enum": ["gols", "assistències", "lesions", "errades"]
     }
   },
   "title": "Game creator",
