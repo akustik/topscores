@@ -1,10 +1,7 @@
 package org.gmd.service
 
 import org.gmd.Algorithm
-import org.gmd.model.Game
-import org.gmd.model.MemberMetrics
-import org.gmd.model.Metric
-import org.gmd.model.Score
+import org.gmd.model.*
 import org.gmd.repository.GameRepository
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
@@ -50,7 +47,7 @@ open class GameServiceImpl(val repository: GameRepository,
         val games = repository.listGames(account = account, tournament = tournament)
         val metricsById = games
                 .flatMap { it.parties }
-                .flatMap { it.metrics }
+                .flatMap { it.metrics + defaultMetricsForMembers(it.members, it.team.name)}
                 .filter { it.name.contains(":") }
                 .groupingBy { it.name }
 
@@ -62,6 +59,12 @@ open class GameServiceImpl(val repository: GameRepository,
             Pair(it.key.substringAfter(":"), Metric(it.key.substringBefore(":"), it.value.value))
         }.groupBy({ it.first }, { it.second }).map { MemberMetrics(it.key, it.value.sortedBy { it.name }) }.sortedBy { it.member }
     }
+    
+    private fun defaultMetricsForMembers(members: List<TeamMember>, teamName: String): List<Metric> {
+        return members.flatMap { m -> listOf(metricForPlayer("played", m.name), metricForPlayer(teamName, m.name)) }
+    }
+    
+    private fun metricForPlayer(metric: String, player: String, value: Int = 1) = Metric("$metric:$player", value)
 
     override fun listTournaments(account: String): List<String> {
         return repository.listTournaments(account).sorted()

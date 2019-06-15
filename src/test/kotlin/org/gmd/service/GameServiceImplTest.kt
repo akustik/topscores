@@ -60,9 +60,10 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentMemberMetricsAggregateMetricsForAllTeamMembers() {
         val expected = listOf(
-                MemberMetrics("Arnau", listOf(Metric("gols", 1))),
-                MemberMetrics("Guillem", listOf(Metric("gols", 2))),
-                MemberMetrics("Ramon", listOf(Metric("gols", 2)))
+                MemberMetrics("Arnau", listOf(Metric("gols", 1), Metric("grocs", 1), Metric("played", 1))),
+                MemberMetrics("Guillem", listOf(Metric("blaus", 1), Metric("gols", 2), Metric("played", 1))),
+                MemberMetrics("Ramon", listOf(Metric("gols", 2), Metric("grocs", 1), Metric("played", 1))),
+                MemberMetrics("Uri", listOf(Metric("blaus", 1), Metric("played", 1)))
         )
 
         val account = "test"
