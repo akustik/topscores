@@ -1,6 +1,7 @@
 package org.gmd.service
 
 import org.gmd.Algorithm
+import org.gmd.PartyKind
 import org.gmd.model.*
 import org.gmd.repository.GameRepository
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
@@ -42,8 +43,8 @@ open class GameServiceImpl(val repository: GameRepository,
     override fun computeTournamentMemberMetrics(account: String, tournament: String): List<MemberMetrics> {
         val games = repository.listGames(account = account, tournament = tournament)
         val metricsById = games
-                .flatMap { it.parties }
-                .flatMap { it.metrics + defaultMetricsForMembers(it.members, it.team.name)}
+                .flatMap { game -> withPartyKind(game)}
+                .flatMap { it.second.metrics + defaultMetricsForMembers(it.second.members, it.second.team.name, it.first)}
                 .filter { it.name.contains(":") }
                 .groupingBy { it.name }
 
@@ -56,8 +57,19 @@ open class GameServiceImpl(val repository: GameRepository,
         }.groupBy({ it.first }, { it.second }).map { MemberMetrics(it.key, it.value.sortedBy { it.name }) }.sortedBy { it.member }
     }
     
-    private fun defaultMetricsForMembers(members: List<TeamMember>, teamName: String): List<Metric> {
-        return members.flatMap { m -> listOf(metricForPlayer("played", m.name), metricForPlayer(teamName, m.name)) }
+    private fun withPartyKind(game: Game): List<Pair<PartyKind, Party>> {
+        val scores = game.parties.map { p -> p.score }
+        val maxScore = scores.max()
+        val maxKind = if(scores.filter { s -> s != maxScore }.isEmpty()) PartyKind.TIE else PartyKind.WIN
+        return game.parties.map { p -> Pair(if(p.score == maxScore) maxKind else PartyKind.LOSE, p) }
+    }
+    
+    private fun defaultMetricsForMembers(members: List<TeamMember>, teamName: String, kind: PartyKind): List<Metric> {
+        return members.flatMap { m -> listOf(
+                metricForPlayer("z.games", m.name), 
+                metricForPlayer("z.team.$teamName", m.name),
+                metricForPlayer("z.result.${kind.name.toLowerCase()}", m.name)
+        ) }
     }
     
     private fun metricForPlayer(metric: String, player: String, value: Int = 1) = Metric("$metric:$player", value)

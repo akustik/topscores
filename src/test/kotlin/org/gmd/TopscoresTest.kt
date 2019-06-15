@@ -118,41 +118,47 @@ class TopscoresTest {
         val expected = """
         {
             "availableMetrics": [
-                "blaus",
                 "gols",
-                "grocs",
-                "played"
+                "z.games",
+                "z.result.lose",
+                "z.result.win",
+                "z.team.blaus",
+                "z.team.grocs"
             ],
             "metrics": [
                 {
                     "member": "Arnau",
                     "metrics": {
                         "gols": 1,
-                        "grocs": 1,
-                        "played": 1
+                        "z.games": 1,
+                        "z.result.win": 1,
+                        "z.team.grocs": 1
                     }
                 },
                 {
                     "member": "Guillem",
                     "metrics": {
-                        "blaus": 1,
                         "gols": 2,
-                        "played": 1
+                        "z.games": 1,
+                        "z.result.lose": 1,
+                        "z.team.blaus": 1
                     }
                 },
                 {
                     "member": "Ramon",
                     "metrics": {
                         "gols": 2,
-                        "grocs": 1,
-                        "played": 1
+                        "z.games": 1,
+                        "z.result.win": 1,
+                        "z.team.grocs": 1
                     }
                 },
                 {
                     "member": "Uri",
                     "metrics": {
-                        "blaus": 1,
-                        "played": 1
+                        "z.games": 1,
+                        "z.result.lose": 1,
+                        "z.team.blaus": 1
                     }
                 }
             ],
@@ -175,6 +181,7 @@ class TopscoresTest {
                 }
             ]
         }
+
         """
         val request = get("/scores/patxanga/players")
                 .header("Authorization", basicAuthHeader("user", "pwd"))
