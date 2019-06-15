@@ -1,12 +1,13 @@
 package org.gmd.service.alg
 
+import org.gmd.model.Evolution
 import org.gmd.model.Game
 import org.gmd.model.Score
 import org.springframework.stereotype.Component
 
 @Component
 open class AdderMemberRatingAlgorithm : MemberRatingAlgorithm {
-    
+
     override fun rate(games: List<Game>): List<Score> {
         val scores: List<Pair<String, Int>> = games
                 .flatMap { game -> game.parties }
@@ -21,4 +22,9 @@ open class AdderMemberRatingAlgorithm : MemberRatingAlgorithm {
                 .mapValues { (_, v) -> v.sum() }
                 .map { (k, v) -> Score(k, v) }
     }
+
+    override fun evolution(games: List<Game>): List<Evolution> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }

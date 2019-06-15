@@ -17,21 +17,30 @@
     <div class="col-xs-12 col-sm-12 col-md-3">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <b>Ranking</b>
+          <b>Evolution</b>
         </div>
         <div class="panel-body">
-          <ol>
-            <li th:each="score : ${status.scores}">
-              <span th:text="${score.member + ': ' + score.score}"></span>
-            </li>
-          </ol>
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Ranking</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="score : ${status.evolution.score}">
+              <td>
+                <span th:text="${score}"></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
     <div class="col-xs-12 col-sm-12 col-md-3" th:each="stats : ${status.metrics}">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <b th:text="${stats.member}"></b>
+          <b>Metrics</b>
         </div>
         <div class="panel-body">
           <ul>

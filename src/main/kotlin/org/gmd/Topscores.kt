@@ -148,7 +148,7 @@ class Topscores {
     }
     
     private fun playerStatus(account: String, tournament: String, player: String, algorithm: String): PlayerStatus {
-        val scores = service.computeTournamentMemberScoreEvolution(
+        val evolution = service.computeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
                 player = player,
@@ -160,7 +160,7 @@ class Topscores {
                 tournament = tournament
         ).filter { metric -> metric.member.equals(player) }
 
-        return PlayerStatus(scores, metrics)
+        return PlayerStatus(evolution, metrics)
     }
 
     private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {

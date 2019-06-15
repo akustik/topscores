@@ -2,6 +2,7 @@ package org.gmd.service
 
 import org.gmd.Algorithm
 import org.gmd.TestData
+import org.gmd.model.Evolution
 import org.gmd.model.MemberMetrics
 import org.gmd.model.Metric
 import org.gmd.model.Score
@@ -52,6 +53,19 @@ class GameServiceImplTest {
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(TestData.patxanga()))
 
         val scores = gameService.computeTournamentMemberScores(account = account, tournament = tournament, alg = Algorithm.ELO)
+
+        Assert.assertEquals(expected, scores)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun computeTournamentScoresShouldRateELOForASingleTeamMember() {
+        val expected = Evolution("Ramon", listOf(1200, 1215))
+        val account = "test"
+        val tournament = "patxanga"
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(TestData.patxanga()))
+
+        val scores = gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, player = "Ramon", alg = Algorithm.ELO)
 
         Assert.assertEquals(expected, scores)
     }

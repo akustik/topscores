@@ -22,13 +22,9 @@ open class GameServiceImpl(val repository: GameRepository,
         return descendent(raterFor(alg).rate(games))
     }
 
-    override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: String, alg: Algorithm): List<Score> {
+    override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: String, alg: Algorithm): Evolution {
         val games = repository.listGames(account = account, tournament = tournament)
-        val rater = raterFor(alg) 
-        
-        return (1..games.size).flatMap { 
-            i -> rater.rate(games.subList(0, i)).filter { s -> s.member.equals(player)  }
-        }
+        return raterFor(alg).evolution(games).findLast { s -> s.member.equals(player) }!!
     }
     
     private fun raterFor(alg: Algorithm): MemberRatingAlgorithm {
