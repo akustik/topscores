@@ -117,33 +117,49 @@ class TopscoresTest {
     fun scoresShouldReturnAggregatedDataByAccount() {
         val expected = """
         {
+            "availableMetrics": [
+                "gols",
+                "z.games",
+                "z.result.lose",
+                "z.result.win",
+                "z.team.blaus",
+                "z.team.grocs"
+            ],
             "metrics": [
                 {
                     "member": "Arnau",
-                    "metrics": [
-                        {
-                            "name": "gols",
-                            "value": 1
-                        }
-                    ]
+                    "metrics": {
+                        "gols": 1,
+                        "z.games": 1,
+                        "z.result.win": 1,
+                        "z.team.grocs": 1
+                    }
                 },
                 {
                     "member": "Guillem",
-                    "metrics": [
-                        {
-                            "name": "gols",
-                            "value": 2
-                        }
-                    ]
+                    "metrics": {
+                        "gols": 2,
+                        "z.games": 1,
+                        "z.result.lose": 1,
+                        "z.team.blaus": 1
+                    }
                 },
                 {
                     "member": "Ramon",
-                    "metrics": [
-                        {
-                            "name": "gols",
-                            "value": 2
-                        }
-                    ]
+                    "metrics": {
+                        "gols": 2,
+                        "z.games": 1,
+                        "z.result.win": 1,
+                        "z.team.grocs": 1
+                    }
+                },
+                {
+                    "member": "Uri",
+                    "metrics": {
+                        "z.games": 1,
+                        "z.result.lose": 1,
+                        "z.team.blaus": 1
+                    }
                 }
             ],
             "scores": [
@@ -165,6 +181,7 @@ class TopscoresTest {
                 }
             ]
         }
+
         """
         val request = get("/scores/patxanga/players")
                 .header("Authorization", basicAuthHeader("user", "pwd"))

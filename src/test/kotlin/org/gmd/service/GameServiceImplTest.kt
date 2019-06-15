@@ -2,6 +2,7 @@ package org.gmd.service
 
 import org.gmd.Algorithm
 import org.gmd.TestData
+import org.gmd.model.Evolution
 import org.gmd.model.MemberMetrics
 import org.gmd.model.Metric
 import org.gmd.model.Score
@@ -58,11 +59,25 @@ class GameServiceImplTest {
 
     @Test
     @Throws(Exception::class)
+    fun computeTournamentScoresShouldRateELOForASingleTeamMember() {
+        val expected = Evolution("Ramon", listOf(1200, 1215))
+        val account = "test"
+        val tournament = "patxanga"
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(TestData.patxanga()))
+
+        val scores = gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, player = "Ramon", alg = Algorithm.ELO)
+
+        Assert.assertEquals(expected, scores)
+    }
+
+    @Test
+    @Throws(Exception::class)
     fun computeTournamentMemberMetricsAggregateMetricsForAllTeamMembers() {
         val expected = listOf(
-                MemberMetrics("Arnau", listOf(Metric("gols", 1))),
-                MemberMetrics("Guillem", listOf(Metric("gols", 2))),
-                MemberMetrics("Ramon", listOf(Metric("gols", 2)))
+                MemberMetrics(member="Arnau", metrics=listOf(Metric(name="gols", value=1), Metric(name="z.games", value=1), Metric(name="z.result.win", value=1), Metric(name="z.team.grocs", value=1))), 
+                MemberMetrics(member="Guillem", metrics=listOf(Metric(name="gols", value=2), Metric(name="z.games", value=1), Metric(name="z.result.lose", value=1), Metric(name="z.team.blaus", value=1))), 
+                MemberMetrics(member="Ramon", metrics=listOf(Metric(name="gols", value=2), Metric(name="z.games", value=1), Metric(name="z.result.win", value=1), Metric(name="z.team.grocs", value=1))), 
+                MemberMetrics(member="Uri", metrics=listOf(Metric(name="z.games", value=1), Metric(name="z.result.lose", value=1), Metric(name="z.team.blaus", value=1)))
         )
 
         val account = "test"

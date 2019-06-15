@@ -30,17 +30,32 @@
         </div>
       </div>
     </div>
-    <div class="col-xs-12 col-sm-12 col-md-3" th:each="stats : ${status.metrics}">
+    <div class="col-xs-12 col-sm-12 col-md-9">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <b th:text="${stats.member}"></b>
+          <b>Metrics</b>
         </div>
         <div class="panel-body">
-          <ul>
-            <li th:each="metric : ${stats.metrics}">
-              <span th:text="${metric.name + ': ' + metric.value}"></span>
-            </li>
-          </ul>
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Player</th>
+              <th th:each="available : ${status.availableMetrics}">
+                <span th:text="${available}"></span>
+              </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="memberMetrics : ${status.metrics}">
+              <td>
+                <span th:text="${memberMetrics.member}"></span>
+              </td>
+              <td th:each="available : ${status.availableMetrics}">
+                <span th:text="${memberMetrics.metrics.getOrDefault(available, 0)}"></span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

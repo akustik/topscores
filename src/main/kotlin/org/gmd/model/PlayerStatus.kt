@@ -1,13 +1,13 @@
 package org.gmd.model
 
 class PlayerStatus() {
-    lateinit var scores: List<Score>
+    lateinit var evolution: Evolution
     lateinit var metrics: List<MemberMetrics>
 
     constructor(
-            scores: List<Score>,
+            evolution: Evolution,
             metrics: List<MemberMetrics>): this() {
-        this.scores = scores
+        this.evolution = evolution
         this.metrics = metrics
     }
 }

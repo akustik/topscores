@@ -136,12 +136,19 @@ class Topscores {
                 account = account,
                 tournament = tournament
         )
+        
+        val tournamentMetrics = metrics.map {
+            m -> TournamentMetrics(
+                m.member,
+                m.metrics.groupBy({metric -> metric.name}, {metric -> metric.value}).mapValues { entry -> entry.value.sum() })
+        }
+        val availableMetrics = metrics.flatMap { m -> m.metrics.map { m -> m.name } }.distinct().sorted()
 
-        return TournamentStatus(scores, metrics)
+        return TournamentStatus(scores, tournamentMetrics, availableMetrics)
     }
     
     private fun playerStatus(account: String, tournament: String, player: String, algorithm: String): PlayerStatus {
-        val scores = service.computeTournamentMemberScoreEvolution(
+        val evolution = service.computeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
                 player = player,
@@ -153,7 +160,7 @@ class Topscores {
                 tournament = tournament
         ).filter { metric -> metric.member.equals(player) }
 
-        return PlayerStatus(scores, metrics)
+        return PlayerStatus(evolution, metrics)
     }
 
     private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {

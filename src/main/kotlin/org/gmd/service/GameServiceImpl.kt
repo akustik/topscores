@@ -1,10 +1,8 @@
 package org.gmd.service
 
 import org.gmd.Algorithm
-import org.gmd.model.Game
-import org.gmd.model.MemberMetrics
-import org.gmd.model.Metric
-import org.gmd.model.Score
+import org.gmd.PartyKind
+import org.gmd.model.*
 import org.gmd.repository.GameRepository
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
@@ -25,13 +23,9 @@ open class GameServiceImpl(val repository: GameRepository,
         return descendent(raterFor(alg).rate(games))
     }
 
-    override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: String, alg: Algorithm): List<Score> {
+    override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: String, alg: Algorithm): Evolution {
         val games = repository.listGames(account = account, tournament = tournament)
-        val rater = raterFor(alg) 
-        
-        return (1..games.size).flatMap { 
-            i -> rater.rate(games.subList(0, i)).filter { s -> s.member.equals(player)  }
-        }
+        return raterFor(alg).evolution(games).findLast { s -> s.member.equals(player) }!!
     }
     
     private fun raterFor(alg: Algorithm): MemberRatingAlgorithm {
@@ -49,8 +43,8 @@ open class GameServiceImpl(val repository: GameRepository,
     override fun computeTournamentMemberMetrics(account: String, tournament: String): List<MemberMetrics> {
         val games = repository.listGames(account = account, tournament = tournament)
         val metricsById = games
-                .flatMap { it.parties }
-                .flatMap { it.metrics }
+                .flatMap { game -> withPartyKind(game)}
+                .flatMap { it.second.metrics + defaultMetricsForMembers(it.second.members, it.second.team.name, it.first)}
                 .filter { it.name.contains(":") }
                 .groupingBy { it.name }
 
@@ -62,6 +56,23 @@ open class GameServiceImpl(val repository: GameRepository,
             Pair(it.key.substringAfter(":"), Metric(it.key.substringBefore(":"), it.value.value))
         }.groupBy({ it.first }, { it.second }).map { MemberMetrics(it.key, it.value.sortedBy { it.name }) }.sortedBy { it.member }
     }
+    
+    private fun withPartyKind(game: Game): List<Pair<PartyKind, Party>> {
+        val scores = game.parties.map { p -> p.score }
+        val maxScore = scores.max()
+        val maxKind = if(scores.filter { s -> s != maxScore }.isEmpty()) PartyKind.TIE else PartyKind.WIN
+        return game.parties.map { p -> Pair(if(p.score == maxScore) maxKind else PartyKind.LOSE, p) }
+    }
+    
+    private fun defaultMetricsForMembers(members: List<TeamMember>, teamName: String, kind: PartyKind): List<Metric> {
+        return members.flatMap { m -> listOf(
+                metricForPlayer("z.games", m.name), 
+                metricForPlayer("z.team.$teamName", m.name),
+                metricForPlayer("z.result.${kind.name.toLowerCase()}", m.name)
+        ) }
+    }
+    
+    private fun metricForPlayer(metric: String, player: String, value: Int = 1) = Metric("$metric:$player", value)
 
     override fun listTournaments(account: String): List<String> {
         return repository.listTournaments(account).sorted()
