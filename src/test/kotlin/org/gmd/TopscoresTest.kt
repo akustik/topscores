@@ -117,33 +117,43 @@ class TopscoresTest {
     fun scoresShouldReturnAggregatedDataByAccount() {
         val expected = """
         {
+            "availableMetrics": [
+                "blaus",
+                "gols",
+                "grocs",
+                "played"
+            ],
             "metrics": [
                 {
                     "member": "Arnau",
-                    "metrics": [
-                        {
-                            "name": "gols",
-                            "value": 1
-                        }
-                    ]
+                    "metrics": {
+                        "gols": 1,
+                        "grocs": 1,
+                        "played": 1
+                    }
                 },
                 {
                     "member": "Guillem",
-                    "metrics": [
-                        {
-                            "name": "gols",
-                            "value": 2
-                        }
-                    ]
+                    "metrics": {
+                        "blaus": 1,
+                        "gols": 2,
+                        "played": 1
+                    }
                 },
                 {
                     "member": "Ramon",
-                    "metrics": [
-                        {
-                            "name": "gols",
-                            "value": 2
-                        }
-                    ]
+                    "metrics": {
+                        "gols": 2,
+                        "grocs": 1,
+                        "played": 1
+                    }
+                },
+                {
+                    "member": "Uri",
+                    "metrics": {
+                        "blaus": 1,
+                        "played": 1
+                    }
                 }
             ],
             "scores": [
