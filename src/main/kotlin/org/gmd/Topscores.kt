@@ -115,8 +115,8 @@ class Topscores {
             @RequestBody body: String,
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
-        
-        if (System.getenv("bypass_slack_secret").equals("true") || 
+
+        if (System.getenv("bypass_slack_secret").equals("true") ||
                 isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
             val players = text.split(" ")
             val parties = players.reversed().mapIndexed { index, player ->
@@ -137,7 +137,24 @@ class Topscores {
             )
 
             service.addGame(teamDomain, createdGame)
-            return "Good game!"
+
+            val scores = service.computeTournamentMemberScores(teamDomain, channelName, Algorithm.ELO)
+
+            val leaderboard = scores.map { score -> "${score.member}: ${score.score}" }
+                    .joinToString(separator = "\n", prefix = "-")
+            
+
+            return """
+            {
+                "response_type": "in_channel",
+                "text": "Good game!",
+                "attachments": [
+                    {
+                        "text":"$leaderboard"
+                    }
+                ]
+            }
+            """
         } else {
             return "Invalid signature. Please, review the application secret."
         }
