@@ -7,6 +7,7 @@ import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
@@ -68,6 +69,14 @@ class Topscores {
         return account
     }
 
+    @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+    @ResponseBody
+    internal fun slackCommand(
+            @RequestParam(name = "command") command: String,
+            @RequestParam(name = "text") text: String): String {
+        return "Received $command with $text"
+    }
+
     @ApiOperation(value = "Stores a new game into the system")
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
@@ -118,10 +127,10 @@ class Topscores {
     @RequestMapping("/scores/{tournament}/player/{player}", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun evolution(authentication: Authentication,
-                        @PathVariable("tournament") tournament: String,
-                        @PathVariable("player") player: String,
-                        @ApiParam(value = "Algorithm to be used in the ranking", required = false, allowableValues = "SUM, ELO")
-                        @RequestParam(name = "alg", defaultValue = "SUM") algorithm: String): PlayerStatus {
+                           @PathVariable("tournament") tournament: String,
+                           @PathVariable("player") player: String,
+                           @ApiParam(value = "Algorithm to be used in the ranking", required = false, allowableValues = "SUM, ELO")
+                           @RequestParam(name = "alg", defaultValue = "SUM") algorithm: String): PlayerStatus {
         return playerStatus(authentication.name, tournament, player, algorithm)
     }
 
@@ -136,17 +145,18 @@ class Topscores {
                 account = account,
                 tournament = tournament
         )
-        
+
         val tournamentMetrics = metrics.map {
-            m -> TournamentMetrics(
-                m.member,
-                m.metrics.groupBy({metric -> metric.name}, {metric -> metric.value}).mapValues { entry -> entry.value.sum() })
+            m ->
+            TournamentMetrics(
+                    m.member,
+                    m.metrics.groupBy({ metric -> metric.name }, { metric -> metric.value }).mapValues { entry -> entry.value.sum() })
         }
         val availableMetrics = metrics.flatMap { m -> m.metrics.map { m -> m.name } }.distinct().sorted()
 
         return TournamentStatus(scores, tournamentMetrics, availableMetrics)
     }
-    
+
     private fun playerStatus(account: String, tournament: String, player: String, algorithm: String): PlayerStatus {
         val evolution = service.computeTournamentMemberScoreEvolution(
                 account = account,
