@@ -115,20 +115,15 @@ class Topscores {
             @RequestBody body: String,
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
-
-        val charset = Charset.defaultCharset()
-        val slackSecret = System.getenv("slack_secret")
-        val baseString = "v0:$slackTimestamp:$body"
-        val signature = Hashing.hmacSha256(slackSecret.toByteArray(charset)).hashString(baseString, charset)
-        val coded = "v0=" + String(Hex.encode(signature.asBytes()))
-
-        if (slackSignature.equals(coded, ignoreCase = true) || System.getenv("bypass_slack_secret").equals("true")) {
+        
+        if (System.getenv("bypass_slack_secret").equals("true") || 
+                isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
             val players = text.split(" ")
             val parties = players.reversed().mapIndexed { index, player ->
                 Party(
                         team = Team(player),
                         members = listOf(TeamMember(player)),
-                        score = index,
+                        score = index + 1,
                         metrics = emptyList(),
                         tags = emptyList()
 
@@ -146,6 +141,16 @@ class Topscores {
         } else {
             return "Invalid signature. Please, review the application secret."
         }
+    }
+
+    private fun isSlackSignatureValid(slackSignature: String, slackTimestamp: String, body: String): Boolean {
+        val charset = Charset.defaultCharset()
+        val slackSecret = System.getenv("slack_secret")
+        val baseString = "v0:$slackTimestamp:$body"
+        val signature = Hashing.hmacSha256(slackSecret.toByteArray(charset)).hashString(baseString, charset)
+        val coded = "v0=" + String(Hex.encode(signature.asBytes()))
+
+        return slackSignature.equals(coded, ignoreCase = true)
     }
 
 
