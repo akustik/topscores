@@ -72,25 +72,6 @@ class Topscores {
         return account
     }
 
-    @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
-    @ResponseBody
-    internal fun slackCommand(
-            @RequestParam(name = "command") command: String,
-            @RequestParam(name = "text") text: String,
-            @RequestParam(name = "team_domain") teamDomain: String,
-            @RequestBody body: String,
-            @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
-            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
-        
-        val charset = Charset.defaultCharset()
-        val slackSecret = System.getenv("slack_secret")
-        val baseString = "v0:$slackTimestamp:$body"
-        val signature = Hashing.hmacSha256(slackSecret.toByteArray(charset)).hashString(baseString, charset)
-        val coded = String(Hex.encode(signature.asBytes()))
-        
-        return "Received command with $slackSignature, generated $coded"
-    }
-
     @ApiOperation(value = "Stores a new game into the system")
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
@@ -103,6 +84,10 @@ class Topscores {
     @ResponseBody
     internal fun addSimpleGame(authentication: Authentication,
                                @RequestBody game: SimpleGame): Game {
+        return addSimpleGame(authentication.name, game)
+    }
+
+    private fun addSimpleGame(account: String, game: SimpleGame): Game {
         val parties = game.teams.map { t ->
             Party(
                     team = Team(name = t.team),
@@ -117,8 +102,52 @@ class Topscores {
                 parties = parties,
                 timestamp = System.currentTimeMillis()
         )
-        return addGame(authentication, createdGame)
+        return service.addGame(account, createdGame)
     }
+
+    @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+    @ResponseBody
+    internal fun slackCommand(
+            @RequestParam(name = "command") command: String,
+            @RequestParam(name = "text") text: String,
+            @RequestParam(name = "team_domain") teamDomain: String,
+            @RequestParam(name = "channel_name") channelName: String,
+            @RequestBody body: String,
+            @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
+            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+
+        val charset = Charset.defaultCharset()
+        val slackSecret = System.getenv("slack_secret")
+        val baseString = "v0:$slackTimestamp:$body"
+        val signature = Hashing.hmacSha256(slackSecret.toByteArray(charset)).hashString(baseString, charset)
+        val coded = "v0=" + String(Hex.encode(signature.asBytes()))
+
+        if (slackSignature.equals(coded, ignoreCase = true) || System.getenv("bypass_slack_secret").equals("true")) {
+            val players = text.split(" ")
+            val parties = players.reversed().mapIndexed { index, player ->
+                Party(
+                        team = Team(player),
+                        members = listOf(TeamMember(player)),
+                        score = index,
+                        metrics = emptyList(),
+                        tags = emptyList()
+
+                )
+            }
+
+            val createdGame = Game(
+                    tournament = channelName,
+                    parties = parties,
+                    timestamp = System.currentTimeMillis()
+            )
+
+            service.addGame(teamDomain, createdGame)
+            return "Good game!"
+        } else {
+            return "Invalid signature. Please, review the application secret."
+        }
+    }
+
 
     @ApiOperation(value = "List all the games for a given account")
     @RequestMapping("/games/list", method = arrayOf(RequestMethod.GET))
