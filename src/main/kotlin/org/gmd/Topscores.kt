@@ -74,9 +74,9 @@ class Topscores {
     internal fun slackCommand(
             @RequestParam(name = "command") command: String,
             @RequestParam(name = "text") text: String,
-            @RequestParam(name = "enterprise_name") enterpriseName: String,
+            @RequestParam(name = "team_domain") teamDomain: String,
             @RequestHeader(name = "X-Slack-Signature") signature: String): String {
-        return "Received $command with $text: $enterpriseName: $signature"
+        return "Received $command with $text: $teamDomain: $signature"
     }
 
     @ApiOperation(value = "Stores a new game into the system")
