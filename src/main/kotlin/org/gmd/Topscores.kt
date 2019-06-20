@@ -116,8 +116,9 @@ class Topscores {
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
-        if (System.getenv("bypass_slack_secret").equals("true") ||
-                isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
+        val bypassSecret = System.getenv("bypass_slack_secret")?.equals("true") ?: false
+        
+        if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
             val players = text.split(" ")
             val parties = players.reversed().mapIndexed { index, player ->
                 Party(
