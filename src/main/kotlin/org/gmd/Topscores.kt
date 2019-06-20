@@ -86,7 +86,7 @@ class Topscores {
         val slackSecret = System.getenv("slack_secret")
         val baseString = "v0:$slackTimestamp:$body"
         val signature = Hashing.hmacSha256(slackSecret.toByteArray(charset)).hashString(baseString, charset)
-        val coded = Hex.encode(signature.asBytes())
+        val coded = String(Hex.encode(signature.asBytes()))
         
         return "Received command with $slackSignature, generated $coded"
     }
