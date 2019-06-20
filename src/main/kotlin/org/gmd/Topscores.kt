@@ -140,8 +140,8 @@ class Topscores {
 
             val scores = service.computeTournamentMemberScores(teamDomain, channelName, Algorithm.ELO)
 
-            val leaderboard = scores.map { score -> "${score.member}: ${score.score}" }
-                    .joinToString(separator = "\n", prefix = "-")
+            val leaderboard = scores.map { score -> "- ${score.member}: ${score.score}" }
+                    .joinToString(separator = "\n")
             
 
             return """
