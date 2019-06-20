@@ -119,7 +119,7 @@ class Topscores {
         val bypassSecret = System.getenv("bypass_slack_secret")?.equals("true") ?: false
         
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
-            val players = text.split(" ")
+            val players = text.toLowerCase().split(" ")
             val parties = players.reversed().mapIndexed { index, player ->
                 Party(
                         team = Team(player),
