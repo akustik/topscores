@@ -1,5 +1,6 @@
 package org.gmd
 
+import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
@@ -9,8 +10,10 @@ import org.gmd.service.GameService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
+import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import java.nio.charset.Charset
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
@@ -75,8 +78,17 @@ class Topscores {
             @RequestParam(name = "command") command: String,
             @RequestParam(name = "text") text: String,
             @RequestParam(name = "team_domain") teamDomain: String,
-            @RequestHeader(name = "X-Slack-Signature") signature: String): String {
-        return "Received $command with $text: $teamDomain: $signature"
+            @RequestBody body: String,
+            @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
+            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+        
+        val charset = Charset.defaultCharset()
+        val slackSecret = System.getenv("slack_secret")
+        val baseString = "v0:$slackTimestamp:$body"
+        val signature = Hashing.hmacSha256(slackSecret.toByteArray(charset)).hashString(baseString, charset)
+        val coded = Hex.encode(signature.asBytes())
+        
+        return "Received command with $slackSignature, generated $coded"
     }
 
     @ApiOperation(value = "Stores a new game into the system")
