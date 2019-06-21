@@ -138,7 +138,7 @@ class Topscores {
             try {
                 val input = 
                         if(text.isNotEmpty()) 
-                            StrTokenizer(text, ",").tokenList 
+                            StrTokenizer(text, " ").tokenList 
                         else 
                             emptyList()
                 
