@@ -1,7 +1,6 @@
 package org.gmd
 
 import com.github.ajalt.clikt.core.*
-import com.github.ajalt.clikt.output.TermUi
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.google.common.hash.Hashing
@@ -19,7 +18,6 @@ import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.nio.charset.Charset
-import kotlin.system.exitProcess
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
@@ -112,11 +110,12 @@ class Topscores {
     }
 
 
-    class Leaderboard : CliktCommand() {
+    class Leaderboard : CliktCommand(printHelpOnEmptyArgs = true) {
         override fun run() = Unit
+        
     }
 
-    class Add(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game") {
+    class Add(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true) {
         val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
         override fun run() {
             val normalizedPlayers = players.map { p -> p.toLowerCase() }
@@ -145,7 +144,7 @@ class Topscores {
         }
     }
 
-    class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
+    class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard", printHelpOnEmptyArgs = true) {
         override fun run() {
             val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
             val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
@@ -159,7 +158,7 @@ class Topscores {
     @ResponseBody
     internal fun slackCommand(
             @RequestParam(name = "command") command: String,
-            @RequestParam(name = "text") text: String,
+            @RequestParam(name = "text", defaultValue = "") text: String,
             @RequestParam(name = "team_domain") teamDomain: String,
             @RequestParam(name = "channel_name") channelName: String,
             @RequestBody body: String,
@@ -178,7 +177,7 @@ class Topscores {
             )
 
             try {
-                cmd.parse(text.split(" "))
+                cmd.parse(if(text.isNotEmpty()) text.split(" ") else emptyList())
             } catch (e: PrintHelpMessage) {
                 responseHelper.internalMessage(e.command.getFormattedHelp())
             } catch (e: PrintMessage) {
