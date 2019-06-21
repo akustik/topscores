@@ -24,17 +24,20 @@ class Add(val response: SlackResponseHelper, val service: GameService, val accou
             )
         }
 
-        val createdGame = Game(
+        val gameToCreate = Game(
                 tournament = tournament,
                 parties = parties,
                 timestamp = System.currentTimeMillis()
         )
 
-        service.addGame(account, createdGame)
+        val storedGame = service.addGame(account, gameToCreate)
+        val storedPlayers = storedGame.parties
+                .sortedByDescending { party -> party.score }
+                .flatMap { p -> p.members.map { m -> m.name } }
 
-        val scores = players.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
+        val scores = storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
 
-        response.publicMessage("Good game! Created a new game with the following players:",
+        response.publicMessage("Good game! A new game entry has been created!",
                 listOf(scores))
     }
 }

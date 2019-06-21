@@ -8,9 +8,14 @@ import org.gmd.slack.SlackResponseHelper
 class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
     override fun run() {
         val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
-        val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
-                .joinToString(separator = "\n")
+        
+        if(scores.isNotEmpty()) {
+            val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
+                    .joinToString(separator = "\n")
 
-        response.publicMessage("This is the current ELO leadearboard: ", listOf(leaderboard))
+            response.publicMessage("Current ELO leaderboard", listOf(leaderboard))            
+        } else {
+            response.publicMessage("There are no registered games yet. Add games to start the fun!")   
+        }
     }
 }
