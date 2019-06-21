@@ -136,7 +136,8 @@ class Topscores(private val env: EnvProvider) {
             try {
                 
                 if(text.isNotEmpty()) {
-                    val tokens = StrTokenizer(text, ' ', '"').tokenList
+                    val cleansedText = text.replace("\u201C", "\"").replace("\u201D", "\"")
+                    val tokens = StrTokenizer(cleansedText, ' ', '"').tokenList
                     cmd.parse(tokens)
                 } else {
                     cmd.parse(emptyList())

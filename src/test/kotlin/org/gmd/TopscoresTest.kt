@@ -2,9 +2,6 @@ package org.gmd
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
-import org.gmd.model.Metric
-import org.gmd.model.Score
-import org.gmd.model.TournamentStatus
 import org.gmd.repository.GameRepository
 import org.gmd.repository.GameRepositoryForTesting
 import org.gmd.service.GameService
@@ -196,7 +193,7 @@ class TopscoresTest {
         val request = post("/slack/command")
                 .header("X-Slack-Signature", "fake")
                 .header("X-Slack-Request-Timestamp", "123456789")
-                .content("text=add \"baby mario\" mario&command=something&team_domain=scopely&channel_name=mario_kart")
+                .content("text=add+%E2%80%9Cbaby+mario%E2%80%9D+mario&command=something&team_domain=scopely&channel_name=mario_kart")
                 .contentType("application/x-www-form-urlencoded")
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
