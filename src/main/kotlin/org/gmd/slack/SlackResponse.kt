@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 class SlackResponse(val text: String = "Something went wrong!",
                     @get:JsonProperty("response_type")
                     val responseType: String = "ephemeral",
-                    val attachements: List<SlackAttachement> = emptyList()) {
+                    val attachments: List<SlackAttachment> = emptyList()) {
 
     fun toJson(): String {
         return ObjectMapper().writeValueAsString(this)
