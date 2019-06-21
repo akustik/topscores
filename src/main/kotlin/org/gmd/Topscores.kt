@@ -1,8 +1,6 @@
 package org.gmd
 
 import com.github.ajalt.clikt.core.*
-import com.github.ajalt.clikt.parameters.arguments.argument
-import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -25,7 +23,7 @@ import java.nio.charset.Charset
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
-class Topscores {
+class Topscores(private val env: EnvProvider) {
 
     @Autowired
     lateinit private var service: GameService
@@ -124,7 +122,7 @@ class Topscores {
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
-        val bypassSecret = System.getenv("bypass_slack_secret")?.equals("true") ?: false
+        val bypassSecret = env.getEnv().get("bypass_slack_secret")?.equals("true") ?: false
         
         val responseHelper = SlackResponseHelper()
         
@@ -136,13 +134,14 @@ class Topscores {
             )
 
             try {
-                val input = 
-                        if(text.isNotEmpty()) 
-                            StrTokenizer(text, " ").tokenList 
-                        else 
-                            emptyList()
                 
-                cmd.parse(input)
+                if(text.isNotEmpty()) {
+                    val tokens = StrTokenizer(text, ' ', '"').tokenList
+                    cmd.parse(tokens)
+                } else {
+                    cmd.parse(emptyList())
+                }
+                    
             } catch (e: PrintHelpMessage) {
                 responseHelper.internalMessage(e.command.getFormattedHelp())
             } catch (e: PrintMessage) {
@@ -165,9 +164,9 @@ class Topscores {
 
     private fun isSlackSignatureValid(slackSignature: String, slackTimestamp: String, body: String): Boolean {
         val charset = Charset.defaultCharset()
-        val slackSecret = System.getenv("slack_secret")
+        val slackSecret = env.getEnv().get("slack_secret")
         val baseString = "v0:$slackTimestamp:$body"
-        val signature = Hashing.hmacSha256(slackSecret.toByteArray(charset)).hashString(baseString, charset)
+        val signature = Hashing.hmacSha256(slackSecret!!.toByteArray(charset)).hashString(baseString, charset)
         val coded = "v0=" + String(Hex.encode(signature.asBytes()))
 
         return slackSignature.equals(coded, ignoreCase = true)
