@@ -7,6 +7,9 @@ import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
+import org.gmd.command.Add
+import org.gmd.command.Leaderboard
+import org.gmd.command.Print
 import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.GameService
@@ -108,52 +111,7 @@ class Topscores {
         )
         return service.addGame(account, createdGame)
     }
-
-
-    class Leaderboard : CliktCommand(printHelpOnEmptyArgs = true) {
-        override fun run() = Unit
-        
-    }
-
-    class Add(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true) {
-        val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
-        override fun run() {
-            val normalizedPlayers = players.map { p -> p.toLowerCase() }
-            val parties = normalizedPlayers.reversed().mapIndexed { index, player ->
-                Party(
-                        team = Team(player),
-                        members = listOf(TeamMember(player)),
-                        score = index + 1,
-                        metrics = emptyList(),
-                        tags = emptyList()
-                )
-            }
-
-            val createdGame = Game(
-                    tournament = tournament,
-                    parties = parties,
-                    timestamp = System.currentTimeMillis()
-            )
-
-            service.addGame(account, createdGame)
-
-            val scores = players.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
-            
-            response.publicMessage("Good game! Created a new game with the following players:",
-                    listOf(scores))
-        }
-    }
-
-    class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
-        override fun run() {
-            val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
-            val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
-                    .joinToString(separator = "\n")
-            
-            response.publicMessage("This is the current ELO leadearboard: ", listOf(leaderboard))
-        }
-    }
-
+    
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
