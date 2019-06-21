@@ -7,6 +7,7 @@ import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
+import org.apache.commons.lang3.text.StrTokenizer
 import org.gmd.command.Add
 import org.gmd.command.Leaderboard
 import org.gmd.command.Print
@@ -135,7 +136,13 @@ class Topscores {
             )
 
             try {
-                cmd.parse(if(text.isNotEmpty()) text.split(" ") else emptyList())
+                val input = 
+                        if(text.isNotEmpty()) 
+                            StrTokenizer(text, ",").tokenList 
+                        else 
+                            emptyList()
+                
+                cmd.parse(input)
             } catch (e: PrintHelpMessage) {
                 responseHelper.internalMessage(e.command.getFormattedHelp())
             } catch (e: PrintMessage) {
