@@ -72,7 +72,7 @@ class TopscoresTest {
 
         @Bean
         open fun controller(): Topscores {
-            return Topscores()
+            return Topscores(EnvProviderForTesting(mapOf("bypass_slack_secret" to "true")))
         }
     }
 
@@ -188,6 +188,19 @@ class TopscoresTest {
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(expected))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun slackCommandShouldSupportDoubleQuotes() {
+        val request = post("/slack/command")
+                .header("X-Slack-Signature", "fake")
+                .header("X-Slack-Request-Timestamp", "123456789")
+                .content("text=add \"baby mario\" mario&command=something&team_domain=scopely&channel_name=mario_kart")
+                .contentType("application/x-www-form-urlencoded")
+
+        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
+                .andExpect(content().string("""{"text":"Good game! A new game entry has been created!","attachments":[{"text":"1. baby mario\n2. mario"}],"response_type":"in_channel"}"""))
     }
 
     private fun basicAuthHeader(user: String, password: String): String {
