@@ -1,5 +1,9 @@
 package org.gmd
 
+import com.github.ajalt.clikt.core.*
+import com.github.ajalt.clikt.output.TermUi
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
@@ -7,6 +11,7 @@ import io.swagger.annotations.ApiParam
 import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.GameService
+import org.gmd.slack.SlackResponseHelper
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
@@ -14,6 +19,7 @@ import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.nio.charset.Charset
+import kotlin.system.exitProcess
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
@@ -105,6 +111,50 @@ class Topscores {
         return service.addGame(account, createdGame)
     }
 
+
+    class Leaderboard : CliktCommand() {
+        override fun run() = Unit
+    }
+
+    class Add(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game") {
+        val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
+        override fun run() {
+            val normalizedPlayers = players.map { p -> p.toLowerCase() }
+            val parties = normalizedPlayers.reversed().mapIndexed { index, player ->
+                Party(
+                        team = Team(player),
+                        members = listOf(TeamMember(player)),
+                        score = index + 1,
+                        metrics = emptyList(),
+                        tags = emptyList()
+                )
+            }
+
+            val createdGame = Game(
+                    tournament = tournament,
+                    parties = parties,
+                    timestamp = System.currentTimeMillis()
+            )
+
+            service.addGame(account, createdGame)
+
+            val scores = players.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
+            
+            response.publicMessage("Good game! Created a new game with the following players:",
+                    listOf(scores))
+        }
+    }
+
+    class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
+        override fun run() {
+            val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
+            val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
+                    .joinToString(separator = "\n")
+            
+            response.publicMessage("This is the current ELO leadearboard: ", listOf(leaderboard))
+        }
+    }
+
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
@@ -118,47 +168,35 @@ class Topscores {
 
         val bypassSecret = System.getenv("bypass_slack_secret")?.equals("true") ?: false
         
+        val responseHelper = SlackResponseHelper()
+        
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
-            val players = text.toLowerCase().split(" ")
-            val parties = players.reversed().mapIndexed { index, player ->
-                Party(
-                        team = Team(player),
-                        members = listOf(TeamMember(player)),
-                        score = index + 1,
-                        metrics = emptyList(),
-                        tags = emptyList()
 
-                )
-            }
-
-            val createdGame = Game(
-                    tournament = channelName,
-                    parties = parties,
-                    timestamp = System.currentTimeMillis()
+            val cmd = Leaderboard().subcommands(
+                    Add(responseHelper, service, teamDomain, channelName),
+                    Print(responseHelper, service, teamDomain, channelName)
             )
 
-            service.addGame(teamDomain, createdGame)
-
-            val scores = service.computeTournamentMemberScores(teamDomain, channelName, Algorithm.ELO)
-
-            val leaderboard = scores.mapIndexed { index, score -> "${index+1}. ${score.member} (${score.score})" }
-                    .joinToString(separator = "\n")
+            try {
+                cmd.parse(text.split(" "))
+            } catch (e: PrintHelpMessage) {
+                responseHelper.internalMessage(e.command.getFormattedHelp())
+            } catch (e: PrintMessage) {
+                responseHelper.internalMessage(e.message!!)
+            } catch (e: UsageError) {
+                val message = "Error: " + e.message
+                responseHelper.internalMessage(message)
+            } catch (e: CliktError) {
+                responseHelper.internalMessage(e.message!!)
+            } catch (e: Abort) {
+                responseHelper.internalMessage("Aborted!")
+            }        
             
-
-            return """
-            {
-                "response_type": "in_channel",
-                "text": "Good game!",
-                "attachments": [
-                    {
-                        "text":"$leaderboard"
-                    }
-                ]
-            }
-            """
         } else {
-            return "Invalid signature. Please, review the application secret."
+            responseHelper.internalMessage("Invalid signature. Please, review the application secret.")
         }
+        
+        return responseHelper.asJson()
     }
 
     private fun isSlackSignatureValid(slackSignature: String, slackTimestamp: String, body: String): Boolean {
