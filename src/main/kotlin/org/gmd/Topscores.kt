@@ -144,7 +144,7 @@ class Topscores {
         }
     }
 
-    class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard", printHelpOnEmptyArgs = true) {
+    class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
         override fun run() {
             val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
             val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
