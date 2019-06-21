@@ -12,7 +12,7 @@ class SlackResponseHelper {
     fun publicMessage(text: String, attachements: List<String> = emptyList()) {
         slackResponse = SlackResponse(
                 text = text,
-                attachements = attachements.map { a -> SlackAttachement(a) },
+                attachments = attachements.map { a -> SlackAttachment(a) },
                 responseType = "in_channel"
         )
     }
