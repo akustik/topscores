@@ -24,6 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.nio.charset.Charset
+import java.sql.Timestamp
 import java.util.*
 
 
@@ -49,7 +50,7 @@ class TopscoresTest {
             return repo
          */
 
-        private val repository = GameRepositoryForTesting(listOf(TestData.patxanga()))
+        private val repository = GameRepositoryForTesting(listOf(Pair(Timestamp(0), TestData.patxanga())))
 
         @Bean
         open fun authentication(): BasicConfiguration {

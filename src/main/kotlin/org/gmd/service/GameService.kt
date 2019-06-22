@@ -2,6 +2,7 @@ package org.gmd.service
 
 import org.gmd.Algorithm
 import org.gmd.model.*
+import java.sql.Timestamp
 
 
 interface GameService {
@@ -17,4 +18,8 @@ interface GameService {
     fun computeTournamentMemberMetrics(account: String, tournament: String): List<MemberMetrics>
     
     fun listTournaments(account: String): List<String>
+    
+    fun listEntries(account: String, tournament: String): List<Pair<Timestamp, Game>>
+    
+    fun deleteEntry(account: String, tournament: String, createdAt: Timestamp): Boolean
 }
