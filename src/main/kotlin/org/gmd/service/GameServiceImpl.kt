@@ -8,23 +8,24 @@ import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.gmd.service.alg.MemberRatingAlgorithm
 import org.springframework.stereotype.Component
+import java.time.Instant
 
 @Component
 open class GameServiceImpl(val repository: GameRepository,
                            val adderAlg: AdderMemberRatingAlgorithm,
                            val eloAlg: ELOMemberRatingAlgorithm) : GameService {
-    
+
     override fun addGame(account: String, game: Game): Game = repository.addGame(account, game)
 
-    override fun listGames(account: String): List<Game> = repository.listGames(account)
+    override fun listGames(account: String): List<Game> = repository.listGames(account).map { e -> e.second }
 
     override fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm): List<Score> {
-        val games = repository.listGames(account = account, tournament = tournament)
+        val games = repository.listGames(account = account, tournament = tournament).map { e -> e.second }
         return descendent(raterFor(alg).rate(games))
     }
 
     override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: String, alg: Algorithm): Evolution {
-        val games = repository.listGames(account = account, tournament = tournament)
+        val games = repository.listGames(account = account, tournament = tournament).map { e -> e.second }
         return raterFor(alg).evolution(games).findLast { s -> s.member.equals(player) }!!
     }
     
@@ -41,7 +42,7 @@ open class GameServiceImpl(val repository: GameRepository,
     }
 
     override fun computeTournamentMemberMetrics(account: String, tournament: String): List<MemberMetrics> {
-        val games = repository.listGames(account = account, tournament = tournament)
+        val games = repository.listGames(account = account, tournament = tournament).map { e -> e.second }
         val metricsById = games
                 .flatMap { game -> withPartyKind(game)}
                 .flatMap { it.second.metrics + defaultMetricsForMembers(it.second.members, it.second.team.name, it.first)}
@@ -78,4 +79,11 @@ open class GameServiceImpl(val repository: GameRepository,
         return repository.listTournaments(account).sorted()
     }
 
+    override fun listEntries(account: String, tournament: String): List<Pair<Instant, Game>> {
+        return repository.listGames(account, tournament).sortedByDescending { e -> e.first }
+    }
+    
+    override fun deleteEntry(account: String, tournament: String, createdAt: Instant): Boolean {
+        return repository.deleteGame(account, tournament, createdAt)
+    }
 }

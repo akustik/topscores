@@ -6,9 +6,7 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.apache.commons.lang3.text.StrTokenizer
-import org.gmd.command.Add
-import org.gmd.command.Leaderboard
-import org.gmd.command.Print
+import org.gmd.command.*
 import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.GameService
@@ -20,6 +18,8 @@ import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.nio.charset.Charset
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
@@ -110,7 +110,7 @@ class Topscores(private val env: EnvProvider) {
         )
         return service.addGame(account, createdGame)
     }
-    
+
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
@@ -123,26 +123,29 @@ class Topscores(private val env: EnvProvider) {
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
         val bypassSecret = env.getEnv().get("bypass_slack_secret")?.equals("true") ?: false
-        
+
         val responseHelper = SlackResponseHelper()
-        
+
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
-                    Add(responseHelper, service, teamDomain, channelName),
-                    Print(responseHelper, service, teamDomain, channelName)
+                    AddGame(responseHelper, service, teamDomain, channelName),
+                    PrintElo(responseHelper, service, teamDomain, channelName),
+                    PrintPlayerElo(responseHelper, service, teamDomain, channelName),
+                    PrintGames(responseHelper, service, teamDomain, channelName),
+                    DeleteGame(responseHelper, service, teamDomain, channelName)
             )
 
             try {
-                
-                if(text.isNotEmpty()) {
+
+                if (text.isNotEmpty()) {
                     val cleansedText = text.replace("\u201C", "\"").replace("\u201D", "\"")
                     val tokens = StrTokenizer(cleansedText, ' ', '"').tokenList
                     cmd.parse(tokens)
                 } else {
                     cmd.parse(emptyList())
                 }
-                    
+
             } catch (e: PrintHelpMessage) {
                 responseHelper.internalMessage(e.command.getFormattedHelp())
             } catch (e: PrintMessage) {
@@ -154,12 +157,12 @@ class Topscores(private val env: EnvProvider) {
                 responseHelper.internalMessage(e.message!!)
             } catch (e: Abort) {
                 responseHelper.internalMessage("Aborted!")
-            }        
-            
+            }
+
         } else {
             responseHelper.internalMessage("Invalid signature. Please, review the application secret.")
         }
-        
+
         return responseHelper.asJson()
     }
 
@@ -244,5 +247,24 @@ class Topscores(private val env: EnvProvider) {
     private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {
         game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
         return game
+    }
+
+    @ApiOperation(value = "List all entries for a given account and tournament")
+    @RequestMapping("/entries/{tournament}/list", method = arrayOf(RequestMethod.GET))
+    @ResponseBody
+    internal fun listEntries(authentication: Authentication,
+                             @PathVariable("tournament") tournament: String): List<String> {
+        return service.listEntries(account = authentication.name, tournament = tournament)
+                .map { e -> DateTimeFormatter.ISO_INSTANT.format(e.first) }
+    }
+
+    @ApiOperation(value = "Deletes an entry for a given account and tournament")
+    @RequestMapping("/entries/{tournament}/delete", method = arrayOf(RequestMethod.DELETE))
+    @ResponseBody
+    internal fun deleteEntry(authentication: Authentication,
+                             @PathVariable("tournament") tournament: String,
+                             @RequestBody createdAt: String): Boolean {
+        val instant = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(createdAt))
+        return service.deleteEntry(account = authentication.name, tournament = tournament, createdAt = instant)
     }
 }
