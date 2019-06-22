@@ -10,7 +10,7 @@ import org.gmd.model.TeamMember
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 
-class Add(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true) {
+class AddGame(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true) {
     val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
     override fun run() {
         val normalizedPlayers = players.map { p -> p.toLowerCase() }

@@ -6,9 +6,7 @@ import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import org.apache.commons.lang3.text.StrTokenizer
-import org.gmd.command.Add
-import org.gmd.command.Leaderboard
-import org.gmd.command.Print
+import org.gmd.command.*
 import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.GameService
@@ -131,8 +129,11 @@ class Topscores(private val env: EnvProvider) {
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
-                    Add(responseHelper, service, teamDomain, channelName),
-                    Print(responseHelper, service, teamDomain, channelName)
+                    AddGame(responseHelper, service, teamDomain, channelName),
+                    PrintElo(responseHelper, service, teamDomain, channelName),
+                    PrintPlayerElo(responseHelper, service, teamDomain, channelName),
+                    PrintGames(responseHelper, service, teamDomain, channelName),
+                    DeleteGame(responseHelper, service, teamDomain, channelName)
             )
 
             try {

@@ -11,7 +11,7 @@ import java.time.Instant
 interface GameService {
 
     fun listGames(account: String): List<Game>
-
+    
     fun addGame(account: String, game: Game): Game
 
     fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm = Algorithm.SUM): List<Score>

@@ -5,7 +5,7 @@ import org.gmd.Algorithm
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 
-class Print(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
+class PrintElo(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
     override fun run() {
         val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
         
