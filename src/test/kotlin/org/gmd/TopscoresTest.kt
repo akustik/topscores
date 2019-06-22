@@ -194,7 +194,7 @@ class TopscoresTest {
         val request = post("/slack/command")
                 .header("X-Slack-Signature", "fake")
                 .header("X-Slack-Request-Timestamp", "123456789")
-                .content("text=add+%E2%80%9Cbaby+mario%E2%80%9D+mario&command=something&team_domain=scopely&channel_name=mario_kart")
+                .content("text=addgame+%E2%80%9Cbaby+mario%E2%80%9D+mario&command=something&team_domain=scopely&channel_name=mario_kart")
                 .contentType("application/x-www-form-urlencoded")
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
