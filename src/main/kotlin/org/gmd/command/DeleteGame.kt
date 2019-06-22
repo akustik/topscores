@@ -8,7 +8,7 @@ import com.github.ajalt.clikt.parameters.types.int
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 
-class DeleteGame(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Deletes a game", printHelpOnEmptyArgs = true) {
+class DeleteGame(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Delete a game", printHelpOnEmptyArgs = true) {
     val index: Int by option(help = "Index of the game").int().required()
     override fun run() {
         val entries = service.listEntries(account, tournament).sortedByDescending { e -> e.second.timestamp }
