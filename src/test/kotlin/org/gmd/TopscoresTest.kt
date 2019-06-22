@@ -70,7 +70,7 @@ class TopscoresTest {
 
         @Bean
         open fun controller(): Topscores {
-            return Topscores(EnvProviderForTesting(mapOf("bypass_slack_secret" to "true")))
+            return Topscores(EnvProviderForTesting(mapOf("bypass_slack_secret" to "true", "token:scopely" to "something")))
         }
     }
 
@@ -199,6 +199,19 @@ class TopscoresTest {
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().string("""{"text":"Good game! A new game entry has been created!","attachments":[{"text":"1. baby mario\n2. mario"}],"response_type":"in_channel"}"""))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun slackCommandFailsIfEnvTokenIsNotPresent() {
+        val request = post("/slack/command")
+                .header("X-Slack-Signature", "fake")
+                .header("X-Slack-Request-Timestamp", "123456789")
+                .content("text=addgame+%E2%80%9Cbaby+mario%E2%80%9D+mario&command=something&team_domain=company&channel_name=mario_kart")
+                .contentType("application/x-www-form-urlencoded")
+
+        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
+                .andExpect(content().string("""{"text":"Something went wrong!","attachments":[],"response_type":"ephemeral"}"""))
     }
 
     private fun basicAuthHeader(user: String, password: String): String {

@@ -26,7 +26,7 @@ import java.time.format.DateTimeFormatter
 class Topscores(private val env: EnvProvider) {
 
     @Autowired
-    lateinit private var service: GameService
+    private lateinit var service: GameService
 
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
@@ -122,10 +122,13 @@ class Topscores(private val env: EnvProvider) {
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
-        val bypassSecret = env.getEnv().get("bypass_slack_secret")?.equals("true") ?: false
-
         val responseHelper = SlackResponseHelper()
 
+        if(env.getEnv().get("token:" + teamDomain) == null) {
+            return responseHelper.asJson()
+        }
+
+        val bypassSecret = env.getEnv().get("bypass_slack_secret")?.equals("true") ?: false
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
