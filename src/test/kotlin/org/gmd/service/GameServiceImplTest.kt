@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.junit4.SpringRunner
-import java.sql.Timestamp
+import java.time.Instant
 
 
 @RunWith(SpringRunner::class)
@@ -36,7 +36,7 @@ class GameServiceImplTest {
         )
         val account = "test"
         val tournament = "patxanga"
-        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Timestamp(0), TestData.patxanga())))
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
 
         val scores = gameService.computeTournamentMemberScores(account = account, tournament = tournament)
 
@@ -51,7 +51,7 @@ class GameServiceImplTest {
         )
         val account = "test"
         val tournament = "patxanga"
-        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Timestamp(0), TestData.patxanga())))
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
         
         val scores = gameService.computeTournamentMemberScores(account = account, tournament = tournament, alg = Algorithm.ELO)
 
@@ -64,7 +64,7 @@ class GameServiceImplTest {
         val expected = Evolution("Ramon", listOf(1200, 1215))
         val account = "test"
         val tournament = "patxanga"
-        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Timestamp(0), TestData.patxanga())))
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
 
         val scores = gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, player = "Ramon", alg = Algorithm.ELO)
 
@@ -83,7 +83,7 @@ class GameServiceImplTest {
 
         val account = "test"
         val tournament = "patxanga"
-        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Timestamp(0), TestData.patxanga())))
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
 
         val metrics = gameService.computeTournamentMemberMetrics(account = account, tournament = tournament)
 

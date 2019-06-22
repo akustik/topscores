@@ -8,7 +8,7 @@ import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.gmd.service.alg.MemberRatingAlgorithm
 import org.springframework.stereotype.Component
-import java.sql.Timestamp
+import java.time.Instant
 
 @Component
 open class GameServiceImpl(val repository: GameRepository,
@@ -79,11 +79,11 @@ open class GameServiceImpl(val repository: GameRepository,
         return repository.listTournaments(account).sorted()
     }
 
-    override fun listEntries(account: String, tournament: String): List<Pair<Timestamp, Game>> {
+    override fun listEntries(account: String, tournament: String): List<Pair<Instant, Game>> {
         return repository.listGames(account, tournament).sortedByDescending { e -> e.first }
     }
     
-    override fun deleteEntry(account: String, tournament: String, createdAt: Timestamp): Boolean {
+    override fun deleteEntry(account: String, tournament: String, createdAt: Instant): Boolean {
         return repository.deleteGame(account, tournament, createdAt)
     }
 }

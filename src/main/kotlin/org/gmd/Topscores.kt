@@ -20,7 +20,8 @@ import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import java.nio.charset.Charset
-import java.sql.Timestamp
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
@@ -251,16 +252,18 @@ class Topscores(private val env: EnvProvider) {
     @RequestMapping("/entries/{tournament}/list", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun listEntries(authentication: Authentication,
-                             @PathVariable("tournament") tournament: String): List<Long> {
-        return service.listEntries(account = authentication.name, tournament = tournament).map { e -> e.first.time }
+                             @PathVariable("tournament") tournament: String): List<String> {
+        return service.listEntries(account = authentication.name, tournament = tournament)
+                .map { e -> DateTimeFormatter.ISO_INSTANT.format(e.first) }
     }
 
     @ApiOperation(value = "Deletes an entry for a given account and tournament")
-    @RequestMapping("/entries/{tournament}/delete/{created_at}", method = arrayOf(RequestMethod.DELETE))
+    @RequestMapping("/entries/{tournament}/delete", method = arrayOf(RequestMethod.DELETE))
     @ResponseBody
     internal fun deleteEntry(authentication: Authentication,
                              @PathVariable("tournament") tournament: String,
-                             @PathVariable("created_at") createdAt: Long): Boolean {
-        return service.deleteEntry(account = authentication.name, tournament = tournament, createdAt = Timestamp(createdAt))
+                             @RequestBody createdAt: String): Boolean {
+        val instant = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(createdAt))
+        return service.deleteEntry(account = authentication.name, tournament = tournament, createdAt = instant)
     }
 }
