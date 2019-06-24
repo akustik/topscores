@@ -142,7 +142,10 @@ class Topscores(private val env: EnvProvider) {
             try {
 
                 if (text.isNotEmpty()) {
-                    val cleansedText = text.replace("\u201C", "\"").replace("\u201D", "\"")
+                    val cleansedText = text
+                            .replace("\u201C", "\"") //fix quotes
+                            .replace("\u201D", "\"") //fix quotes
+                            .replace("@", "") //remove at
                     val tokens = StrTokenizer(cleansedText, ' ', '"').tokenList
                     cmd.parse(tokens)
                 } else {
