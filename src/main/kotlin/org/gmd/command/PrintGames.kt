@@ -21,11 +21,11 @@ class PrintGames(val response: SlackResponseHelper, val service: GameService, va
                             .sortedByDescending { party -> party.score }
                             .flatMap { p -> p.members.map { m -> m.name } }
 
-                    storedPlayers.mapIndexed { playerIdx, s -> "${playerIdx + 1}. $s" }.joinToString(separator = " ")
+                    storedPlayers.mapIndexed { playerIdx, s -> "${playerIdx + 1}.$s" }.joinToString(separator = " ")
                 }
             }
 
-            val content = gamePlayers.mapIndexed { index, game -> "#$index $game" }
+            val content = gamePlayers.mapIndexed { index, game -> "[$index] $game" }
                     .joinToString(separator = "\n")
 
             response.publicMessage("Last games", listOf(content))

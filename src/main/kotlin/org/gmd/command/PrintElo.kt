@@ -10,7 +10,7 @@ class PrintElo(val response: SlackResponseHelper, val service: GameService, val 
         val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
         
         if(scores.isNotEmpty()) {
-            val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
+            val leaderboard = scores.mapIndexed { index, score -> "${index + 1}.${score.member} (${score.score})" }
                     .joinToString(separator = "\n")
 
             response.publicMessage("Current ELO leaderboard", listOf(leaderboard))            

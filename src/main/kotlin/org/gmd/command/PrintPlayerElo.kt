@@ -15,7 +15,7 @@ class PrintPlayerElo(val response: SlackResponseHelper, val service: GameService
         val evolution = service.computeTournamentMemberScoreEvolution(account, tournament, player, Algorithm.ELO)
         
         if(evolution.score.isNotEmpty()) {
-            val leaderboard = evolution.score.mapIndexed { index, score -> "${index + 1}. $score" }
+            val leaderboard = evolution.score.mapIndexed { index, score -> "${index + 1}.$score" }
                     .joinToString(separator = "\n")
 
             response.publicMessage("Current ELO evolution for $player", listOf(leaderboard))            
