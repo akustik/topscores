@@ -35,7 +35,7 @@ class AddGame(val response: SlackResponseHelper, val service: GameService, val a
                 .sortedByDescending { party -> party.score }
                 .flatMap { p -> p.members.map { m -> m.name } }
 
-        val scores = storedPlayers.mapIndexed { index, s -> "${index + 1}.$s" }.joinToString(separator = "\n")
+        val scores = storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
 
         response.publicMessage("Good game! A new game entry has been created!",
                 listOf(scores))

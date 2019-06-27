@@ -198,7 +198,7 @@ class TopscoresTest {
                 .contentType("application/x-www-form-urlencoded")
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().string("""{"text":"Good game! A new game entry has been created!","attachments":[{"text":"1.baby mario\n2.mario"}],"response_type":"in_channel"}"""))
+                .andExpect(content().string("""{"text":"Good game! A new game entry has been created!","attachments":[{"text":"1. baby mario\n2. mario"}],"response_type":"in_channel"}"""))
     }
 
     @Test
