@@ -66,7 +66,26 @@ class GameServiceImplTest {
         val tournament = "patxanga"
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
 
-        val scores = gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, player = "Ramon", alg = Algorithm.ELO)
+        val scores = gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, player = listOf("Ramon"), alg = Algorithm.ELO).first()
+
+        Assert.assertEquals(expected, scores)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun computeTournamentScoresShouldRateELOEvolutionForASingleTeamMember() {
+        val expected = Evolution("Ramon", listOf(1200, 1215, 1229))
+        val account = "test"
+        val tournament = "patxanga"
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
+
+        val scores = gameService.computeTournamentMemberScoreEvolution(
+                account = account,
+                tournament = tournament,
+                player = listOf("Ramon"),
+                alg = Algorithm.ELO,
+                withGames = listOf(TestData.patxanga())
+        ).first()
 
         Assert.assertEquals(expected, scores)
     }

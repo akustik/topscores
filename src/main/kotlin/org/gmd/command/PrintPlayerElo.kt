@@ -12,7 +12,7 @@ class PrintPlayerElo(val response: SlackResponseHelper, val service: GameService
     
     override fun run() {
         
-        val evolution = service.computeTournamentMemberScoreEvolution(account, tournament, player, Algorithm.ELO)
+        val evolution = service.computeTournamentMemberScoreEvolution(account, tournament, listOf(player), Algorithm.ELO).first()
         
         if(evolution.score.isNotEmpty()) {
             val leaderboard = evolution.score.mapIndexed { index, score -> "${index + 1}. $score" }
