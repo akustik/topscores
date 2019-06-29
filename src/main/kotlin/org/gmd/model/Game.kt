@@ -25,6 +25,26 @@ class Game() {
         return ObjectMapper().writeValueAsBytes(this)
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Game
+
+        if (tournament != other.tournament) return false
+        if (parties != other.parties) return false
+        if (timestamp != other.timestamp) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = tournament.hashCode()
+        result = 31 * result + parties.hashCode()
+        result = 31 * result + (timestamp?.hashCode() ?: 0)
+        return result
+    }
+
     companion object {
         fun fromJsonBytes(bytes : ByteArray): Game {
             return ObjectMapper().readValue(bytes, Game::class.java)

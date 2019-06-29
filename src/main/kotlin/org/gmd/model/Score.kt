@@ -23,6 +23,4 @@ class Score(val member: String, val score: Int) {
         result = 31 * result + score
         return result
     }
-
-
 }

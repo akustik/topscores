@@ -6,14 +6,18 @@ class SlackResponseHelper {
     var slackResponse = SlackResponse()
 
     fun internalMessage(text: String) {
-        slackResponse = SlackResponse(text = text)
+        message(text = text, silent = true)
     }
 
-    fun publicMessage(text: String, attachements: List<String> = emptyList()) {
+    fun publicMessage(text: String, attachments: List<String> = emptyList()) {
+        message(text = text, attachments = attachments, silent = false)
+    }
+
+    fun message(text: String, attachments: List<String> = emptyList(), silent: Boolean = true) {
         slackResponse = SlackResponse(
                 text = text,
-                attachments = attachements.map { a -> SlackAttachment(a) },
-                responseType = "in_channel"
+                attachments = attachments.map { a -> SlackAttachment(a) },
+                responseType = if(!silent) SlackResponse.IN_CHANNEL else SlackResponse.EPHEMERAL
         )
     }
 
