@@ -4,6 +4,7 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import org.gmd.Algorithm
@@ -18,7 +19,7 @@ class PrintPlayerElo(
         username: String)
     : CliktCommand(help = "Print the current ELO evolution for a player") {
 
-    val player by argument(help = "Player name").default(username)
+    val player by option("--player", "-p", help = "Player name").default(username)
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
 
     override fun run() {
