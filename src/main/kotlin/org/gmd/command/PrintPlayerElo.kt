@@ -19,14 +19,14 @@ class PrintPlayerElo(
         username: String)
     : CliktCommand(help = "Print the current ELO evolution for a player") {
 
-    val player by option("--player", "-p", help = "Player name").default(username)
+    val player by argument(help = "Player name").default(username)
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
 
     override fun run() {
-        val evolution = service.computeTournamentMemberScoreEvolution(account, tournament, listOf(player), Algorithm.ELO).first()
+        val evolution = service.computeTournamentMemberScoreEvolution(account, tournament, listOf(player), Algorithm.ELO)
         
-        if(evolution.score.isNotEmpty()) {
-            val leaderboard = evolution.score.mapIndexed { index, score -> "${index + 1}. $score" }
+        if(evolution.isNotEmpty()) {
+            val leaderboard =  evolution.first().score.mapIndexed { index, score -> "${index + 1}. $score" }
                     .joinToString(separator = "\n")
 
             response.message(text ="Current ELO evolution for $player", attachments = listOf(leaderboard), silent = silent)
