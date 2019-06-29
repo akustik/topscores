@@ -31,7 +31,7 @@ class PrintPlayerElo(
 
             response.message(text ="Current ELO evolution for $player", attachments = listOf(leaderboard), silent = silent)
         } else {
-            response.message(text = "There are no registered games for that player yet. Add games to start the fun!", silent = silent)
+            response.message(text = "There are no registered games for $player yet. Add games to start the fun!", silent = silent)
         }
     }
 }
