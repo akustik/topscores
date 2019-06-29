@@ -33,7 +33,6 @@ open class GameServiceImpl(val repository: GameRepository,
         return when (alg) {
             Algorithm.SUM -> adderAlg
             Algorithm.ELO -> eloAlg
-            else -> adderAlg
         }
     }
 

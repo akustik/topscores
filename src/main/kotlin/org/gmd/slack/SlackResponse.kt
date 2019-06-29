@@ -5,11 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 
 class SlackResponse(val text: String = "Something went wrong!",
                     @get:JsonProperty("response_type")
-                    val responseType: String = "ephemeral",
+                    val responseType: String = EPHEMERAL,
                     val attachments: List<SlackAttachment> = emptyList()) {
 
-    fun toJson(): String {
-        return ObjectMapper().writeValueAsString(this)
+    companion object {
+        val IN_CHANNEL = "in_channel"
+        val EPHEMERAL = "ephemeral"
     }
 }
 

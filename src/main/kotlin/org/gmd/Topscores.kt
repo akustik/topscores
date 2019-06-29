@@ -106,7 +106,7 @@ class Topscores(private val env: EnvProvider) {
         val createdGame = Game(
                 tournament = game.tournament,
                 parties = parties,
-                timestamp = System.currentTimeMillis()
+                timestamp = env.getCurrentTimeInMillis()
         )
         return service.addGame(account, createdGame)
     }
@@ -114,7 +114,7 @@ class Topscores(private val env: EnvProvider) {
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
-            @RequestParam(name = "command") command: String,
+            @RequestParam(name = "user_name") userName: String,
             @RequestParam(name = "text", defaultValue = "") text: String,
             @RequestParam(name = "team_domain") teamDomain: String,
             @RequestParam(name = "channel_name") channelName: String,
@@ -132,9 +132,9 @@ class Topscores(private val env: EnvProvider) {
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
-                    AddGame(responseHelper, service, teamDomain, channelName),
+                    AddGame(responseHelper, env, service, teamDomain, channelName),
                     PrintElo(responseHelper, service, teamDomain, channelName),
-                    PrintPlayerElo(responseHelper, service, teamDomain, channelName),
+                    PrintPlayerElo(responseHelper, service, teamDomain, channelName, userName),
                     PrintGames(responseHelper, service, teamDomain, channelName),
                     DeleteGame(responseHelper, service, teamDomain, channelName)
             )
@@ -251,7 +251,7 @@ class Topscores(private val env: EnvProvider) {
     }
 
     private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {
-        game.timestamp = game.timestamp?.let { game.timestamp } ?: System.currentTimeMillis()
+        game.timestamp = game.timestamp?.let { game.timestamp } ?: env.getCurrentTimeInMillis()
         return game
     }
 
