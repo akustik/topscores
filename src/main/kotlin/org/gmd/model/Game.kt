@@ -24,6 +24,8 @@ class Game() {
     fun toJsonBytes(): ByteArray {
         return ObjectMapper().writeValueAsBytes(this)
     }
+    
+    fun partiesDescendingByScore(): List<Party> = parties.sortedByDescending { p -> p.score }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
