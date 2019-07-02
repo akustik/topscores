@@ -13,7 +13,7 @@ class PrintGames(val response: SlackResponseHelper, val service: GameService, va
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
 
     override fun run() {
-        val entries = service.listEntries(account, tournament).sortedByDescending { e -> e.second.timestamp }.take(maxElements)
+        val entries = service.listEntries(account, tournament, maxElements)
 
         if (entries.isNotEmpty()) {
             val games = entries.map { e -> e.second }

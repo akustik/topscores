@@ -11,7 +11,7 @@ import org.gmd.slack.SlackResponseHelper
 class DeleteGame(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Delete a game", printHelpOnEmptyArgs = true) {
     val index: Int by option(help = "Index of the game").int().required()
     override fun run() {
-        val entries = service.listEntries(account, tournament).sortedByDescending { e -> e.second.timestamp }
+        val entries = service.listEntries(account, tournament, 10)
         if (entries.isNotEmpty()) {
             service.deleteEntry(account, tournament, entries.get(index).first)
             response.publicMessage("Deleted #$index!")

@@ -1,19 +1,7 @@
 package org.gmd.slack
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.slf4j.LoggerFactory
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.web.client.RestTemplate
 
-
-class SlackResponseHelper(val responseUrl: String? = null) {
-
-    companion object {
-        var logger = LoggerFactory.getLogger(SlackResponseHelper::class.java)
-    }
+class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
 
     var slackResponse = SlackResponse()
 
@@ -28,24 +16,17 @@ class SlackResponseHelper(val responseUrl: String? = null) {
     fun message(text: String, attachments: List<String> = emptyList(), silent: Boolean = true) {
         slackResponse = responseOf(text, attachments, silent)
     }
-    
+
     fun asJson(): String {
         return slackResponse.asJson()
     }
 
+    fun asyncDefaultResponse() {
+        internalMessage("ACK! You will get the response in a few seconds.")
+    }
+
     fun asyncMessage(text: String, attachments: List<String> = emptyList(), silent: Boolean = true) {
-        val response = responseOf(text, attachments, silent)
-        val body = ObjectMapper().writeValueAsString(response)
-        val template = RestTemplate()
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_JSON
-
-        val request = HttpEntity<String>(body, headers)
-        val responseEntity = template.postForEntity(responseUrl!!, request, String::class.java)
-
-        if (responseEntity.statusCode != HttpStatus.OK) {
-            logger.error("Unable to deliver async response {} with response {}", response.asJson(), responseEntity)
-        }
+        asyncExecutor(responseOf(text, attachments, silent))
     }
 
     private fun responseOf(text: String, attachments: List<String>, silent: Boolean): SlackResponse {

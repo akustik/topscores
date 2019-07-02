@@ -7,7 +7,6 @@ import org.gmd.repository.GameRepository
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.gmd.service.alg.MemberRatingAlgorithm
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -18,20 +17,16 @@ open class GameServiceImpl(val repository: GameRepository,
 
     override fun addGame(account: String, game: Game): Game = repository.addGame(account, game)
 
-    override fun listGames(account: String): List<Game> = repository.listGames(account).map { e -> e.second }
+    override fun listGames(account: String, maxElements: Int): List<Game>
+            = repository.listGames(account, maxElements).map { e -> e.second }
 
     override fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm): List<Score> {
-        val games = repository.listGames(account = account, tournament = tournament).map { e -> e.second }
+        val games = repository.listGames(account = account, tournament = tournament, maxElements = 1000).map { e -> e.second }
         return descendent(raterFor(alg).rate(games))
     }
 
-    @Async
-    override fun consumeTournamentMemberScores(account: String, tournament: String, alg: Algorithm, consumer: (List<Score>) -> Unit) {
-        consumer(computeTournamentMemberScores(account = account, tournament = tournament, alg = alg))
-    }
-
     override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: List<String>, alg: Algorithm, withGames: List<Game>): List<Evolution> {
-        val games = repository.listGames(account = account, tournament = tournament).map { e -> e.second }
+        val games = repository.listGames(account = account, tournament = tournament, maxElements = 1000).map { e -> e.second }
         return raterFor(alg).evolution(games + withGames).filter { s -> player.contains(s.member) }
     }
 
@@ -47,7 +42,7 @@ open class GameServiceImpl(val repository: GameRepository,
     }
 
     override fun computeTournamentMemberMetrics(account: String, tournament: String): List<MemberMetrics> {
-        val games = repository.listGames(account = account, tournament = tournament).map { e -> e.second }
+        val games = repository.listGames(account = account, tournament = tournament, maxElements = 1000).map { e -> e.second }
         val metricsById = games
                 .flatMap { game -> withPartyKind(game) }
                 .flatMap { it.second.metrics + defaultMetricsForMembers(it.second.members, it.second.team.name, it.first) }
@@ -85,8 +80,8 @@ open class GameServiceImpl(val repository: GameRepository,
         return repository.listTournaments(account).sorted()
     }
 
-    override fun listEntries(account: String, tournament: String): List<Pair<Instant, Game>> {
-        return repository.listGames(account, tournament).sortedByDescending { e -> e.first }
+    override fun listEntries(account: String, tournament: String, maxElements: Int): List<Pair<Instant, Game>> {
+        return repository.listGames(account, tournament, maxElements).sortedByDescending { e -> e.first }
     }
 
     override fun deleteEntry(account: String, tournament: String, createdAt: Instant): Boolean {
