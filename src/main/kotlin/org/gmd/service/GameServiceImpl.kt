@@ -7,6 +7,7 @@ import org.gmd.repository.GameRepository
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.gmd.service.alg.MemberRatingAlgorithm
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.time.Instant
 
@@ -24,6 +25,11 @@ open class GameServiceImpl(val repository: GameRepository,
         return descendent(raterFor(alg).rate(games))
     }
 
+    @Async
+    override fun consumeTournamentMemberScores(account: String, tournament: String, alg: Algorithm, consumer: (List<Score>) -> Unit) {
+        consumer(computeTournamentMemberScores(account = account, tournament = tournament, alg = alg))
+    }
+    
     override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: List<String>, alg: Algorithm, withGames: List<Game>): List<Evolution> {
         val games = repository.listGames(account = account, tournament = tournament).map { e -> e.second }
         return raterFor(alg).evolution(games + withGames).filter { s -> player.contains(s.member) }

@@ -12,5 +12,9 @@ class SlackResponse(val text: String = "Something went wrong!",
         val IN_CHANNEL = "in_channel"
         val EPHEMERAL = "ephemeral"
     }
+
+    fun asJson(): String {
+        return ObjectMapper().writeValueAsString(this)
+    }
 }
 

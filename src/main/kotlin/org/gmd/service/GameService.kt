@@ -15,6 +15,8 @@ interface GameService {
     fun addGame(account: String, game: Game): Game
 
     fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm = Algorithm.SUM): List<Score>
+
+    fun consumeTournamentMemberScores(account: String, tournament: String, alg: Algorithm = Algorithm.SUM, consumer: (List<Score>) -> Unit): Unit
     
     fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: List<String>, alg: Algorithm = Algorithm.SUM, withGames: List<Game> = emptyList()): List<Evolution>
 
