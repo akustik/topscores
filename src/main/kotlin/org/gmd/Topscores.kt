@@ -114,6 +114,7 @@ class Topscores(private val env: EnvProvider) {
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
+            @RequestParam(name = "response_url") responseUrl: String,
             @RequestParam(name = "user_name") userName: String,
             @RequestParam(name = "text", defaultValue = "") text: String,
             @RequestParam(name = "team_domain") teamDomain: String,
@@ -122,7 +123,7 @@ class Topscores(private val env: EnvProvider) {
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
-        val responseHelper = SlackResponseHelper()
+        val responseHelper = SlackResponseHelper(responseUrl)
 
         if(env.getEnv().get("token:" + teamDomain) == null) {
             return responseHelper.asJson()
@@ -134,6 +135,7 @@ class Topscores(private val env: EnvProvider) {
             val cmd = Leaderboard().subcommands(
                     AddGame(responseHelper, env, service, teamDomain, channelName),
                     PrintElo(responseHelper, service, teamDomain, channelName),
+                    PrintEloAsync(responseHelper, service, teamDomain, channelName),
                     PrintPlayerElo(responseHelper, service, teamDomain, channelName, userName),
                     PrintGames(responseHelper, service, teamDomain, channelName),
                     DeleteGame(responseHelper, service, teamDomain, channelName)
