@@ -1,12 +1,15 @@
 package org.gmd.service
 
 import org.gmd.Algorithm
+import org.gmd.AsyncConfiguration
 import org.gmd.TestData
 import org.gmd.model.Evolution
 import org.gmd.model.MemberMetrics
 import org.gmd.model.Metric
 import org.gmd.model.Score
 import org.gmd.repository.GameRepository
+import org.gmd.service.alg.AdderMemberRatingAlgorithm
+import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,14 +26,22 @@ import java.time.Instant
 class GameServiceImplTest {
 
     @Autowired
-    lateinit var gameService: GameServiceImpl
+    lateinit var adderMemberRatingAlgorithm: AdderMemberRatingAlgorithm
 
+    @Autowired
+    lateinit var eloMemberRatingAlgorithm: ELOMemberRatingAlgorithm
+    
     @MockBean
     lateinit var gameRepository: GameRepository
+    
+    fun buildGameService(): GameService {
+        return GameServiceImpl(gameRepository, adderMemberRatingAlgorithm, eloMemberRatingAlgorithm)
+    }
 
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldAddUpScoresForAllTeamMembers() {
+        val gameService = buildGameService()
         val expected = listOf(
                 Score("Ramon", 1), Score("Arnau", 1), Score("Uri", 0), Score("Guillem", 0)
         )
@@ -46,6 +57,7 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOForAllTeamMembers() {
+        val gameService = buildGameService()
         val expected = listOf(
                 Score("Ramon", 1215), Score("Arnau", 1215), Score("Uri", 1185), Score("Guillem", 1185)
         )
@@ -61,6 +73,7 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOForASingleTeamMember() {
+        val gameService = buildGameService()
         val expected = Evolution("Ramon", listOf(1200, 1215))
         val account = "test"
         val tournament = "patxanga"
@@ -74,6 +87,7 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOEvolutionForASingleTeamMember() {
+        val gameService = buildGameService()
         val expected = Evolution("Ramon", listOf(1200, 1215, 1229))
         val account = "test"
         val tournament = "patxanga"
@@ -93,6 +107,7 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentMemberMetricsAggregateMetricsForAllTeamMembers() {
+        val gameService = buildGameService()
         val expected = listOf(
                 MemberMetrics(member="Arnau", metrics=listOf(Metric(name="gols", value=1), Metric(name="z.games", value=1), Metric(name="z.result.win", value=1), Metric(name="z.team.grocs", value=1))), 
                 MemberMetrics(member="Guillem", metrics=listOf(Metric(name="gols", value=2), Metric(name="z.games", value=1), Metric(name="z.result.lose", value=1), Metric(name="z.team.blaus", value=1))), 
