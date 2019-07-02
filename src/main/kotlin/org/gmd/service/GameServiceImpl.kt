@@ -14,6 +14,10 @@ import java.time.Instant
 open class GameServiceImpl(val repository: GameRepository,
                            val adderAlg: AdderMemberRatingAlgorithm,
                            val eloAlg: ELOMemberRatingAlgorithm) : GameService {
+    
+    companion object {
+        val MAX_HISTORY = 1000
+    }
 
     override fun addGame(account: String, game: Game): Game = repository.addGame(account, game)
 
@@ -21,12 +25,12 @@ open class GameServiceImpl(val repository: GameRepository,
             = repository.listGames(account, maxElements).map { e -> e.second }
 
     override fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm): List<Score> {
-        val games = repository.listGames(account = account, tournament = tournament, maxElements = 1000).map { e -> e.second }
+        val games = repository.listGames(account = account, tournament = tournament, maxElements = MAX_HISTORY).map { e -> e.second }
         return descendent(raterFor(alg).rate(games))
     }
 
     override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: List<String>, alg: Algorithm, withGames: List<Game>): List<Evolution> {
-        val games = repository.listGames(account = account, tournament = tournament, maxElements = 1000).map { e -> e.second }
+        val games = repository.listGames(account = account, tournament = tournament, maxElements = MAX_HISTORY).map { e -> e.second }
         return raterFor(alg).evolution(games + withGames).filter { s -> player.contains(s.member) }
     }
 
@@ -42,7 +46,7 @@ open class GameServiceImpl(val repository: GameRepository,
     }
 
     override fun computeTournamentMemberMetrics(account: String, tournament: String): List<MemberMetrics> {
-        val games = repository.listGames(account = account, tournament = tournament, maxElements = 1000).map { e -> e.second }
+        val games = repository.listGames(account = account, tournament = tournament, maxElements = MAX_HISTORY).map { e -> e.second }
         val metricsById = games
                 .flatMap { game -> withPartyKind(game) }
                 .flatMap { it.second.metrics + defaultMetricsForMembers(it.second.members, it.second.team.name, it.first) }
