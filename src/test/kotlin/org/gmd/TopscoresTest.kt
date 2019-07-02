@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
 import org.gmd.repository.GameRepository
 import org.gmd.repository.GameRepositoryForTesting
+import org.gmd.service.AsyncGameService
+import org.gmd.service.AsyncGameServiceForTesting
 import org.gmd.service.GameService
 import org.gmd.service.GameServiceImpl
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
@@ -64,8 +66,12 @@ class TopscoresTest {
 
         @Bean
         open fun gameService(): GameService {
-            val gameService = GameServiceImpl(repository, AdderMemberRatingAlgorithm(), ELOMemberRatingAlgorithm())
-            return gameService
+            return GameServiceImpl(repository, AdderMemberRatingAlgorithm(), ELOMemberRatingAlgorithm())
+        }
+
+        @Bean
+        open fun asyncGameService(): AsyncGameService {
+            return AsyncGameServiceForTesting(GameServiceImpl(repository, AdderMemberRatingAlgorithm(), ELOMemberRatingAlgorithm()))
         }
 
         @Bean
@@ -109,7 +115,7 @@ class TopscoresTest {
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(TestData.mariokart, false))
     }
-    
+
     @Test
     @Throws(Exception::class)
     fun scoresShouldReturnAggregatedDataByAccount() {

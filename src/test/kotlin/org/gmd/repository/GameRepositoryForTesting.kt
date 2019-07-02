@@ -9,7 +9,7 @@ class GameRepositoryForTesting(val accountGames: List<Pair<Instant, Game>>) : Ga
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun listGames(account: String, tournament: String): List<Pair<Instant, Game>> {
+    override fun listGames(account: String, tournament: String, maxElements: Int): List<Pair<Instant, Game>> {
         return accountGames.filter { g -> g.second.tournament.equals(tournament) }
     }
 
@@ -17,7 +17,7 @@ class GameRepositoryForTesting(val accountGames: List<Pair<Instant, Game>>) : Ga
         return game
     }
 
-    override fun listGames(account: String): List<Pair<Instant, Game>> {
+    override fun listGames(account: String, maxElements: Int): List<Pair<Instant, Game>> {
         return accountGames
     }
 

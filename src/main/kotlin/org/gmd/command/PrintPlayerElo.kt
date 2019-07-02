@@ -3,17 +3,15 @@ package org.gmd.command
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
-import com.github.ajalt.clikt.parameters.arguments.multiple
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import org.gmd.Algorithm
-import org.gmd.service.GameService
+import org.gmd.service.AsyncGameService
 import org.gmd.slack.SlackResponseHelper
 
 class PrintPlayerElo(
         val response: SlackResponseHelper,
-        val service: GameService,
+        val service: AsyncGameService,
         val account: String,
         val tournament: String,
         username: String)
@@ -23,15 +21,23 @@ class PrintPlayerElo(
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
 
     override fun run() {
-        val evolution = service.computeTournamentMemberScoreEvolution(account, tournament, listOf(player), Algorithm.ELO)
-        
-        if(evolution.isNotEmpty()) {
-            val leaderboard =  evolution.first().score.mapIndexed { index, score -> "${index + 1}. $score" }
-                    .joinToString(separator = "\n")
+        returnEvolution()
+        response.asyncDefaultResponse();
+    }
 
-            response.message(text ="Current ELO evolution for $player", attachments = listOf(leaderboard), silent = silent)
-        } else {
-            response.message(text = "There are no registered games for $player yet. Add games to start the fun!", silent = silent)
-        }
+    fun returnEvolution() {
+        service.consumeTournamentMemberScoreEvolution(account, tournament, listOf(player), Algorithm.ELO, emptyList(), {
+            evolution ->
+            run {
+                if (evolution.isNotEmpty()) {
+                    val leaderboard = evolution.first().score.mapIndexed { index, score -> "${index + 1}. $score" }
+                            .joinToString(separator = "\n")
+
+                    response.asyncMessage(text = "Current ELO evolution for $player", attachments = listOf(leaderboard), silent = silent)
+                } else {
+                    response.asyncMessage(text = "There are no registered games for $player yet. Add games to start the fun!", silent = silent)
+                }
+            }
+        })
     }
 }

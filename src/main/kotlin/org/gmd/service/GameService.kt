@@ -10,13 +10,11 @@ import java.time.Instant
 
 interface GameService {
 
-    fun listGames(account: String): List<Game>
+    fun listGames(account: String, maxElements: Int = 5): List<Game>
     
     fun addGame(account: String, game: Game): Game
 
     fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm = Algorithm.SUM): List<Score>
-
-    fun consumeTournamentMemberScores(account: String, tournament: String, alg: Algorithm = Algorithm.SUM, consumer: (List<Score>) -> Unit): Unit
     
     fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: List<String>, alg: Algorithm = Algorithm.SUM, withGames: List<Game> = emptyList()): List<Evolution>
 
@@ -24,7 +22,7 @@ interface GameService {
     
     fun listTournaments(account: String): List<String>
     
-    fun listEntries(account: String, tournament: String): List<Pair<Instant, Game>>
+    fun listEntries(account: String, tournament: String, maxElements: Int = 5): List<Pair<Instant, Game>>
     
     fun deleteEntry(account: String, tournament: String, createdAt: Instant): Boolean
 }

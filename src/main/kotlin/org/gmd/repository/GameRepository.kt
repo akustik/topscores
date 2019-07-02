@@ -5,9 +5,9 @@ import java.time.Instant
 
 interface GameRepository {
 
-    fun listGames(account: String): List<Pair<Instant, Game>>
+    fun listGames(account: String, maxElements: Int): List<Pair<Instant, Game>>
 
-    fun listGames(account: String, tournament: String): List<Pair<Instant, Game>>
+    fun listGames(account: String, tournament: String, maxElements: Int): List<Pair<Instant, Game>>
     
     fun addGame(account: String, game: Game): Game
 

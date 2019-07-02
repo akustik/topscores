@@ -19,16 +19,17 @@ open class JdbcGameRepository : GameRepository {
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
-    override fun listGames(account: String): List<Pair<Instant, Game>> {
+    override fun listGames(account: String, maxElements: Int): List<Pair<Instant, Game>> {
         val tableName = withTableForAccount(account)
-        return jdbcTemplate.query("select created_at, content from $tableName", GameRowMapper())
-                 
+        return jdbcTemplate.query("select created_at, content from $tableName order by created_at desc limit ?", 
+                arrayOf(maxElements), GameRowMapper())
+
     }
 
-    override fun listGames(account: String, tournament: String): List<Pair<Instant, Game>> {
+    override fun listGames(account: String, tournament: String, maxElements: Int): List<Pair<Instant, Game>> {
         val tableName = withTableForAccount(account)
-        return jdbcTemplate.query("select created_at, content from $tableName where tournament = ?",
-                arrayOf(tournament), GameRowMapper())
+        return jdbcTemplate.query("select created_at, content from $tableName where tournament = ? order by created_at desc limit ?",
+                arrayOf(tournament, maxElements), GameRowMapper())
     }
 
     override fun addGame(account: String, game: Game): Game {

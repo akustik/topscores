@@ -9,14 +9,20 @@ import org.apache.commons.lang3.text.StrTokenizer
 import org.gmd.command.*
 import org.gmd.form.SimpleGame
 import org.gmd.model.*
+import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.client.RestTemplate
 import java.nio.charset.Charset
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -25,8 +31,15 @@ import java.time.format.DateTimeFormatter
 @Controller
 class Topscores(private val env: EnvProvider) {
 
+    companion object {
+        var logger = LoggerFactory.getLogger(Topscores::class.java)
+    }
+
     @Autowired
     private lateinit var service: GameService
+
+    @Autowired
+    private lateinit var asyncService: AsyncGameService
 
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
@@ -123,9 +136,24 @@ class Topscores(private val env: EnvProvider) {
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
-        val responseHelper = SlackResponseHelper(responseUrl)
+        val responseHelper = SlackResponseHelper({
+            response ->
+            run {
+                val responseBody = response.asJson()
+                val template = RestTemplate()
+                val headers = HttpHeaders()
+                headers.contentType = MediaType.APPLICATION_JSON
 
-        if(env.getEnv().get("token:" + teamDomain) == null) {
+                val request = HttpEntity<String>(responseBody, headers)
+                val responseEntity = template.postForEntity(responseUrl, request, String::class.java)
+
+                if (responseEntity.statusCode != HttpStatus.OK) {
+                    logger.error("Unable to deliver async response {} with response {}", response.asJson(), responseEntity)
+                }
+            }
+        })
+
+        if (env.getEnv().get("token:" + teamDomain) == null) {
             return responseHelper.asJson()
         }
 
@@ -133,10 +161,9 @@ class Topscores(private val env: EnvProvider) {
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
-                    AddGame(responseHelper, env, service, teamDomain, channelName),
-                    PrintElo(responseHelper, service, teamDomain, channelName),
-                    PrintEloAsync(responseHelper, service, teamDomain, channelName),
-                    PrintPlayerElo(responseHelper, service, teamDomain, channelName, userName),
+                    AddGame(responseHelper, env, service, asyncService, teamDomain, channelName),
+                    PrintElo(responseHelper, asyncService, teamDomain, channelName),
+                    PrintPlayerElo(responseHelper, asyncService, teamDomain, channelName, userName),
                     PrintGames(responseHelper, service, teamDomain, channelName),
                     DeleteGame(responseHelper, service, teamDomain, channelName)
             )
