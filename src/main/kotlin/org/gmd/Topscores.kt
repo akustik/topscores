@@ -124,6 +124,48 @@ class Topscores(private val env: EnvProvider) {
         return service.addGame(account, createdGame)
     }
 
+
+    @ApiOperation(value = "List all the games for a given account")
+    @RequestMapping("/games/list", method = arrayOf(RequestMethod.GET))
+    @ResponseBody
+    internal fun listGames(authentication: Authentication): List<Game> {
+        return service.listGames(authentication.name)
+    }
+
+    @ApiOperation(value = "Upload a full tournament with the format idx;first;second;third;fourth")
+    @RequestMapping("/games/upload/simple/{tournament}", method = arrayOf(RequestMethod.POST))
+    @ResponseBody
+    internal fun uploadTournament(authentication: Authentication,
+                                  @PathVariable("tournament") tournament: String,
+                                  @RequestBody body: String): Int {
+        val lines = body.split("\n")
+        val games: List<Pair<Int, List<String>>> = lines.map {
+            line ->
+            run {
+                val tokens = StrTokenizer(line, ';', '"').tokenList
+                Pair(Integer.parseInt(tokens.first()!!), tokens.drop(1))
+            }
+        }
+
+        var addedGames = 0
+        games.forEach {
+            game ->
+            run {
+                var gameToCreate = AddGame.playerOrderedListToGame(
+                        tournament, 
+                        env.getCurrentTimeInMillis() + game.first, 
+                        game.second
+                )
+                
+                service.addGame(authentication.name, gameToCreate)
+                
+                addedGames += 1
+            }
+        }
+        
+        return addedGames
+    }
+
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
@@ -210,14 +252,6 @@ class Topscores(private val env: EnvProvider) {
         val coded = "v0=" + String(Hex.encode(signature.asBytes()))
 
         return slackSignature.equals(coded, ignoreCase = true)
-    }
-
-
-    @ApiOperation(value = "List all the games for a given account")
-    @RequestMapping("/games/list", method = arrayOf(RequestMethod.GET))
-    @ResponseBody
-    internal fun listGames(authentication: Authentication): List<Game> {
-        return service.listGames(authentication.name)
     }
 
     @ApiOperation(value = "Ranks the players of a given tournament")

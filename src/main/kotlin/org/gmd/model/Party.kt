@@ -25,7 +25,7 @@ class Party() {
         this.tags = tags
         this.score = score
     }
-
+    
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -48,5 +48,9 @@ class Party() {
         result = 31 * result + tags.hashCode()
         result = 31 * result + score
         return result
+    }
+
+    override fun toString(): String {
+        return "Party(team=$team, members=$members, metrics=$metrics, tags=$tags, score=$score)"
     }
 }
