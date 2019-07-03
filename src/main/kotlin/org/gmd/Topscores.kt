@@ -163,6 +163,7 @@ class Topscores(private val env: EnvProvider) {
             val cmd = Leaderboard().subcommands(
                     AddGame(responseHelper, env, service, asyncService, teamDomain, channelName),
                     PrintElo(responseHelper, asyncService, teamDomain, channelName),
+                    Ping(responseHelper, asyncService, teamDomain, channelName),
                     PrintPlayerElo(responseHelper, asyncService, teamDomain, channelName, userName),
                     PrintGames(responseHelper, service, teamDomain, channelName),
                     DeleteGame(responseHelper, service, teamDomain, channelName)
