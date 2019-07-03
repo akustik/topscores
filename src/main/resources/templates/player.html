@@ -3,6 +3,41 @@
 <head>
   <title>Topscores</title>
   <div th:replace="fragments/layout :: css"/>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    google.charts.load('current', {'packages':['line']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      var scores = [[${status.evolution.score}]];
+      var indexed = scores.map(function(v, idx) {
+        return [idx, v];
+      });
+      var data = new google.visualization.DataTable();
+      data.addColumn('number', 'Game');
+      data.addColumn('number', 'Ranking');
+      data.addRows(indexed);
+
+      var options = {
+        width: 900,
+        height: 500,
+        axes: {
+          x: {
+            0: {side: 'top'}
+          }
+        },
+        vAxis: {
+          format: 'decimal'
+        }
+      };
+
+      var chart = new google.charts.Line(document.getElementById('player_evolution_chart'));
+
+      chart.draw(data, google.charts.Line.convertOptions(options));
+    }
+    /*]]>*/
+  </script>
 </head>
 <body>
 
@@ -14,18 +49,25 @@
   </div>
   <hr />
   <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <b>Player evolution</b>
+        </div>
+        <div class="panel-body">
+          <div id="player_evolution_chart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-xs-12 col-sm-12 col-md-3">
       <div class="panel panel-default">
         <div class="panel-heading">
-          <b>Evolution</b>
+          <b>Ranking</b>
         </div>
         <div class="panel-body">
           <table class="table">
-            <thead>
-            <tr>
-              <th>Ranking</th>
-            </tr>
-            </thead>
             <tbody>
             <tr th:each="score : ${status.evolution.score}">
               <td>
