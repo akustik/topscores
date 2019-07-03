@@ -16,8 +16,9 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
     val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
     val dryRun by option(help = "Returns an ELO simulation without actually storing the game").flag()
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
+    val force by option("--force", "-f", help = "Do not show the slack response to everyone").flag()
     val withElo by option("--with-elo", help = "Show also the ELO updates after adding a new game").flag()
-    
+
     companion object {
         fun playerOrderedListToGame(tournament: String, timestamp: Long, players: List<String>): Game {
             val parties = players.reversed().mapIndexed { index, player ->
@@ -41,7 +42,7 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
     override fun run() {
         val normalizedPlayers = players.map { p -> p.toLowerCase() }
         val gameToCreate = playerOrderedListToGame(tournament, envProvider.getCurrentTimeInMillis(), normalizedPlayers)
-        
+
         if (dryRun) {
             response.asyncDefaultResponse()
             asyncService.consumeTournamentMemberScoreEvolution(
@@ -59,12 +60,28 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
                     }
             )
         } else {
-            val storedGame = service.addGame(account, gameToCreate)
-            response.publicMessage(
-                    "Good game! A new game entry has been created!",
-                    computeFeedbackAfterGameAdd(storedGame, normalizedPlayers)
-            )
+            if (!force && gameIsDuplicated(gameToCreate)) {
+                response.message("Please, wait some time before adding more games! " +
+                        "Check last game for duplicates and use the --force flag if you're sure that is OK",
+                        listOf(computePlayerOrder(gameToCreate)), silent = true)
+            } else {
+                val storedGame = service.addGame(account, gameToCreate)
+                response.publicMessage(
+                        "Good game! A new game entry has been created!",
+                        computeFeedbackAfterGameAdd(storedGame, normalizedPlayers)
+                )
+            }
         }
+    }
+
+    private fun gameIsDuplicated(gameToAdd: Game): Boolean {
+        val lastEntry = service.listEntries(account, tournament, maxElements = 1)
+        if (lastEntry.isNotEmpty()) {
+            val entry = lastEntry.first()
+            return computePlayerOrder(entry.second) == computePlayerOrder(gameToAdd)
+        }
+
+        return false
     }
 
     private fun computeFeedbackAfterGameAdd(storedGame: Game, normalizedPlayers: List<String>): List<String> {
