@@ -17,25 +17,31 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
     val dryRun by option(help = "Returns an ELO simulation without actually storing the game").flag()
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val withElo by option("--with-elo", help = "Show also the ELO updates after adding a new game").flag()
+    
+    companion object {
+        fun playerOrderedListToGame(tournament: String, timestamp: Long, players: List<String>): Game {
+            val parties = players.reversed().mapIndexed { index, player ->
+                Party(
+                        team = Team(player),
+                        members = listOf(TeamMember(player)),
+                        score = index + 1,
+                        metrics = emptyList(),
+                        tags = emptyList()
+                )
+            }
+
+            return Game(
+                    tournament = tournament,
+                    parties = parties,
+                    timestamp = timestamp
+            )
+        }
+    }
 
     override fun run() {
         val normalizedPlayers = players.map { p -> p.toLowerCase() }
-        val parties = normalizedPlayers.reversed().mapIndexed { index, player ->
-            Party(
-                    team = Team(player),
-                    members = listOf(TeamMember(player)),
-                    score = index + 1,
-                    metrics = emptyList(),
-                    tags = emptyList()
-            )
-        }
-
-        val gameToCreate = Game(
-                tournament = tournament,
-                parties = parties,
-                timestamp = envProvider.getCurrentTimeInMillis()
-        )
-
+        val gameToCreate = playerOrderedListToGame(tournament, envProvider.getCurrentTimeInMillis(), normalizedPlayers)
+        
         if (dryRun) {
             response.asyncDefaultResponse()
             asyncService.consumeTournamentMemberScoreEvolution(

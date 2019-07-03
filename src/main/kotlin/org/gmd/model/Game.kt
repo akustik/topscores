@@ -47,6 +47,11 @@ class Game() {
         return result
     }
 
+    override fun toString(): String {
+        return "Game(tournament='$tournament', parties=$parties, timestamp=$timestamp)"
+    }
+
+
     companion object {
         fun fromJsonBytes(bytes : ByteArray): Game {
             return ObjectMapper().readValue(bytes, Game::class.java)

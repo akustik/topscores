@@ -23,5 +23,7 @@ class TeamMember() {
         return name.hashCode()
     }
 
-
+    override fun toString(): String {
+        return "TeamMember(name='$name')"
+    }
 }
