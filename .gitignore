@@ -30,3 +30,4 @@ out/
 node_modules/
 dist/
 built/
+*.dump

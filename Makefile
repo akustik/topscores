@@ -13,5 +13,9 @@ prod-db-info:
 prod-db-show-tables:
 	heroku pg:psql -c "\dt"
 
+prod-db-backup:
+	heroku pg:backups:capture
+	heroku pg:backups:download
+
 prod-env:
 	heroku config
