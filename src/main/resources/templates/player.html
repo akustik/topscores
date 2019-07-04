@@ -6,7 +6,7 @@
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script type="text/javascript" th:inline="javascript">
     /*<![CDATA[*/
-    google.charts.load('current', {'packages':['line']});
+    google.charts.load('current', {'packages':['corechart']});
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
@@ -14,11 +14,8 @@
       var indexed = scores.map(function(v, idx) {
         return [idx, v];
       });
-      var data = new google.visualization.DataTable();
-      data.addColumn('number', 'Games');
-      data.addColumn('number', 'Ranking');
-      data.addRows(indexed);
-
+      var headers = [['Games', 'Ranking']];
+      var data = google.visualization.arrayToDataTable(headers.concat(indexed));
       var options = {
         height: 400,
         axes: {
@@ -28,12 +25,22 @@
         },
         vAxis: {
           format: 'decimal'
-        }
+        },
+        trendlines: {
+          0: {
+            type: 'linear',
+            color: 'green',
+            lineWidth: 3,
+            opacity: 0.3,
+            showR2: true,
+            visibleInLegend: true
+          }
+        },
+        theme: 'material'
       };
-
-      var chart = new google.charts.Line(document.getElementById('player_evolution_chart'));
-
-      chart.draw(data, google.charts.Line.convertOptions(options));
+      
+      var chart = new google.visualization.LineChart(document.getElementById('player_evolution_chart'));
+      chart.draw(data, options);
     }
     /*]]>*/
   </script>
