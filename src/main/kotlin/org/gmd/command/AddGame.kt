@@ -16,7 +16,7 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
     val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
     val dryRun by option(help = "Returns an ELO simulation without actually storing the game").flag()
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
-    val force by option("--force", "-f", help = "Do not show the slack response to everyone").flag()
+    val force by option("--force", "-f", help = "Force the addition of the game and ignore collisions").flag()
     val withElo by option("--with-elo", help = "Show also the ELO updates after adding a new game").flag()
 
     companion object {

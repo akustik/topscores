@@ -20,8 +20,7 @@
       data.addRows(indexed);
 
       var options = {
-        width: 900,
-        height: 500,
+        height: 400,
         axes: {
           x: {
             0: {side: 'top'}
@@ -61,24 +60,6 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-xs-12 col-sm-12 col-md-3">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <b>Ranking</b>
-        </div>
-        <div class="panel-body">
-          <table class="table">
-            <tbody>
-            <tr th:each="score : ${status.evolution.score}">
-              <td>
-                <span th:text="${score}"></span>
-              </td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
     <div class="col-xs-12 col-sm-12 col-md-3" th:each="stats : ${status.metrics}">
       <div class="panel panel-default">
         <div class="panel-heading">
