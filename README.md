@@ -1,4 +1,5 @@
 # Resources
+* [ELO](https://www.geeksforgeeks.org/elo-rating-algorithm)
 * [Heroku (Kotling based)](https://devcenter.heroku.com/articles/getting-started-with-kotlin)
 * [Github](https://devcenter.heroku.com/articles/github-integration) 
 * Travis CI
