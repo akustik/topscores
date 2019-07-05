@@ -40,6 +40,8 @@ class Topscores(private val env: EnvProvider) {
 
     @Autowired
     private lateinit var asyncService: AsyncGameService
+    
+    private val slackLock = "slackLock"
 
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
@@ -152,17 +154,17 @@ class Topscores(private val env: EnvProvider) {
             game ->
             run {
                 var gameToCreate = AddGame.playerOrderedListToGame(
-                        tournament, 
-                        env.getCurrentTimeInMillis() + game.first, 
+                        tournament,
+                        env.getCurrentTimeInMillis() + game.first,
                         game.second
                 )
-                
+
                 service.addGame(authentication.name, gameToCreate)
-                
+
                 addedGames += 1
             }
         }
-        
+
         return addedGames
     }
 
@@ -213,16 +215,19 @@ class Topscores(private val env: EnvProvider) {
 
             try {
 
-                if (text.isNotEmpty()) {
+                val arguments = if (text.isNotEmpty()) {
                     val cleansedText = text
                             .replace("\u201C", "\"") //fix quotes
                             .replace("\u201D", "\"") //fix quotes
                             .replace("@", "") //remove at
-                    val tokens = StrTokenizer(cleansedText, ' ', '"').tokenList
-                    cmd.parse(tokens)
+                    StrTokenizer(cleansedText, ' ', '"').tokenList
                 } else {
-                    cmd.parse(emptyList())
+                    emptyList()
                 }
+
+                synchronized(slackLock, {
+                    cmd.parse(arguments)
+                })
 
             } catch (e: PrintHelpMessage) {
                 responseHelper.internalMessage(e.command.getFormattedHelp())
