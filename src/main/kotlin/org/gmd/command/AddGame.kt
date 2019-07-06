@@ -3,9 +3,11 @@ package org.gmd.command
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.choice
 import org.gmd.Algorithm
 import org.gmd.EnvProvider
 import org.gmd.model.*
@@ -16,10 +18,11 @@ import kotlin.concurrent.withLock
 
 class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, val service: GameService, val asyncService: AsyncGameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true) {
     val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
-    val dryRun by option(help = "Returns an ELO simulation without actually storing the game").flag()
+    val dryRun by option(help = "Returns an updated ranking simulation without actually storing the game").flag()
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val force by option("--force", "-f", help = "Force the addition of the game and ignore collisions").flag()
-    val withElo by option("--with-elo", help = "Show also the ELO updates after adding a new game").flag().deprecated("All additions already compute ELO")
+    val withElo by option("--with-elo", help = "Show also the ranking updates after adding a new game").flag().deprecated("All additions already compute ranking")
+    val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
 
     companion object {
         fun playerOrderedListToGame(tournament: String, timestamp: Long, players: List<String>): Game {
@@ -43,6 +46,7 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
 
     override fun run() {
         val normalizedPlayers = players.map { p -> p.toLowerCase() }
+        val algorithm = Algorithm.valueOf(alg.toUpperCase())
         val gameToCreate = playerOrderedListToGame(tournament, envProvider.getCurrentTimeInMillis(), normalizedPlayers)
 
         if (dryRun) {
@@ -51,7 +55,7 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
                     account = account,
                     tournament = tournament,
                     player = normalizedPlayers,
-                    alg = Algorithm.ELO,
+                    alg = algorithm,
                     withGames = listOf(gameToCreate),
                     consumer = { simulation ->
                         run {
@@ -71,7 +75,7 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
                     val storedGame = service.addGame(account, gameToCreate)
                     response.publicMessage(
                             "Good game! A new game entry has been created!",
-                            computeFeedbackAfterGameAdd(storedGame, normalizedPlayers)
+                            computeFeedbackAfterGameAdd(storedGame, normalizedPlayers, algorithm)
                     )
                 }
             }
@@ -88,12 +92,12 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
         return false
     }
 
-    private fun computeFeedbackAfterGameAdd(storedGame: Game, normalizedPlayers: List<String>): List<String> {
+    private fun computeFeedbackAfterGameAdd(storedGame: Game, normalizedPlayers: List<String>, algorithm: Algorithm): List<String> {
         asyncService.consumeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
                 player = normalizedPlayers,
-                alg = Algorithm.ELO,
+                alg = algorithm,
                 withGames = emptyList(),
                 consumer = { evolution ->
                     run {
