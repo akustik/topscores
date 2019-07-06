@@ -8,15 +8,15 @@
       },
       "members": [
         {
-          "name": "Guillem"
+          "name": "guillem"
         },
         {
-          "name": "Uri"
+          "name": "uri"
         }
       ],
       "metrics": [
         {
-          "name": "gols:Guillem",
+          "name": "gols:guillem",
           "value": 2
         }
       ],
@@ -34,19 +34,19 @@
       },
       "members": [
         {
-          "name": "Ramon"
+          "name": "ramon"
         },
         {
-          "name": "Arnau"
+          "name": "arnau"
         }
       ],
       "metrics": [
         {
-          "name": "gols:Ramon",
+          "name": "gols:ramon",
           "value": 2
         },
         {
-          "name": "gols:Arnau",
+          "name": "gols:arnau",
           "value": 1
         }
       ],

@@ -10,8 +10,10 @@ import org.gmd.service.GameService
 import org.gmd.service.GameServiceImpl
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
+import org.gmd.slack.SlackAsyncExecutorProviderForTesting
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
+import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,6 +35,10 @@ import java.util.*
 @WebMvcTest(Topscores::class)
 @RunWith(SpringRunner::class)
 class TopscoresTest {
+
+    companion object {
+        val slackAsyncExecutorProviderForTesting = SlackAsyncExecutorProviderForTesting()
+    }
 
     @Autowired
     private val mockMvc: MockMvc? = null
@@ -76,7 +82,11 @@ class TopscoresTest {
 
         @Bean
         open fun controller(): Topscores {
-            return Topscores(EnvProviderForTesting(mapOf("bypass_slack_secret" to "true", "token:scopely" to "something"), 1234L))
+            return Topscores(EnvProviderForTesting(mapOf(
+                    "bypass_slack_secret" to "true",
+                    "token:scopely" to "something",
+                    "token:patxanga" to "something"
+            ), 1234L), slackAsyncExecutorProviderForTesting)
         }
     }
 
@@ -131,7 +141,7 @@ class TopscoresTest {
             ],
             "metrics": [
                 {
-                    "member": "Arnau",
+                    "member": "arnau",
                     "metrics": {
                         "gols": 1,
                         "z.games": 1,
@@ -140,7 +150,7 @@ class TopscoresTest {
                     }
                 },
                 {
-                    "member": "Guillem",
+                    "member": "guillem",
                     "metrics": {
                         "gols": 2,
                         "z.games": 1,
@@ -149,7 +159,7 @@ class TopscoresTest {
                     }
                 },
                 {
-                    "member": "Ramon",
+                    "member": "ramon",
                     "metrics": {
                         "gols": 2,
                         "z.games": 1,
@@ -158,7 +168,7 @@ class TopscoresTest {
                     }
                 },
                 {
-                    "member": "Uri",
+                    "member": "uri",
                     "metrics": {
                         "z.games": 1,
                         "z.result.lose": 1,
@@ -168,19 +178,19 @@ class TopscoresTest {
             ],
             "scores": [
                 {
-                    "member": "Ramon",
+                    "member": "ramon",
                     "score": 1
                 },
                 {
-                    "member": "Arnau",
+                    "member": "arnau",
                     "score": 1
                 },
                 {
-                    "member": "Uri",
+                    "member": "uri",
                     "score": 0
                 },
                 {
-                    "member": "Guillem",
+                    "member": "guillem",
                     "score": 0
                 }
             ]
@@ -205,6 +215,23 @@ class TopscoresTest {
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().string("""{"text":"Good game! A new game entry has been created!","attachments":[{"text":"1. baby mario\n2. mario"}],"response_type":"in_channel"}"""))
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun slackCommandShouldExecuteAsyncCommands() {
+        val request = post("/slack/command")
+                .header("X-Slack-Signature", "fake")
+                .header("X-Slack-Request-Timestamp", "123456789")
+                .content("text=addgame+%E2%80%9Cguillem%E2%80%9D+uri&user_name=mario&team_domain=patxanga&channel_name=patxanga&response_url=url")
+                .contentType("application/x-www-form-urlencoded")
+
+        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
+                .andExpect(content().string("""{"text":"Good game! A new game entry has been created!","attachments":[{"text":"1. guillem\n2. uri"}],"response_type":"in_channel"}"""))
+
+        val asyncResponse = slackAsyncExecutorProviderForTesting.accumulatedResponses["url"]!!
+        Assert.assertEquals("Computed ELO changes after this game", asyncResponse.text)
+        Assert.assertEquals("1. guillem (1185, -15)\n2. uri (1185, -15)", asyncResponse.attachments[0].text)
     }
 
     @Test
