@@ -1,15 +1,12 @@
 package org.gmd.service
 
 import org.gmd.Algorithm
-import org.gmd.AsyncConfiguration
 import org.gmd.TestData
 import org.gmd.model.Evolution
 import org.gmd.model.MemberMetrics
 import org.gmd.model.Metric
 import org.gmd.model.Score
 import org.gmd.repository.GameRepository
-import org.gmd.service.alg.AdderMemberRatingAlgorithm
-import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,7 +24,7 @@ class GameServiceImplTest {
 
     @Autowired
     lateinit var gameService: GameServiceImpl
-    
+
     @MockBean
     lateinit var gameRepository: GameRepository
 
@@ -35,7 +32,7 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentScoresShouldAddUpScoresForAllTeamMembers() {
         val expected = listOf(
-                Score("Ramon", 1), Score("Arnau", 1), Score("Uri", 0), Score("Guillem", 0)
+                Score("ramon", 1), Score("arnau", 1), Score("uri", 0), Score("guillem", 0)
         )
         val account = "test"
         val tournament = "patxanga"
@@ -50,12 +47,12 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOForAllTeamMembers() {
         val expected = listOf(
-                Score("Ramon", 1215), Score("Arnau", 1215), Score("Uri", 1185), Score("Guillem", 1185)
+                Score("ramon", 1215), Score("arnau", 1215), Score("uri", 1185), Score("guillem", 1185)
         )
         val account = "test"
         val tournament = "patxanga"
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
-        
+
         val scores = gameService.computeTournamentMemberScores(account = account, tournament = tournament, alg = Algorithm.ELO)
 
         Assert.assertEquals(expected, scores)
@@ -64,12 +61,12 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOForASingleTeamMember() {
-        val expected = Evolution("Ramon", listOf(1200, 1215))
+        val expected = Evolution("ramon", listOf(1200, 1215))
         val account = "test"
         val tournament = "patxanga"
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
 
-        val scores = gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, player = listOf("Ramon"), alg = Algorithm.ELO).first()
+        val scores = gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, player = listOf("ramon"), alg = Algorithm.ELO).first()
 
         Assert.assertEquals(expected, scores)
     }
@@ -77,7 +74,7 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOEvolutionForASingleTeamMember() {
-        val expected = Evolution("Ramon", listOf(1200, 1215, 1229))
+        val expected = Evolution("ramon", listOf(1200, 1215, 1229))
         val account = "test"
         val tournament = "patxanga"
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
@@ -85,7 +82,7 @@ class GameServiceImplTest {
         val scores = gameService.computeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
-                player = listOf("Ramon"),
+                player = listOf("ramon"),
                 alg = Algorithm.ELO,
                 withGames = listOf(TestData.patxanga())
         ).first()
@@ -97,10 +94,10 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentMemberMetricsAggregateMetricsForAllTeamMembers() {
         val expected = listOf(
-                MemberMetrics(member="Arnau", metrics=listOf(Metric(name="gols", value=1), Metric(name="z.games", value=1), Metric(name="z.result.win", value=1), Metric(name="z.team.grocs", value=1))), 
-                MemberMetrics(member="Guillem", metrics=listOf(Metric(name="gols", value=2), Metric(name="z.games", value=1), Metric(name="z.result.lose", value=1), Metric(name="z.team.blaus", value=1))), 
-                MemberMetrics(member="Ramon", metrics=listOf(Metric(name="gols", value=2), Metric(name="z.games", value=1), Metric(name="z.result.win", value=1), Metric(name="z.team.grocs", value=1))), 
-                MemberMetrics(member="Uri", metrics=listOf(Metric(name="z.games", value=1), Metric(name="z.result.lose", value=1), Metric(name="z.team.blaus", value=1)))
+                MemberMetrics(member = "arnau", metrics = listOf(Metric(name = "gols", value = 1), Metric(name = "z.games", value = 1), Metric(name = "z.result.win", value = 1), Metric(name = "z.team.grocs", value = 1))),
+                MemberMetrics(member = "guillem", metrics = listOf(Metric(name = "gols", value = 2), Metric(name = "z.games", value = 1), Metric(name = "z.result.lose", value = 1), Metric(name = "z.team.blaus", value = 1))),
+                MemberMetrics(member = "ramon", metrics = listOf(Metric(name = "gols", value = 2), Metric(name = "z.games", value = 1), Metric(name = "z.result.win", value = 1), Metric(name = "z.team.grocs", value = 1))),
+                MemberMetrics(member = "uri", metrics = listOf(Metric(name = "z.games", value = 1), Metric(name = "z.result.lose", value = 1), Metric(name = "z.team.blaus", value = 1)))
         )
 
         val account = "test"

@@ -11,7 +11,9 @@ import org.gmd.form.SimpleGame
 import org.gmd.model.*
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
+import org.gmd.slack.SlackAsyncExecutorProvider
 import org.gmd.slack.SlackResponseHelper
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpEntity
@@ -29,10 +31,10 @@ import java.time.format.DateTimeFormatter
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
-class Topscores(private val env: EnvProvider) {
+class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProvider: SlackAsyncExecutorProvider) {
 
     companion object {
-        var logger = LoggerFactory.getLogger(Topscores::class.java)
+        var logger: Logger = LoggerFactory.getLogger(Topscores::class.java)
     }
 
     @Autowired
@@ -40,8 +42,6 @@ class Topscores(private val env: EnvProvider) {
 
     @Autowired
     private lateinit var asyncService: AsyncGameService
-    
-    private val slackLock = "slackLock"
 
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
@@ -141,8 +141,7 @@ class Topscores(private val env: EnvProvider) {
                                   @PathVariable("tournament") tournament: String,
                                   @RequestBody body: String): Int {
         val lines = body.split("\n")
-        val games: List<Pair<Int, List<String>>> = lines.map {
-            line ->
+        val games: List<Pair<Int, List<String>>> = lines.map { line ->
             run {
                 val tokens = StrTokenizer(line, ';', '"').tokenList
                 Pair(Integer.parseInt(tokens.first()!!), tokens.drop(1))
@@ -150,8 +149,7 @@ class Topscores(private val env: EnvProvider) {
         }
 
         var addedGames = 0
-        games.forEach {
-            game ->
+        games.forEach { game ->
             run {
                 var gameToCreate = AddGame.playerOrderedListToGame(
                         tournament,
@@ -180,28 +178,13 @@ class Topscores(private val env: EnvProvider) {
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
-        val responseHelper = SlackResponseHelper({
-            response ->
-            run {
-                val responseBody = response.asJson()
-                val template = RestTemplate()
-                val headers = HttpHeaders()
-                headers.contentType = MediaType.APPLICATION_JSON
+        val responseHelper = SlackResponseHelper(slackAsyncExecutorProvider.executorFor(responseUrl))
 
-                val request = HttpEntity<String>(responseBody, headers)
-                val responseEntity = template.postForEntity(responseUrl, request, String::class.java)
-
-                if (responseEntity.statusCode != HttpStatus.OK) {
-                    logger.error("Unable to deliver async response {} with response {}", response.asJson(), responseEntity)
-                }
-            }
-        })
-
-        if (env.getEnv().get("token:" + teamDomain) == null) {
+        if (env.getEnv()["token:$teamDomain"] == null) {
             return responseHelper.asJson()
         }
 
-        val bypassSecret = env.getEnv().get("bypass_slack_secret")?.equals("true") ?: false
+        val bypassSecret = env.getEnv()["bypass_slack_secret"]?.equals("true") ?: false
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
@@ -225,9 +208,7 @@ class Topscores(private val env: EnvProvider) {
                     emptyList()
                 }
 
-                synchronized(slackLock, {
-                    cmd.parse(arguments)
-                })
+                cmd.parse(arguments)
 
             } catch (e: PrintHelpMessage) {
                 responseHelper.internalMessage(e.command.getFormattedHelp())
@@ -292,8 +273,7 @@ class Topscores(private val env: EnvProvider) {
                 tournament = tournament
         )
 
-        val tournamentMetrics = metrics.map {
-            m ->
+        val tournamentMetrics = metrics.map { m ->
             TournamentMetrics(
                     m.member,
                     m.metrics.groupBy({ metric -> metric.name }, { metric -> metric.value }).mapValues { entry -> entry.value.sum() })
