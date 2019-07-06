@@ -29,7 +29,7 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
 
     class RatedMember(val name: String, val score: Int, val rating: List<Double>)
 
-    tailrec private fun ratePlayersInGame(ratings: MutableMap<String, List<Double>>, games: List<Game>): MutableMap<String, List<Double>> {
+    private tailrec fun ratePlayersInGame(ratings: MutableMap<String, List<Double>>, games: List<Game>): MutableMap<String, List<Double>> {
         return when {
             games.isNotEmpty() -> {
                 val currentStatus = games.first().parties.flatMap { party ->
@@ -63,10 +63,10 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
     }
 
     private fun eloRatingDeltaForA(a: RatedMember, b: RatedMember, k: Int = 30): Double {
-        if (a.score > b.score) {
-            return k * probabilityOfWinForB(a, b)
+        return if (a.score > b.score) {
+            k * probabilityOfWinForB(a, b)
         } else {
-            return k * (probabilityOfWinForB(a, b) - 1)
+            k * (probabilityOfWinForB(a, b) - 1)
         }
     }
 
