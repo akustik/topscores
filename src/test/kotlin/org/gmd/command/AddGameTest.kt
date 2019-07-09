@@ -81,7 +81,7 @@ class AddGameTest {
         Mockito.`when`(gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, alg = Algorithm.ELO, player = listOf(player1, player2))).thenReturn(evolutions)
 
 
-        AddGame(response = helper, envProvider = EnvProviderForTesting(emptyMap(), timestamp), service = gameService, asyncService = AsyncGameServiceForTesting(gameService), account = account, tournament = tournament).parse(listOf("--with-elo", player1, player2))
+        AddGame(response = helper, envProvider = EnvProviderForTesting(emptyMap(), timestamp), service = gameService, asyncService = AsyncGameServiceForTesting(gameService), account = account, tournament = tournament).parse(listOf( player1, player2))
 
         Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse.text)
         Assert.assertEquals("1. player1\n2. player2", helper.slackResponse.attachments.first().text)

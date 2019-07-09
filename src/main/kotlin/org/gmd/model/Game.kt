@@ -25,6 +25,10 @@ class Game() {
         return parties.first { party -> party.team == team }
     }
 
+    fun contains(team: Team): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     fun toJsonBytes(): ByteArray {
         return ObjectMapper().writeValueAsBytes(this)
     }
