@@ -20,12 +20,14 @@ class Game() {
         this.parties = parties
         this.timestamp = timestamp
     }
-    
+
+    fun getParty(team: Team): Party {
+        return parties.first { party -> party.team == team }
+    }
+
     fun toJsonBytes(): ByteArray {
         return ObjectMapper().writeValueAsBytes(this)
     }
-    
-    fun partiesDescendingByScore(): List<Party> = parties.sortedByDescending { p -> p.score }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -53,7 +55,7 @@ class Game() {
 
 
     companion object {
-        fun fromJsonBytes(bytes : ByteArray): Game {
+        fun fromJsonBytes(bytes: ByteArray): Game {
             return ObjectMapper().readValue(bytes, Game::class.java)
         }
     }

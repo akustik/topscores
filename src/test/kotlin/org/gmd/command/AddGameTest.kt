@@ -67,9 +67,11 @@ class AddGameTest {
     @Throws(Exception::class)
     fun addGameShouldPrintEloEvolutionIfRequired() {
         var asyncResponse: SlackResponse? = null
-        val helper = SlackResponseHelper({ response -> run {
-            asyncResponse = response
-        } })
+        val helper = SlackResponseHelper { response ->
+            run {
+                asyncResponse = response
+            }
+        }
         val evolutions = listOf(
                 Evolution(player1, listOf(1200, 1213)),
                 Evolution(player2, listOf(1200, 1193))

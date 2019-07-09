@@ -9,8 +9,8 @@ import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 
 class PrintGames(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the recent games") {
-    val maxElements: Int by option(help = "Max number of games").int().default(3)
-    val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
+    private val maxElements: Int by option(help = "Max number of games").int().default(3)
+    private val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
 
     override fun run() {
         val entries = service.listEntries(account, tournament, maxElements)
