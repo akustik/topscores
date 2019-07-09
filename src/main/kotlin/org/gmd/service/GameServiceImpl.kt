@@ -14,7 +14,7 @@ import java.time.Instant
 open class GameServiceImpl(val repository: GameRepository,
                            val adderAlg: AdderMemberRatingAlgorithm,
                            val eloAlg: ELOMemberRatingAlgorithm) : GameService {
-    
+
     companion object {
         val MAX_HISTORY = 1000
     }
@@ -24,14 +24,27 @@ open class GameServiceImpl(val repository: GameRepository,
     override fun listGames(account: String, maxElements: Int): List<Game>
             = repository.listGames(account, maxElements).map { e -> e.second }
 
-    override fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm): List<Score> {
+    override fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm, teams: List<String>): List<Score> {
         val games = repository.listGames(account = account, tournament = tournament, maxElements = MAX_HISTORY).map { e -> e.second }
-        return descendent(raterFor(alg).rate(games))
+        return descendent(raterFor(alg).rate(games.map(filterForTeams(teams))))
     }
 
     override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: List<String>, alg: Algorithm, withGames: List<Game>): List<Evolution> {
         val games = repository.listGames(account = account, tournament = tournament, maxElements = MAX_HISTORY).map { e -> e.second }
         return raterFor(alg).evolution(games + withGames).filter { s -> player.contains(s.member) }
+    }
+
+    private fun filterForTeams(teams: List<String>): (Game) -> Game = {
+        game ->
+        if (teams.isEmpty()) {
+            game
+        } else {
+            Game(
+                    tournament = game.tournament,
+                    parties = game.parties.filter { p -> teams.contains(p.team.name) },
+                    timestamp = game.timestamp
+            )
+        }
     }
 
     private fun raterFor(alg: Algorithm): MemberRatingAlgorithm {

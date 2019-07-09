@@ -15,7 +15,7 @@ class Game() {
     constructor(
             tournament: String,
             parties: List<Party>,
-            timestamp: Long): this() {
+            timestamp: Long? = null): this() {
         this.tournament = tournament
         this.parties = parties
         this.timestamp = timestamp

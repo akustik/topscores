@@ -13,5 +13,9 @@ class TestData {
         fun patxanga(): Game {
             return Game.fromJsonBytes(patxanga.toByteArray(Charset.defaultCharset()))
         }
+        
+        fun mariokart(): Game {
+            return Game.fromJsonBytes(mariokart.toByteArray(Charset.defaultCharset()))
+        }
     }
 }

@@ -32,7 +32,7 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentScoresShouldAddUpScoresForAllTeamMembers() {
         val expected = listOf(
-                Score("ramon", 1), Score("arnau", 1), Score("uri", 0), Score("guillem", 0)
+                Score("ramon", 1, 1), Score("arnau", 1, 1), Score("uri", 0, 1), Score("guillem", 0, 1)
         )
         val account = "test"
         val tournament = "patxanga"
@@ -45,9 +45,24 @@ class GameServiceImplTest {
 
     @Test
     @Throws(Exception::class)
+    fun computeTournamentScoresShouldFilterByTeam() {
+        val expected = listOf(
+                Score("Guillem", 4, 1), Score("Ciriano", 3, 1)
+        )
+        val account = "test"
+        val tournament = "mariokart"
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.mariokart())))
+
+        val scores = gameService.computeTournamentMemberScores(account = account, tournament = tournament, teams = listOf("Villager", "Luigi"))
+
+        Assert.assertEquals(expected, scores)
+    }
+
+    @Test
+    @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOForAllTeamMembers() {
         val expected = listOf(
-                Score("ramon", 1215), Score("arnau", 1215), Score("uri", 1185), Score("guillem", 1185)
+                Score("ramon", 1215, 1), Score("arnau", 1215, 1), Score("uri", 1185, 1), Score("guillem", 1185, 1)
         )
         val account = "test"
         val tournament = "patxanga"
