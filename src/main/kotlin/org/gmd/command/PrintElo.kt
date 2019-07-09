@@ -1,6 +1,8 @@
 package org.gmd.command
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.arguments.argument
+import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -12,6 +14,7 @@ import org.gmd.slack.SlackResponseHelper
 class PrintElo(val response: SlackResponseHelper, val service: AsyncGameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
+    val players by argument(help = "Do only consider these players for ranking").multiple(required = false)
 
     override fun run() {
         returnScores()
@@ -19,8 +22,13 @@ class PrintElo(val response: SlackResponseHelper, val service: AsyncGameService,
     }
 
     private fun returnScores() {
+        val normalizedPlayers = players.map { p -> p.toLowerCase() }
         val algorithm = Algorithm.valueOf(alg.toUpperCase())
-        service.consumeTournamentMemberScores(account, tournament, algorithm) {
+        service.consumeTournamentMemberScores(
+                account = account,
+                tournament = tournament,
+                alg = algorithm,
+                teams = normalizedPlayers) {
             scores ->
             run {
                 if (scores.isNotEmpty()) {

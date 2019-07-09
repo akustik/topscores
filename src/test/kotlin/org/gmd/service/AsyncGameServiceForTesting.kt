@@ -10,8 +10,8 @@ open class AsyncGameServiceForTesting(val service: GameService) : AsyncGameServi
         consumer(service.computeTournamentMemberScoreEvolution(account, tournament, player, alg, withGames))
     }
 
-    override fun consumeTournamentMemberScores(account: String, tournament: String, alg: Algorithm, consumer: (List<Score>) -> Unit) {
-        consumer(service.computeTournamentMemberScores(account, tournament, alg))
+    override fun consumeTournamentMemberScores(account: String, tournament: String, alg: Algorithm, teams: List<String>, consumer: (List<Score>) -> Unit) {
+        consumer(service.computeTournamentMemberScores(account, tournament, alg, teams))
     }
 }
 

@@ -15,12 +15,14 @@ open class AsyncGameServiceWrapper(val service: GameService) : AsyncGameService 
             account: String,
             tournament: String,
             alg: Algorithm,
+            teams: List<String>,
             consumer: (List<Score>) -> Unit
     ): Unit {
         consumer(service.computeTournamentMemberScores(
                 account = account,
                 tournament = tournament,
-                alg = alg)
+                alg = alg,
+                teams = teams)
         )
     }
 

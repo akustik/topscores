@@ -13,7 +13,7 @@ open class AdderMemberRatingAlgorithm : MemberRatingAlgorithm {
         ratePlayersInGame(ratedPlayers, games.sortedBy { game -> game.timestamp })
         return ratedPlayers.map {
             rating ->
-            Score(rating.key, rating.value.last(), rating.value.size)
+            Score(rating.key, rating.value.last(), rating.value.size - 1)
         }
     }
 
