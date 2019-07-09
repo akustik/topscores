@@ -32,7 +32,7 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentScoresShouldAddUpScoresForAllTeamMembers() {
         val expected = listOf(
-                Score("ramon", 1), Score("arnau", 1), Score("uri", 0), Score("guillem", 0)
+                Score("ramon", 1, 2), Score("arnau", 1, 2), Score("uri", 0, 2), Score("guillem", 0, 2)
         )
         val account = "test"
         val tournament = "patxanga"
@@ -47,7 +47,7 @@ class GameServiceImplTest {
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOForAllTeamMembers() {
         val expected = listOf(
-                Score("ramon", 1215), Score("arnau", 1215), Score("uri", 1185), Score("guillem", 1185)
+                Score("ramon", 1215, 2), Score("arnau", 1215, 2), Score("uri", 1185, 2), Score("guillem", 1185, 2)
         )
         val account = "test"
         val tournament = "patxanga"

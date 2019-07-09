@@ -24,7 +24,7 @@ class PrintElo(val response: SlackResponseHelper, val service: AsyncGameService,
             scores ->
             run {
                 if (scores.isNotEmpty()) {
-                    val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
+                    val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score}, ${score.games})" }
                             .joinToString(separator = "\n")
 
                     response.asyncMessage(text = "Current ${algorithm.name} leaderboard", attachments = listOf(leaderboard), silent = silent)

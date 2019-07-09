@@ -9,18 +9,12 @@ import org.springframework.stereotype.Component
 open class AdderMemberRatingAlgorithm : MemberRatingAlgorithm {
 
     override fun rate(games: List<Game>): List<Score> {
-        val scores: List<Pair<String, Int>> = games
-                .flatMap { game -> game.parties }
-                .flatMap {
-                    party ->
-                    party.members.map {
-                        member ->
-                        member.name to party.score
-                    }
-                }
-        return scores.groupBy({ it.first }, { it.second })
-                .mapValues { (_, v) -> v.sum() }
-                .map { (k, v) -> Score(k, v) }
+        val ratedPlayers = mutableMapOf<String, List<Int>>()
+        ratePlayersInGame(ratedPlayers, games.sortedBy { game -> game.timestamp })
+        return ratedPlayers.map {
+            rating ->
+            Score(rating.key, rating.value.last(), rating.value.size)
+        }
     }
 
     override fun evolution(games: List<Game>): List<Evolution> {

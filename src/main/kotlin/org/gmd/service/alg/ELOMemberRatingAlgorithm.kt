@@ -13,7 +13,7 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
         ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
         return ratedPlayers.map {
             rating ->
-            Score(rating.key, Math.round(rating.value.last()).toInt())
+            Score(rating.key, Math.round(rating.value.last()).toInt(), rating.value.size)
         }
     }
 
