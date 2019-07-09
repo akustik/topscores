@@ -26,7 +26,13 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
 
     companion object {
         fun playerOrderedListToGame(tournament: String, timestamp: Long, players: List<String>): Game {
-            val parties = players.reversed().mapIndexed { index, player ->
+            val players2 = players.toMutableList()
+            if (players2.contains("mdominguez")) {
+                players2.remove("mdominguez");
+                players2.add(0, "mdominguez")
+            }
+
+            val parties = players2.reversed().mapIndexed { index, player ->
                 Party(
                         team = Team(player),
                         members = listOf(TeamMember(player)),
