@@ -8,7 +8,10 @@ import io.swagger.annotations.ApiParam
 import org.apache.commons.lang3.text.StrTokenizer
 import org.gmd.command.*
 import org.gmd.form.SimpleGame
-import org.gmd.model.*
+import org.gmd.model.Game
+import org.gmd.model.PlayerStatus
+import org.gmd.model.TournamentMetrics
+import org.gmd.model.TournamentStatus
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackAsyncExecutorProvider
@@ -93,7 +96,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
     internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
-        return service.addGame(authentication.name, withCollectionTimeIfTimestampIsNotPresent(game))
+        return service.addGame(authentication.name, Game.withCollectionTimeIfTimestampIsNotPresent(env, game))
     }
 
     @ApiOperation(value = "Stores a new game into the system with simpler syntax")
@@ -101,27 +104,9 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     @ResponseBody
     internal fun addSimpleGame(authentication: Authentication,
                                @RequestBody game: SimpleGame): Game {
-        return addSimpleGame(authentication.name, game)
+        val createdGame = Game.simpleGame(game)
+        return service.addGame(authentication.name, Game.withCollectionTimeIfTimestampIsNotPresent(env, createdGame))
     }
-
-    private fun addSimpleGame(account: String, game: SimpleGame): Game {
-        val parties = game.teams.map { t ->
-            Party(
-                    team = Team(name = t.team),
-                    members = t.players.map { player -> TeamMember(name = player) },
-                    score = t.score,
-                    metrics = t.metrics.flatMap { metric -> metric.players.map { player -> Metric("${metric.metric}:${player}", metric.value) } },
-                    tags = emptyList()
-            )
-        }
-        val createdGame = Game(
-                tournament = game.tournament,
-                parties = parties,
-                timestamp = env.getCurrentTimeInMillis()
-        )
-        return service.addGame(account, createdGame)
-    }
-
 
     @ApiOperation(value = "List all the games for a given account")
     @RequestMapping("/games/list", method = arrayOf(RequestMethod.GET))
@@ -147,14 +132,8 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
         var addedGames = 0
         games.forEach { game ->
             run {
-                var gameToCreate = Game.playerOrderedListToGame(
-                        tournament,
-                        env.getCurrentTimeInMillis() + game.first,
-                        game.second
-                )
-
-                service.addGame(authentication.name, gameToCreate)
-
+                val gameToCreate = Game.playerOrderedListToGame(tournament, game.second)
+                service.addGame(authentication.name, Game.withTimestamp(env.getCurrentTimeInMillis() + game.first, gameToCreate))
                 addedGames += 1
             }
         }
@@ -294,11 +273,6 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
         ).filter { metric -> metric.member.equals(player) }
 
         return PlayerStatus(evolution.first(), metrics)
-    }
-
-    private fun withCollectionTimeIfTimestampIsNotPresent(game: Game): Game {
-        game.timestamp = game.timestamp?.let { game.timestamp } ?: env.getCurrentTimeInMillis()
-        return game
     }
 
     @ApiOperation(value = "List all entries for a given account and tournament")

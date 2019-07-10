@@ -17,12 +17,12 @@ import org.gmd.slack.SlackResponseHelper
 import kotlin.concurrent.withLock
 
 class AddGame(
-        val response: SlackResponseHelper, 
-        val envProvider: EnvProvider, 
-        val service: GameService, 
-        val asyncService: AsyncGameService, 
-        val account: String, 
-        val tournament: String) 
+        val response: SlackResponseHelper,
+        val envProvider: EnvProvider,
+        val service: GameService,
+        val asyncService: AsyncGameService,
+        val account: String,
+        val tournament: String)
     : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true), SlackCommand {
     val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
     val dryRun by option(help = "Returns an updated ranking simulation without actually storing the game").flag()
@@ -34,7 +34,7 @@ class AddGame(
     override fun run() {
         val normalizedPlayers = normalizePlayers(players)
         val algorithm = parseAlgorithm(alg)
-        val gameToCreate = Game.playerOrderedListToGame(tournament, envProvider.getCurrentTimeInMillis(), normalizedPlayers)
+        val gameToCreate = Game.playerOrderedListToGame(tournament, normalizedPlayers)
 
         if (dryRun) {
             response.asyncDefaultResponse()
@@ -59,7 +59,7 @@ class AddGame(
                             "Check last game for duplicates and use the --force flag if you're sure that is OK",
                             listOf(), silent = true)
                 } else {
-                    val storedGame = service.addGame(account, gameToCreate)
+                    val storedGame = service.addGame(account, Game.withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate))
                     response.publicMessage(
                             "Good game! A new game entry has been created!",
                             computeFeedbackAfterGameAdd(storedGame, normalizedPlayers, algorithm)
