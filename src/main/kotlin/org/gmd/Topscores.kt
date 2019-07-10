@@ -193,7 +193,8 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
                     Ping(responseHelper, asyncService, teamDomain, channelName),
                     PrintPlayerElo(responseHelper, asyncService, teamDomain, channelName, userName),
                     PrintGames(responseHelper, service, teamDomain, channelName),
-                    DeleteGame(responseHelper, service, teamDomain, channelName)
+                    DeleteGame(responseHelper, service, teamDomain, channelName),
+                    MatchUp(responseHelper, service, teamDomain, channelName, userName)
             )
 
             try {

@@ -67,9 +67,11 @@ class AddGameTest {
     @Throws(Exception::class)
     fun addGameShouldPrintEloEvolutionIfRequired() {
         var asyncResponse: SlackResponse? = null
-        val helper = SlackResponseHelper({ response -> run {
-            asyncResponse = response
-        } })
+        val helper = SlackResponseHelper { response ->
+            run {
+                asyncResponse = response
+            }
+        }
         val evolutions = listOf(
                 Evolution(player1, listOf(1200, 1213)),
                 Evolution(player2, listOf(1200, 1193))
@@ -79,7 +81,7 @@ class AddGameTest {
         Mockito.`when`(gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, alg = Algorithm.ELO, player = listOf(player1, player2))).thenReturn(evolutions)
 
 
-        AddGame(response = helper, envProvider = EnvProviderForTesting(emptyMap(), timestamp), service = gameService, asyncService = AsyncGameServiceForTesting(gameService), account = account, tournament = tournament).parse(listOf("--with-elo", player1, player2))
+        AddGame(response = helper, envProvider = EnvProviderForTesting(emptyMap(), timestamp), service = gameService, asyncService = AsyncGameServiceForTesting(gameService), account = account, tournament = tournament).parse(listOf( player1, player2))
 
         Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse.text)
         Assert.assertEquals("1. player1\n2. player2", helper.slackResponse.attachments.first().text)

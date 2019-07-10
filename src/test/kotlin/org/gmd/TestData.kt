@@ -11,11 +11,15 @@ class TestData {
         val mariokart = TestData::class.java.getResource("/samples/mariokart.json").readText()
         
         fun patxanga(): Game {
-            return Game.fromJsonBytes(patxanga.toByteArray(Charset.defaultCharset()))
+            return parse(patxanga)
         }
-        
+
         fun mariokart(): Game {
-            return Game.fromJsonBytes(mariokart.toByteArray(Charset.defaultCharset()))
+            return parse(mariokart)
+        }
+
+        private fun parse(data: String): Game {
+            return Game.fromJsonBytes(data.toByteArray(Charset.defaultCharset()))
         }
     }
 }
