@@ -2,7 +2,10 @@ package org.gmd.command
 
 import org.gmd.Algorithm
 import org.gmd.EnvProviderForTesting
-import org.gmd.model.*
+import org.gmd.TestData.Companion.dummy
+import org.gmd.TestData.Companion.player1
+import org.gmd.TestData.Companion.player2
+import org.gmd.model.Evolution
 import org.gmd.service.AsyncGameServiceForTesting
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponse
@@ -22,31 +25,8 @@ class AddGameTest {
     @MockBean
     lateinit var gameService: GameService
 
-    val player1 = "player1"
-    val player2 = "player2"
     val account = "test"
-    val tournament = "patxanga"
-    val timestamp = 12345L
-    val addedGame = Game(
-            tournament = tournament,
-            parties = listOf(
-                    Party(
-                            team = Team(player2),
-                            members = listOf(TeamMember(player2)),
-                            metrics = listOf(),
-                            tags = listOf(),
-                            score = 1
-                    ),
-                    Party(
-                            team = Team(player1),
-                            members = listOf(TeamMember(player1)),
-                            metrics = listOf(),
-                            tags = listOf(),
-                            score = 2
-                    )
-            ),
-            timestamp = timestamp
-    )
+    val addedGame = dummy()
 
     @Test
     @Throws(Exception::class)
@@ -56,7 +36,13 @@ class AddGameTest {
         //TODO: Give it a try to mockito kotlin and see if it works better with mocks :_(
         Mockito.`when`(gameService.addGame(account, addedGame)).thenReturn(addedGame)
 
-        AddGame(response = helper, envProvider = EnvProviderForTesting(emptyMap(), timestamp), service = gameService, asyncService = AsyncGameServiceForTesting(gameService), account = account, tournament = tournament).parse(listOf(player1, player2))
+        AddGame(response = helper,
+                envProvider = EnvProviderForTesting(emptyMap(), addedGame.timestamp!!),
+                service = gameService,
+                asyncService = AsyncGameServiceForTesting(gameService),
+                account = account,
+                tournament = addedGame.tournament)
+                .parse(listOf(player1, player2))
 
         Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse.text)
         Assert.assertEquals("1. player1\n2. player2", helper.slackResponse.attachments.first().text)
@@ -78,10 +64,20 @@ class AddGameTest {
         )
 
         Mockito.`when`(gameService.addGame(account, addedGame)).thenReturn(addedGame)
-        Mockito.`when`(gameService.computeTournamentMemberScoreEvolution(account = account, tournament = tournament, alg = Algorithm.ELO, player = listOf(player1, player2))).thenReturn(evolutions)
+        Mockito.`when`(gameService.computeTournamentMemberScoreEvolution(
+                account = account,
+                tournament = addedGame.tournament,
+                alg = Algorithm.ELO,
+                player = listOf(player1, player2))).thenReturn(evolutions)
 
 
-        AddGame(response = helper, envProvider = EnvProviderForTesting(emptyMap(), timestamp), service = gameService, asyncService = AsyncGameServiceForTesting(gameService), account = account, tournament = tournament).parse(listOf( player1, player2))
+        AddGame(response = helper,
+                envProvider = EnvProviderForTesting(emptyMap(), addedGame.timestamp!!),
+                service = gameService,
+                asyncService = AsyncGameServiceForTesting(gameService),
+                account = account,
+                tournament = addedGame.tournament)
+                .parse(listOf(player1, player2))
 
         Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse.text)
         Assert.assertEquals("1. player1\n2. player2", helper.slackResponse.attachments.first().text)
@@ -89,6 +85,5 @@ class AddGameTest {
         Assert.assertEquals("in_channel", helper.slackResponse.responseType)
 
     }
-
 }
 

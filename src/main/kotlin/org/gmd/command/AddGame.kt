@@ -4,49 +4,37 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.deprecated
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import org.gmd.Algorithm
 import org.gmd.EnvProvider
-import org.gmd.model.*
+import org.gmd.model.Evolution
+import org.gmd.model.Game
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 import kotlin.concurrent.withLock
 
-class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, val service: GameService, val asyncService: AsyncGameService, val account: String, val tournament: String) : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true) {
+class AddGame(
+        val response: SlackResponseHelper,
+        val envProvider: EnvProvider,
+        val service: GameService,
+        val asyncService: AsyncGameService,
+        val account: String,
+        val tournament: String)
+    : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true), SlackCommand {
     val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
     val dryRun by option(help = "Returns an updated ranking simulation without actually storing the game").flag()
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val force by option("--force", "-f", help = "Force the addition of the game and ignore collisions").flag()
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
 
-    companion object {
-        fun playerOrderedListToGame(tournament: String, timestamp: Long, players: List<String>): Game {
-            val parties = players.reversed().mapIndexed { index, player ->
-                Party(
-                        team = Team(player),
-                        members = listOf(TeamMember(player)),
-                        score = index + 1,
-                        metrics = emptyList(),
-                        tags = emptyList()
-                )
-            }
-
-            return Game(
-                    tournament = tournament,
-                    parties = parties,
-                    timestamp = timestamp
-            )
-        }
-    }
 
     override fun run() {
-        val normalizedPlayers = players.map { p -> p.toLowerCase() }
-        val algorithm = Algorithm.valueOf(alg.toUpperCase())
-        val gameToCreate = playerOrderedListToGame(tournament, envProvider.getCurrentTimeInMillis(), normalizedPlayers)
+        val normalizedPlayers = normalizePlayers(players)
+        val algorithm = parseAlgorithm(alg)
+        val gameToCreate = Game.playerOrderedListToGame(tournament, normalizedPlayers)
 
         if (dryRun) {
             response.asyncDefaultResponse()
@@ -71,7 +59,8 @@ class AddGame(val response: SlackResponseHelper, val envProvider: EnvProvider, v
                             "Check last game for duplicates and use the --force flag if you're sure that is OK",
                             listOf(), silent = true)
                 } else {
-                    val storedGame = service.addGame(account, gameToCreate)
+                    val gameWithCollectionTime = Game.withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate)
+                    val storedGame = service.addGame(account, gameWithCollectionTime)
                     response.publicMessage(
                             "Good game! A new game entry has been created!",
                             computeFeedbackAfterGameAdd(storedGame, normalizedPlayers, algorithm)

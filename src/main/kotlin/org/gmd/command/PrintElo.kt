@@ -12,7 +12,12 @@ import org.gmd.Algorithm
 import org.gmd.service.AsyncGameService
 import org.gmd.slack.SlackResponseHelper
 
-class PrintElo(val response: SlackResponseHelper, val service: AsyncGameService, val account: String, val tournament: String) : CliktCommand(help = "Print the current leaderboard") {
+class PrintElo(
+        val response: SlackResponseHelper, 
+        val service: AsyncGameService, 
+        val account: String, 
+        val tournament: String) 
+    : CliktCommand(help = "Print the current leaderboard"), SlackCommand {
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
     val players by argument(help = "Do only consider these players for ranking").multiple(required = false)
@@ -24,8 +29,8 @@ class PrintElo(val response: SlackResponseHelper, val service: AsyncGameService,
     }
 
     private fun returnScores() {
-        val normalizedPlayers = players.map { p -> p.toLowerCase() }
-        val algorithm = Algorithm.valueOf(alg.toUpperCase())
+        val normalizedPlayers = normalizePlayers(players)
+        val algorithm = parseAlgorithm(alg)
         service.consumeTournamentMemberScores(
                 account = account,
                 tournament = tournament,
