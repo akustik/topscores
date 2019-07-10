@@ -7,6 +7,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
+import com.github.ajalt.clikt.parameters.types.int
 import org.gmd.Algorithm
 import org.gmd.service.AsyncGameService
 import org.gmd.slack.SlackResponseHelper
@@ -15,6 +16,7 @@ class PrintElo(val response: SlackResponseHelper, val service: AsyncGameService,
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
     val players by argument(help = "Do only consider these players for ranking").multiple(required = false)
+    val minGames by option("--min-games", "-m", help="The minimum amount of games played to appear in the ranking").int().default(5)
 
     override fun run() {
         returnScores()
@@ -32,7 +34,9 @@ class PrintElo(val response: SlackResponseHelper, val service: AsyncGameService,
             scores ->
             run {
                 if (scores.isNotEmpty()) {
-                    val leaderboard = scores.mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score} with ${score.games} game/s)" }
+                    val leaderboard = scores
+                            .filter { s -> s.games >= minGames }
+                            .mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
                             .joinToString(separator = "\n")
 
                     response.asyncMessage(text = "Current ${algorithm.name} leaderboard", attachments = listOf(leaderboard), silent = silent)

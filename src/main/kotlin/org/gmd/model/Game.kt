@@ -29,6 +29,8 @@ class Game() {
         return parties.any { party -> party.team == team }
     }
 
+    fun partiesDescendingByScore(): List<Party> = parties.sortedByDescending { p -> p.score }
+
     fun toJsonBytes(): ByteArray {
         return ObjectMapper().writeValueAsBytes(this)
     }
