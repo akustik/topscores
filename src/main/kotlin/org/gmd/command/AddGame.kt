@@ -59,7 +59,8 @@ class AddGame(
                             "Check last game for duplicates and use the --force flag if you're sure that is OK",
                             listOf(), silent = true)
                 } else {
-                    val storedGame = service.addGame(account, Game.withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate))
+                    val gameWithCollectionTime = Game.withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate)
+                    val storedGame = service.addGame(account, gameWithCollectionTime)
                     response.publicMessage(
                             "Good game! A new game entry has been created!",
                             computeFeedbackAfterGameAdd(storedGame, normalizedPlayers, algorithm)
