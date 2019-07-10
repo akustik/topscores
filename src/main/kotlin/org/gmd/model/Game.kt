@@ -15,7 +15,7 @@ class Game() {
     constructor(
             tournament: String,
             parties: List<Party>,
-            timestamp: Long? = null): this() {
+            timestamp: Long? = null) : this() {
         this.tournament = tournament
         this.parties = parties
         this.timestamp = timestamp
@@ -26,7 +26,7 @@ class Game() {
     }
 
     fun contains(team: Team): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return parties.any { party -> party.team == team }
     }
 
     fun toJsonBytes(): ByteArray {
