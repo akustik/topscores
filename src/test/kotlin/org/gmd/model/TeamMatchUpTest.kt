@@ -18,7 +18,7 @@ class TeamMatchUpTest {
 
         val inverseWinRatio = TeamMatchUp(player, villager, games).calculateWinRatio()
 
-        assertEquals(0, winRatio)
-        assertEquals(100, inverseWinRatio)
+        assertEquals(100, winRatio)
+        assertEquals(0, inverseWinRatio)
     }
 }

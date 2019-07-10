@@ -24,7 +24,7 @@ class DefaultSlackAsyncExecutorProvider : SlackAsyncExecutorProvider {
             val headers = HttpHeaders()
             headers.contentType = MediaType.APPLICATION_JSON
 
-            val request = HttpEntity<String>(responseBody, headers)
+            val request = HttpEntity(responseBody, headers)
             val responseEntity = template.postForEntity(responseUrl, request, String::class.java)
 
             if (responseEntity.statusCode != HttpStatus.OK) {

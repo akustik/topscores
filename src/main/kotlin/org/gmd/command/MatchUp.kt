@@ -31,7 +31,7 @@ class MatchUp(
     }
 
     private fun returnEvolution() {
-        val games = service.listGames(account, 1000)
+        val games = service.listGames(account, tournament, 1000)
         val team1 = Team(player1)
         val team2 = Team(player2)
         val matchingGames = games.filter { game -> game.contains(team1) && game.contains(team2) }
@@ -39,9 +39,9 @@ class MatchUp(
         val total = matchingGames.size
         if(total > 0) {
             val winRatio = TeamMatchUp(team1, team2, matchingGames).calculateWinRatio()
-            response.message(text ="From $total games $player1 beats $player2 a $winRatio%.", silent = silent)
+            response.asyncMessage(text ="From $total games $player1 beats $player2 a $winRatio%.", silent = silent)
         } else {
-            response.message(text = "No matches found", silent = silent)
+            response.asyncMessage(text = "No matches found", silent = silent)
         }
     }
 }

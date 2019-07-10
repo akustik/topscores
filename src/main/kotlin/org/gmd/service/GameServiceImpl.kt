@@ -14,15 +14,17 @@ import java.time.Instant
 open class GameServiceImpl(val repository: GameRepository,
                            val adderAlg: AdderMemberRatingAlgorithm,
                            val eloAlg: ELOMemberRatingAlgorithm) : GameService {
-
     companion object {
-        val MAX_HISTORY = 1000
+        const val MAX_HISTORY = 1000
     }
 
     override fun addGame(account: String, game: Game): Game = repository.addGame(account, game)
 
-    override fun listGames(account: String, maxElements: Int): List<Game>
-            = repository.listGames(account, maxElements).map { e -> e.second }
+    override fun listGames(account: String, maxElements: Int): List<Game> = repository.listGames(account, maxElements).map { e -> e.second }
+
+    override fun listGames(account: String, tournament: String, maxElements: Int): List<Game> {
+        return repository.listGames(account, tournament, maxElements).map { e -> e.second }
+    }
 
     override fun computeTournamentMemberScores(account: String, tournament: String, alg: Algorithm, teams: List<String>): List<Score> {
         val games = repository.listGames(account = account, tournament = tournament, maxElements = MAX_HISTORY).map { e -> e.second }
@@ -34,8 +36,7 @@ open class GameServiceImpl(val repository: GameRepository,
         return raterFor(alg).evolution(games + withGames).filter { s -> player.contains(s.member) }
     }
 
-    private fun filterForTeams(teams: List<String>): (Game) -> Game = {
-        game ->
+    private fun filterForTeams(teams: List<String>): (Game) -> Game = { game ->
         if (teams.isEmpty()) {
             game
         } else {
