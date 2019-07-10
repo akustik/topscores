@@ -64,5 +64,23 @@ class Game() {
         fun fromJsonBytes(bytes: ByteArray): Game {
             return ObjectMapper().readValue(bytes, Game::class.java)
         }
+
+        fun playerOrderedListToGame(tournament: String, timestamp: Long, players: List<String>): Game {
+            val parties = players.reversed().mapIndexed { index, player ->
+                Party(
+                        team = Team(player),
+                        members = listOf(TeamMember(player)),
+                        score = index + 1,
+                        metrics = emptyList(),
+                        tags = emptyList()
+                )
+            }
+
+            return Game(
+                    tournament = tournament,
+                    parties = parties,
+                    timestamp = timestamp
+            )
+        }
     }
 }

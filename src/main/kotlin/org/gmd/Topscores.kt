@@ -16,15 +16,11 @@ import org.gmd.slack.SlackResponseHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.client.RestTemplate
 import java.nio.charset.Charset
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -151,7 +147,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
         var addedGames = 0
         games.forEach { game ->
             run {
-                var gameToCreate = AddGame.playerOrderedListToGame(
+                var gameToCreate = Game.playerOrderedListToGame(
                         tournament,
                         env.getCurrentTimeInMillis() + game.first,
                         game.second

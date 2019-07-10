@@ -8,7 +8,12 @@ import com.github.ajalt.clikt.parameters.types.int
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 
-class PrintGames(val response: SlackResponseHelper, val service: GameService, val account: String, val tournament: String) : CliktCommand(help = "Print the recent games") {
+class PrintGames(
+        val response: SlackResponseHelper,
+        val service: GameService, 
+        val account: String, 
+        val tournament: String) 
+    : CliktCommand(help = "Print the recent games"), SlackCommand {
     val maxElements: Int by option(help = "Max number of games").int().default(3)
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
 

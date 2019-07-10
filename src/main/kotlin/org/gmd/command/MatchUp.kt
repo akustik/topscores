@@ -20,7 +20,7 @@ class MatchUp(
         val account: String,
         val tournament: String,
         username: String)
-    : CliktCommand(help = "Print win rate between two players") {
+    : CliktCommand(help = "Print win rate between two players"), SlackCommand {
 
     val player1 by argument(help = "Player1 name")
     val player2 by argument(help = "Player2 name").default(username)

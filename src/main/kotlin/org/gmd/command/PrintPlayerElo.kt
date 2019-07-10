@@ -17,7 +17,7 @@ class PrintPlayerElo(
         val account: String,
         val tournament: String,
         username: String)
-    : CliktCommand(help = "Print the current ELO evolution for a player") {
+    : CliktCommand(help = "Print the current ELO evolution for a player"), SlackCommand {
 
     val player by argument(help = "Player name").default(username)
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
@@ -29,7 +29,7 @@ class PrintPlayerElo(
     }
 
     private fun returnEvolution() {
-        val algorithm = Algorithm.valueOf(alg.toUpperCase())
+        val algorithm = parseAlgorithm(alg)
         service.consumeTournamentMemberScoreEvolution(account, tournament, listOf(player), algorithm, emptyList()) {
             evolution ->
             run {
