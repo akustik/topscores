@@ -43,8 +43,9 @@ class PrintElo(
                             .filter { s -> s.games >= minGames }
                             .mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
                             .joinToString(separator = "\n")
-
-                    response.asyncMessage(text = "Current ${algorithm.name} leaderboard for players with at least $minGames games", attachments = listOf(leaderboard), silent = silent)
+                    
+                    val kind = if(players.isEmpty()) "complete" else "filtered"
+                    response.asyncMessage(text = "Current ${algorithm.name} leaderboard ($kind) for players with at least $minGames games", attachments = listOf(leaderboard), silent = silent)
                 } else {
                     response.asyncMessage(text = "There are no registered games yet. Add games to start the fun!", silent = silent)
                 }
