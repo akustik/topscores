@@ -24,6 +24,7 @@ class MatchUp(
 
     override fun run() {
         returnEvolution()
+        response.asyncDefaultResponse()
     }
 
     private fun returnEvolution() {
