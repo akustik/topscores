@@ -12,7 +12,7 @@ class SlackServiceImpl(private val env: EnvProvider,
                        private val slackRepository: SlackRepository) : SlackService {
 
     override fun oauth(code: String): SlackTeamAuth {
-        val slackSecret = env.getEnv()[EnvProvider.SLACK_SECRET]
+        val slackSecret = env.getEnv()[EnvProvider.SLACK_CLIENT_SECRET]
         val slackClientId = env.getEnv()[EnvProvider.SLACK_CLIENT_ID]
         val response = slackExecutorProvider.oauthExecutor()(slackClientId!!, slackSecret!!, code)
         slackRepository.storeAuth(response)

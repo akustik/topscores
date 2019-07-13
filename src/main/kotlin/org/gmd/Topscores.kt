@@ -206,7 +206,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     private fun isSlackSignatureValid(slackSignature: String, slackTimestamp: String, body: String): Boolean {
         val charset = Charset.defaultCharset()
-        val slackSecret = env.getEnv()[EnvProvider.SLACK_SECRET]
+        val slackSecret = env.getEnv()[EnvProvider.SLACK_SIGNING_SECRET]
         val baseString = "v0:$slackTimestamp:$body"
         val signature = Hashing.hmacSha256(slackSecret!!.toByteArray(charset)).hashString(baseString, charset)
         val coded = "v0=" + String(Hex.encode(signature.asBytes()))
