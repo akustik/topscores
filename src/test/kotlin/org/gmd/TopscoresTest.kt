@@ -4,13 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
 import org.gmd.repository.GameRepository
 import org.gmd.repository.GameRepositoryForTesting
-import org.gmd.service.AsyncGameService
-import org.gmd.service.AsyncGameServiceForTesting
-import org.gmd.service.GameService
-import org.gmd.service.GameServiceImpl
+import org.gmd.service.*
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
-import org.gmd.slack.SlackAsyncExecutorProviderForTesting
+import org.gmd.slack.SlackExecutorProviderForTesting
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.junit.Assert
@@ -37,7 +34,7 @@ import java.util.*
 class TopscoresTest {
 
     companion object {
-        val slackAsyncExecutorProviderForTesting = SlackAsyncExecutorProviderForTesting()
+        val slackAsyncExecutorProviderForTesting = SlackExecutorProviderForTesting()
     }
 
     @Autowired
@@ -73,6 +70,11 @@ class TopscoresTest {
         @Bean
         open fun gameService(): GameService {
             return GameServiceImpl(repository, AdderMemberRatingAlgorithm(), ELOMemberRatingAlgorithm())
+        }
+        
+        @Bean
+        open fun slackService(): SlackService {
+            return SlackServiceForTesting()
         }
 
         @Bean

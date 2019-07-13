@@ -14,10 +14,9 @@ import org.gmd.model.TournamentMetrics
 import org.gmd.model.TournamentStatus
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
-import org.gmd.slack.SlackAsyncExecutorProvider
+import org.gmd.service.SlackService
+import org.gmd.slack.SlackExecutorProvider
 import org.gmd.slack.SlackResponseHelper
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
@@ -30,14 +29,13 @@ import java.time.format.DateTimeFormatter
 
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
-class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProvider: SlackAsyncExecutorProvider) {
-
-    companion object {
-        var logger: Logger = LoggerFactory.getLogger(Topscores::class.java)
-    }
+class Topscores(private val env: EnvProvider, private val slackExecutorProvider: SlackExecutorProvider) {
 
     @Autowired
-    private lateinit var service: GameService
+    private lateinit var gameService: GameService
+
+    @Autowired
+    private lateinit var slackService: SlackService
 
     @Autowired
     private lateinit var asyncService: AsyncGameService
@@ -45,8 +43,8 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
-        val games = service.listGames(account).sortedByDescending { it.timestamp }.take(5)
-        val tournaments = service.listTournaments(account)
+        val games = gameService.listGames(account).sortedByDescending { it.timestamp }.take(5)
+        val tournaments = gameService.listTournaments(account)
         model.put("games", games)
         model.put("account", account)
         model.put("tournaments", tournaments)
@@ -60,7 +58,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
                             model: MutableMap<String, Any>): String {
         val account = authentication.name
         val status = tournamentStatus(account, tournament, alg)
-        val tournaments = service.listTournaments(account)
+        val tournaments = gameService.listTournaments(account)
         model.put("status", status)
         model.put("account", account)
         model.put("tournaments", tournaments)
@@ -76,7 +74,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
                             model: MutableMap<String, Any>): String {
         val account = authentication.name
         val status = playerStatus(account, tournament, player, alg)
-        val tournaments = service.listTournaments(account)
+        val tournaments = gameService.listTournaments(account)
         model.put("status", status)
         model.put("account", account)
         model.put("tournaments", tournaments)
@@ -86,7 +84,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     @RequestMapping("/web/create", method = arrayOf(RequestMethod.GET))
     internal fun create(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
-        val tournaments = service.listTournaments(account)
+        val tournaments = gameService.listTournaments(account)
         model.put("account", account)
         model.put("tournaments", tournaments)
         return account
@@ -96,7 +94,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     @RequestMapping("/games/add", method = arrayOf(RequestMethod.POST))
     @ResponseBody
     internal fun addGame(authentication: Authentication, @RequestBody game: Game): Game {
-        return service.addGame(authentication.name, Game.withCollectionTimeIfTimestampIsNotPresent(env, game))
+        return gameService.addGame(authentication.name, Game.withCollectionTimeIfTimestampIsNotPresent(env, game))
     }
 
     @ApiOperation(value = "Stores a new game into the system with simpler syntax")
@@ -105,14 +103,14 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     internal fun addSimpleGame(authentication: Authentication,
                                @RequestBody game: SimpleGame): Game {
         val createdGame = Game.simpleGame(game)
-        return service.addGame(authentication.name, Game.withCollectionTimeIfTimestampIsNotPresent(env, createdGame))
+        return gameService.addGame(authentication.name, Game.withCollectionTimeIfTimestampIsNotPresent(env, createdGame))
     }
 
     @ApiOperation(value = "List all the games for a given account")
     @RequestMapping("/games/list", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun listGames(authentication: Authentication): List<Game> {
-        return service.listGames(authentication.name)
+        return gameService.listGames(authentication.name)
     }
 
     @ApiOperation(value = "Upload a full tournament with the format idx;first;second;third;fourth")
@@ -133,7 +131,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
         games.forEach { game ->
             run {
                 val gameToCreate = Game.playerOrderedListToGame(tournament, game.second)
-                service.addGame(authentication.name, Game.withTimestamp(env.getCurrentTimeInMillis() + game.first, gameToCreate))
+                gameService.addGame(authentication.name, Game.withTimestamp(env.getCurrentTimeInMillis() + game.first, gameToCreate))
                 addedGames += 1
             }
         }
@@ -153,7 +151,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
 
-        val responseHelper = SlackResponseHelper(slackAsyncExecutorProvider.executorFor(responseUrl))
+        val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
         if (env.getEnv()["token:$teamDomain"] == null) {
             return responseHelper.asJson()
@@ -163,13 +161,13 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
-                    AddGame(responseHelper, env, service, asyncService, teamDomain, channelName),
+                    AddGame(responseHelper, env, gameService, asyncService, teamDomain, channelName),
                     PrintElo(responseHelper, asyncService, teamDomain, channelName),
                     Ping(responseHelper, asyncService, teamDomain, channelName),
                     PrintPlayerElo(responseHelper, asyncService, teamDomain, channelName, userName),
-                    PrintGames(responseHelper, service, teamDomain, channelName),
-                    DeleteGame(responseHelper, service, teamDomain, channelName),
-                    MatchUp(responseHelper, service, teamDomain, channelName, userName)
+                    PrintGames(responseHelper, gameService, teamDomain, channelName),
+                    DeleteGame(responseHelper, gameService, teamDomain, channelName),
+                    MatchUp(responseHelper, gameService, teamDomain, channelName, userName)
             )
 
             try {
@@ -208,12 +206,19 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
 
     private fun isSlackSignatureValid(slackSignature: String, slackTimestamp: String, body: String): Boolean {
         val charset = Charset.defaultCharset()
-        val slackSecret = env.getEnv().get("slack_secret")
+        val slackSecret = env.getEnv()[EnvProvider.SLACK_SECRET]
         val baseString = "v0:$slackTimestamp:$body"
         val signature = Hashing.hmacSha256(slackSecret!!.toByteArray(charset)).hashString(baseString, charset)
         val coded = "v0=" + String(Hex.encode(signature.asBytes()))
 
         return slackSignature.equals(coded, ignoreCase = true)
+    }
+
+    @RequestMapping("/slack/oauth", method = arrayOf(RequestMethod.GET))
+    internal fun slackAuth(
+            @RequestParam(name = "code") code: String): String {
+        slackService.oauth(code)
+        return "index"
     }
 
     @ApiOperation(value = "Ranks the players of a given tournament")
@@ -238,13 +243,13 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     }
 
     private fun tournamentStatus(account: String, tournament: String, algorithm: String): TournamentStatus {
-        val scores = service.computeTournamentMemberScores(
+        val scores = gameService.computeTournamentMemberScores(
                 account = account,
                 tournament = tournament,
                 alg = Algorithm.valueOf(algorithm.toUpperCase())
         )
 
-        val metrics = service.computeTournamentMemberMetrics(
+        val metrics = gameService.computeTournamentMemberMetrics(
                 account = account,
                 tournament = tournament
         )
@@ -260,14 +265,14 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     }
 
     private fun playerStatus(account: String, tournament: String, player: String, algorithm: String): PlayerStatus {
-        val evolution = service.computeTournamentMemberScoreEvolution(
+        val evolution = gameService.computeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
                 player = listOf(player),
                 alg = Algorithm.valueOf(algorithm.toUpperCase())
         )
 
-        val metrics = service.computeTournamentMemberMetrics(
+        val metrics = gameService.computeTournamentMemberMetrics(
                 account = account,
                 tournament = tournament
         ).filter { metric -> metric.member.equals(player) }
@@ -280,7 +285,7 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
     @ResponseBody
     internal fun listEntries(authentication: Authentication,
                              @PathVariable("tournament") tournament: String): List<String> {
-        return service.listEntries(account = authentication.name, tournament = tournament)
+        return gameService.listEntries(account = authentication.name, tournament = tournament)
                 .map { e -> DateTimeFormatter.ISO_INSTANT.format(e.first) }
     }
 
@@ -291,6 +296,6 @@ class Topscores(private val env: EnvProvider, private val slackAsyncExecutorProv
                              @PathVariable("tournament") tournament: String,
                              @RequestBody createdAt: String): Boolean {
         val instant = Instant.from(DateTimeFormatter.ISO_INSTANT.parse(createdAt))
-        return service.deleteEntry(account = authentication.name, tournament = tournament, createdAt = instant)
+        return gameService.deleteEntry(account = authentication.name, tournament = tournament, createdAt = instant)
     }
 }
