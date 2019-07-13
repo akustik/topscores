@@ -4,6 +4,9 @@ start-local:
 show-local-tables:
 	psql -c "\dt"
 
+load-dump-locally:
+	pg_restore -Ocd guillemmercadaldiaz latest.dump
+
 prod-db:
 	heroku pg:psql
 
