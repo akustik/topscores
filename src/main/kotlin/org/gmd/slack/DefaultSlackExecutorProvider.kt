@@ -44,7 +44,6 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
 
             val template = RestTemplate()
             val entity = template.getForEntity(builder.toUriString(), String::class.java)
-            logger.info("Obtained oauth response as ${entity.body}")
             ObjectMapper().readValue(entity.body, SlackTeamAuth::class.java)
         }
     }
