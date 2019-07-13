@@ -3,19 +3,19 @@ package org.gmd.slack
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 
-class SlackTeamAuth {
+class SlackTeamAuth() {
 
     var ok: Boolean? = false
     @JsonProperty("access_token")
-    var accessToken: String
-    var scope: String
+    lateinit var accessToken: String
+    lateinit var scope: String
     @JsonProperty("team_id")
-    var teamId: String
+    lateinit var teamId: String
 
     constructor(ok: Boolean,
                 accessToken: String,
                 scope: String,
-                teamId: String) {
+                teamId: String): this() {
         this.ok = ok
         this.accessToken = accessToken
         this.scope = scope
