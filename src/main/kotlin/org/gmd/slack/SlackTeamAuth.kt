@@ -25,5 +25,9 @@ class SlackTeamAuth() {
     fun toJsonBytes(): ByteArray {
         return ObjectMapper().writeValueAsBytes(this)
     }
+
+    override fun toString(): String {
+        return "SlackTeamAuth(ok=$ok, accessToken='$accessToken', scope='$scope', teamId='$teamId')"
+    }
 }
 
