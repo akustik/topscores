@@ -9,6 +9,9 @@
 <body>
 <nav class="navbar navbar-default navbar-static-top navbar-inverse" th:fragment="header">
     <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Topscores</a>
+        </div>
         <ul class="nav navbar-nav">
             <li th:classappend="${#httpServletRequest.getRequestURI() == '/' ? 'active':''}">
                 <a href="/"><span class="glyphicon glyphicon-home"></span> <span th:text="${account}"></span></a>
@@ -26,17 +29,17 @@
                 </a>
             </li>
         </ul>
-        <ul class="nav navbar-nav">
-            <a th:href="@{https://slack.com/oauth/authorize?client_id=2152042003.671478895824&amp;scope=commands&amp;team=${account}}">
-                <img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" 
-                     srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"/>
-            </a>
-        </ul>
         <ul class="nav navbar-nav navbar-right">
             <li class="navbar-right">
                 <a href="/swagger-ui.html"><span class="glyphicon glyphicon-book"></span> API Documentation</a>
             </li>
         </ul>
+        <div class="navbar-btn navbar-right">
+            <a th:href="@{https://slack.com/oauth/authorize?client_id=2152042003.671478895824&amp;scope=commands&amp;team=${account}}">
+                <img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png"
+                     srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"/>
+            </a>
+        </div>
     </div>
 </nav>
 </body>
