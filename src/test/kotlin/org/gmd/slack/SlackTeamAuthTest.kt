@@ -5,22 +5,26 @@ import org.junit.Assert
 import org.junit.Test
 
 class SlackTeamAuthTest {
-    
+
     private val example = """
-        {
-            "ok": true,
-            "access_token": "xoxp-1111827399-16111519414-20367011469-5f89a31i07",
-            "scope": "identity.basic",
-            "team_id": "T0G9PQBBK"
-        }
-        """
+    {
+        "access_token": "fake",
+        "ok": true,
+        "scope": "identify,commands",
+        "team_id": "EFDG",
+        "team_name": "patxanga",
+        "user_id": "ABCD"
+    }        
+    """
 
     @Test
-    fun shouldDeserialize() {   
+    fun shouldDeserialize() {
         val o = ObjectMapper().readValue(example, SlackTeamAuth::class.java)
         Assert.assertEquals(true, o.ok)
-        Assert.assertEquals("identity.basic", o.scope)
-        Assert.assertEquals("xoxp-1111827399-16111519414-20367011469-5f89a31i07", o.accessToken)
-        Assert.assertEquals("T0G9PQBBK", o.teamId)
+        Assert.assertEquals("identify,commands", o.scope)
+        Assert.assertEquals("fake", o.accessToken)
+        Assert.assertEquals("EFDG", o.teamId)
+        Assert.assertEquals("patxanga", o.teamName)
+        Assert.assertEquals("ABCD", o.userId)
     }
 }

@@ -157,7 +157,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             return responseHelper.asJson()
         }
 
-        val bypassSecret = env.getEnv()["bypass_slack_secret"]?.equals("true") ?: false
+        val bypassSecret = env.getEnv()[EnvProvider.BYPASS_SLACK_SIGNING_SECRET]?.equals("true") ?: false
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
 
             val cmd = Leaderboard().subcommands(
