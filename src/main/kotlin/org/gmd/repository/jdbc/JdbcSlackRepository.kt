@@ -15,17 +15,17 @@ open class JdbcSlackRepository : SlackRepository {
     override fun storeAuth(auth: SlackTeamAuth) {
         assert(auth.ok!!) { "Authentication failed" }
         val tableName = withTable()
-        jdbcTemplate.update("INSERT INTO $tableName(team_id, content) VALUES (?,?)", auth.teamId, auth.toJsonBytes())
+        jdbcTemplate.update("INSERT INTO $tableName(team_name, content) VALUES (?,?)", auth.teamName, auth.toJsonBytes())
     }
 
-    override fun getAuth(teamId: String): SlackTeamAuth {
+    override fun getAuth(teamName: String): SlackTeamAuth {
         TODO("not implemented")
     }
 
     private fun withTable(): String {
         val tableName = "slack_auth"
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS $tableName " +
-                "(team_id TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), content bytea NOT NULL, PRIMARY KEY (team_id, created_at))")
+                "(team_name TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), content bytea NOT NULL, PRIMARY KEY (team_name, created_at))")
         return tableName
     }
 }

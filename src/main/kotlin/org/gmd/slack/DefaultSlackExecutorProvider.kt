@@ -43,8 +43,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
                     .queryParam("client_secret", clientSecret)
 
             val template = RestTemplate()
-            val entity = template.getForEntity(builder.toUriString(), String::class.java)
-            ObjectMapper().readValue(entity.body, SlackTeamAuth::class.java)
+            template.getForObject(builder.toUriString(), SlackTeamAuth::class.java)
         }
     }
 }

@@ -6,6 +6,6 @@ interface SlackRepository {
 
     fun storeAuth(auth: SlackTeamAuth)
 
-    fun getAuth(teamId: String): SlackTeamAuth
+    fun getAuth(teamName: String): SlackTeamAuth
 
 }
