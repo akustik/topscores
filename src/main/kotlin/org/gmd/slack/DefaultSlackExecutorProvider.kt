@@ -1,5 +1,6 @@
 package org.gmd.slack
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpEntity
@@ -42,9 +43,9 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
                     .queryParam("client_secret", clientSecret)
 
             val template = RestTemplate()
-            val response = template.getForObject(builder.toUriString(), SlackTeamAuth::class.java)
-            logger.info("Obtained oauth response as $response")
-            response
+            val entity = template.getForEntity(builder.toUriString(), String::class.java)
+            logger.info("Obtained oauth response as ${entity.body}")
+            ObjectMapper().readValue(entity.body, SlackTeamAuth::class.java)
         }
     }
 }
