@@ -43,7 +43,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
-        withBaseData(account, model)
+        withCommonWeb(account, model)
         withLastGames(account, model)
         withTournamentList(account, model)
         return "index"
@@ -57,7 +57,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         model["tournaments"] = gameService.listTournaments(account)
     }
 
-    private fun withBaseData(account: String, model: MutableMap<String, Any>) {
+    private fun withCommonWeb(account: String, model: MutableMap<String, Any>) {
         model["account"] = account
         model["slack_client_id"] = env.getEnv().getValue(EnvProvider.SLACK_CLIENT_ID)
     }
@@ -68,7 +68,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                             @PathVariable("alg") alg: String,
                             model: MutableMap<String, Any>): String {
         val account = authentication.name
-        withBaseData(account, model)
+        withCommonWeb(account, model)
         withTournamentList(account, model)
         withSelectedTournament(tournament, model)
         withStatus(tournamentStatus(account, tournament, alg), model)
@@ -90,7 +90,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                             @PathVariable("alg") alg: String,
                             model: MutableMap<String, Any>): String {
         val account = authentication.name
-        withBaseData(account, model)
+        withCommonWeb(account, model)
         withTournamentList(account, model)
         withStatus(playerStatus(account, tournament, player, alg), model)
         return "player"
@@ -99,7 +99,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
     @RequestMapping("/web/create", method = arrayOf(RequestMethod.GET))
     internal fun create(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
-        withBaseData(account, model)
+        withCommonWeb(account, model)
         withTournamentList(account, model)
         return account
     }
@@ -238,7 +238,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val account = authentication.name
         withLastGames(account, model)
         withTournamentList(account, model)
-        withBaseData(account, model)
+        withCommonWeb(account, model)
         return "index"
     }
 
