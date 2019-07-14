@@ -43,12 +43,23 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
     @RequestMapping("/", method = arrayOf(RequestMethod.GET))
     internal fun index(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
-        val games = gameService.listGames(account).sortedByDescending { it.timestamp }.take(5)
-        val tournaments = gameService.listTournaments(account)
-        model.put("games", games)
-        model.put("account", account)
-        model.put("tournaments", tournaments)
+        withBaseData(account, model)
+        withLastGames(account, model)
+        withTournamentList(account, model)
         return "index"
+    }
+
+    private fun withLastGames(account: String, model: MutableMap<String, Any>) {
+        model["games"] = gameService.listGames(account).sortedByDescending { it.timestamp }.take(5)
+    }
+
+    private fun withTournamentList(account: String, model: MutableMap<String, Any>) {
+        model["tournaments"] = gameService.listTournaments(account)
+    }
+
+    private fun withBaseData(account: String, model: MutableMap<String, Any>) {
+        model["account"] = account
+        model["slack_client_id"] = env.getEnv().getValue(EnvProvider.SLACK_CLIENT_ID)
     }
 
     @RequestMapping("/web/status/{tournament}/{alg}", method = arrayOf(RequestMethod.GET))
@@ -57,13 +68,19 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                             @PathVariable("alg") alg: String,
                             model: MutableMap<String, Any>): String {
         val account = authentication.name
-        val status = tournamentStatus(account, tournament, alg)
-        val tournaments = gameService.listTournaments(account)
-        model.put("status", status)
-        model.put("account", account)
-        model.put("tournaments", tournaments)
-        model.put("tournament", tournament)
+        withBaseData(account, model)
+        withTournamentList(account, model)
+        withSelectedTournament(tournament, model)
+        withStatus(tournamentStatus(account, tournament, alg), model)
         return "tournament"
+    }
+
+    private fun withSelectedTournament(tournament: String, model: MutableMap<String, Any>) {
+        model["tournament"] = tournament
+    }
+
+    private fun withStatus(status: Any, model: MutableMap<String, Any>) {
+        model["status"] = status
     }
 
     @RequestMapping("/web/status/{tournament}/player/{player}/{alg}", method = arrayOf(RequestMethod.GET))
@@ -73,20 +90,17 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                             @PathVariable("alg") alg: String,
                             model: MutableMap<String, Any>): String {
         val account = authentication.name
-        val status = playerStatus(account, tournament, player, alg)
-        val tournaments = gameService.listTournaments(account)
-        model.put("status", status)
-        model.put("account", account)
-        model.put("tournaments", tournaments)
+        withBaseData(account, model)
+        withTournamentList(account, model)
+        withStatus(playerStatus(account, tournament, player, alg), model)
         return "player"
     }
 
     @RequestMapping("/web/create", method = arrayOf(RequestMethod.GET))
     internal fun create(authentication: Authentication, model: MutableMap<String, Any>): String {
         val account = authentication.name
-        val tournaments = gameService.listTournaments(account)
-        model.put("account", account)
-        model.put("tournaments", tournaments)
+        withBaseData(account, model)
+        withTournamentList(account, model)
         return account
     }
 
@@ -214,10 +228,17 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return slackSignature.equals(coded, ignoreCase = true)
     }
 
-    @RequestMapping("/slack/oauth", method = arrayOf(RequestMethod.GET))
+    @RequestMapping("/web/slack/oauth", method = arrayOf(RequestMethod.GET))
     internal fun slackAuth(
-            @RequestParam(name = "code") code: String): String {
+            @RequestParam(name = "code") code: String,
+            authentication: Authentication,
+            model: MutableMap<String, Any>): String {
         slackService.oauth(code)
+
+        val account = authentication.name
+        withLastGames(account, model)
+        withTournamentList(account, model)
+        withBaseData(account, model)
         return "index"
     }
 
