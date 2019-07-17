@@ -1,5 +1,6 @@
 package org.gmd
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.ajalt.clikt.core.*
 import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
@@ -250,9 +251,14 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     @RequestMapping("/slack/event", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun slackEvent(@RequestBody body: String): String{
+    internal fun slackEvent(@RequestBody body: String): String {
         logger.info("event: $body")
-        return "ok"
+        val tree = ObjectMapper().readTree(body)
+        return if(tree.get("challenge") != null) {
+            tree.get("challenge").asText()
+        } else {
+            "ok"
+        }
     }
 
     @ApiOperation(value = "Ranks the players of a given tournament")
