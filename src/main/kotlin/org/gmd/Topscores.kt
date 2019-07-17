@@ -17,6 +17,8 @@ import org.gmd.service.GameService
 import org.gmd.service.SlackService
 import org.gmd.slack.SlackExecutorProvider
 import org.gmd.slack.SlackResponseHelper
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.security.core.Authentication
@@ -30,6 +32,10 @@ import java.time.format.DateTimeFormatter
 @Api(value = "Main API", description = "Game & rating operations")
 @Controller
 class Topscores(private val env: EnvProvider, private val slackExecutorProvider: SlackExecutorProvider) {
+
+    companion object {
+        var logger: Logger = LoggerFactory.getLogger(Topscores::class.java)
+    }
 
     @Autowired
     private lateinit var gameService: GameService
@@ -240,6 +246,13 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         withTournamentList(account, model)
         withCommonWeb(account, model)
         return "index"
+    }
+
+    @RequestMapping("/slack/event", method = arrayOf(RequestMethod.POST))
+    @ResponseBody
+    internal fun slackEvent(@RequestBody body: String): String{
+        logger.info("event: $body")
+        return "ok"
     }
 
     @ApiOperation(value = "Ranks the players of a given tournament")
