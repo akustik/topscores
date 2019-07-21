@@ -261,6 +261,18 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         }
     }
 
+    @RequestMapping("/slack/interactive", method = arrayOf(RequestMethod.POST))
+    @ResponseBody
+    internal fun slackInteractive(@RequestBody body: String): String {
+        logger.info("interactive: $body")
+        val tree = ObjectMapper().readTree(body)
+        return if(tree.get("challenge") != null) {
+            tree.get("challenge").asText()
+        } else {
+            "ok"
+        }
+    }
+    
     @ApiOperation(value = "Ranks the players of a given tournament")
     @RequestMapping("/scores/{tournament}/players", method = arrayOf(RequestMethod.GET))
     @ResponseBody
