@@ -68,17 +68,17 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
         val template = RestTemplate()
         val entity = HttpEntity<String>(headers)
 
-        val builder = UriComponentsBuilder
+        var builder = UriComponentsBuilder
                 .fromHttpUrl("$url/$method")
                 .queryParam("token", accessToken)
 
 
         if (!cursor.isNullOrEmpty()) {
-            builder.queryParam("cursor", cursor!!)
+            builder = builder.queryParam("cursor", cursor!!)
         }
 
         val response = verified(template.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java))
-        logger.info("Obtained response, next page ${response.first}")
+        logger.info("Obtained response, next page ${response.second.responseMetadata}")
 
         val webApiResponse = response.second
 
