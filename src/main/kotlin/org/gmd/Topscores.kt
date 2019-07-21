@@ -213,7 +213,13 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val signature = Hashing.hmacSha256(slackSecret!!.toByteArray(charset)).hashString(baseString, charset)
         val coded = "v0=" + String(Hex.encode(signature.asBytes()))
 
-        return slackSignature.equals(coded, ignoreCase = true)
+        val isValid = slackSignature.equals(coded, ignoreCase = true)
+        
+        if(!isValid) {
+            logger.error("Invalid signature for request with body $body")
+        }
+        
+        return isValid
     }
 
     private fun executeSlackCommand(teamDomain: String, channelName: String, userName: String,
