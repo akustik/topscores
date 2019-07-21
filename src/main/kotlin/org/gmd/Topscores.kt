@@ -170,7 +170,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             @RequestParam(name = "channel_name") channelName: String,
             @RequestBody body: String,
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
-            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String,
+            @RequestParam(name = "trigger_id", required = false) triggerId: String): String {
 
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
@@ -188,7 +189,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                     PrintPlayerElo(responseHelper, asyncService, teamDomain, channelName, userName),
                     PrintGames(responseHelper, gameService, teamDomain, channelName),
                     DeleteGame(responseHelper, gameService, teamDomain, channelName),
-                    MatchUp(responseHelper, gameService, teamDomain, channelName, userName)
+                    MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
+                    Dialog(responseHelper, triggerId, teamDomain, channelName)
             )
 
             try {
@@ -263,7 +265,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     @RequestMapping("/slack/interactive", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun slackInteractive(@RequestBody body: String): String {
+    internal fun slackInteractive(@RequestParam allParams: Map<String,String>,
+                                  @RequestBody body: String): String {
         logger.info("interactive: $body")
         val tree = ObjectMapper().readTree(body)
         return if(tree.get("challenge") != null) {
