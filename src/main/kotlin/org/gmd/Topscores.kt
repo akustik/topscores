@@ -189,6 +189,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     private fun withSignatureValidation(teamDomain: String, slackSignature: String, slackTimestamp: String,
                                         responseUrl: String, body: String, block: (SlackResponseHelper) -> Unit): SlackResponseHelper {
+        
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
         if (env.getEnv()["token:$teamDomain"] == null) {
@@ -308,7 +309,15 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val submission = parsedPayload["submission"]
         val responseUrl = parsedPayload["response_url"].asText()
 
-        val players = Dialog.playerList(callbackId = callbackId, submission = submission).joinToString(separator = " ")
+        val allUsers = slackService.getWebApi(teamName = teamDomain, method = "users.list")
+                .flatMap { r -> ObjectMapper().readTree(r)["members"].map { it["id"].asText() to it["name"].asText() } }
+                .toMap()
+
+
+        val players = Dialog.playerList(callbackId = callbackId, submission = submission)
+                .joinToString(separator = " ")
+                { allUsers.getOrDefault(it, "undefined") }
+
         val text = "addgame $players"
 
         logger.info("command to run: $text")

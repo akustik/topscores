@@ -1,21 +1,13 @@
 package org.gmd.slack
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
+import org.springframework.http.*
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 
+
 @Component
 class DefaultSlackExecutorProvider : SlackExecutorProvider {
-
-    companion object {
-        var logger: Logger = LoggerFactory.getLogger(DefaultSlackExecutorProvider::class.java)
-    }
 
     override fun asyncResponseExecutorFor(responseUrl: String): (SlackResponse) -> Unit = { response ->
         run {
@@ -25,11 +17,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
             headers.contentType = MediaType.APPLICATION_JSON_UTF8
 
             val request = HttpEntity(responseBody, headers)
-            val responseEntity = template.postForEntity(responseUrl, request, String::class.java)
-
-            if (responseEntity.statusCode != HttpStatus.OK) {
-                logger.error("Unable to deliver async response {} with response {}", response.asJson(), responseEntity)
-            }
+            verified(template.postForEntity(responseUrl, request, String::class.java))
         }
     }
 
@@ -48,6 +36,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
 
     override fun webApiExecutor(url: String): (method: String, jsonBody: String, accessToken: String) -> String = { method: String, jsonBody: String, accessToken: String ->
         run {
+
             val template = RestTemplate()
             val headers = HttpHeaders()
             headers.contentType = MediaType.APPLICATION_JSON_UTF8
@@ -55,15 +44,57 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
             headers["Authorization"] = "Bearer $accessToken"
 
             val request = HttpEntity(jsonBody, headers)
-            val responseEntity = template.postForEntity("$url/$method", request, String::class.java)
+            val response = verified(template.postForEntity("$url/$method", request, String::class.java))
 
-            if (responseEntity.statusCode != HttpStatus.OK) {
-                logger.error("Unable to execute Web API call {} with response {}", jsonBody, responseEntity)
-            } else {
-                logger.info("Executed Web API call for $method with response {}", responseEntity.body!!)
-            }
-
-            responseEntity.body!!
+            response.first
         }
+    }
+
+    override fun webApiPaginatedExecutor(url: String): (method: String, accessToken: String) -> List<String> = { method: String, accessToken: String ->
+        run {
+            doPaginateWebApi(url, method, accessToken, null, emptyList())
+        }
+    }
+
+    private tailrec fun doPaginateWebApi(url: String, method: String, accessToken: String, cursor: String?, acc: List<String>): List<String> {
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        val template = RestTemplate()
+        val entity = HttpEntity<String>(headers)
+        val params = HashMap<String, String>()
+        params["token"] = accessToken
+        if (!cursor.isNullOrEmpty()) {
+            params["cursor"] = cursor!!
+        }
+
+        val response = verified(template.exchange(
+                "$url/$method", HttpMethod.GET, entity, String::class.java, params))
+
+        val webApiResponse = response.second
+
+        return if (webApiResponse.responseMetadata == null || webApiResponse.responseMetadata!!.nextCursor.isNullOrEmpty()) {
+            acc + response.first
+        } else {
+            doPaginateWebApi(
+                    url, method,
+                    webApiResponse.responseMetadata!!.nextCursor!!,
+                    accessToken,
+                    acc + response.first)
+        }
+
+    }
+
+    private fun verified(responseEntity: ResponseEntity<String>): Pair<String, SlackWebApiResponse> {
+        if (responseEntity.statusCode != HttpStatus.OK) {
+            throw IllegalStateException("Unable to execute slack request with response $responseEntity")
+        }
+
+        val webApiResponse = SlackWebApiResponse.fromJson(responseEntity.body)
+
+        if (!webApiResponse.ok) {
+            throw IllegalStateException("The method slack request failed with response $webApiResponse")
+        }
+
+        return Pair(responseEntity.body, webApiResponse)
     }
 }
