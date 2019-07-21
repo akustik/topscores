@@ -1,9 +1,9 @@
 package org.gmd.model
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.ApiModelProperty
 import org.gmd.EnvProvider
 import org.gmd.form.SimpleGame
+import org.gmd.util.JsonUtils.Companion.JSON
 
 
 class Game() {
@@ -34,7 +34,7 @@ class Game() {
     fun partiesDescendingByScore(): List<Party> = parties.sortedByDescending { p -> p.score }
 
     fun toJsonBytes(): ByteArray {
-        return ObjectMapper().writeValueAsBytes(this)
+        return JSON.writeValueAsBytes(this)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -64,7 +64,7 @@ class Game() {
 
     companion object {
         fun fromJsonBytes(bytes: ByteArray): Game {
-            return ObjectMapper().readValue(bytes, Game::class.java)
+            return JSON.readValue(bytes, Game::class.java)
         }
 
         fun playerOrderedListToGame(tournament: String, players: List<String>): Game {
@@ -84,7 +84,7 @@ class Game() {
                     timestamp = null
             )
         }
-        
+
         fun simpleGame(game: SimpleGame): Game {
             val parties = game.teams.map { t ->
                 Party(

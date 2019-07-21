@@ -1,6 +1,5 @@
 package org.gmd
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
 import org.gmd.repository.GameRepository
 import org.gmd.repository.GameRepositoryForTesting
@@ -8,6 +7,7 @@ import org.gmd.service.*
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.gmd.slack.SlackExecutorProviderForTesting
+import org.gmd.util.JsonUtils.Companion.JSON
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.junit.Assert
@@ -71,7 +71,7 @@ class TopscoresTest {
         open fun gameService(): GameService {
             return GameServiceImpl(repository, AdderMemberRatingAlgorithm(), ELOMemberRatingAlgorithm())
         }
-        
+
         @Bean
         open fun slackService(): SlackService {
             return SlackServiceForTesting()
@@ -261,7 +261,7 @@ class TimestampExists : BaseMatcher<String>() {
 
     override fun matches(item: Any?): Boolean {
         if (item is String) {
-            return ObjectMapper().readValue(item, Game::class.java).timestamp!! > 0
+            return JSON.readValue(item, Game::class.java).timestamp!! > 0
         }
 
         return false

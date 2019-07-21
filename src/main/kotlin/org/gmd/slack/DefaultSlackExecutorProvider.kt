@@ -1,5 +1,7 @@
 package org.gmd.slack
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.*
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
@@ -8,6 +10,10 @@ import org.springframework.web.util.UriComponentsBuilder
 
 @Component
 class DefaultSlackExecutorProvider : SlackExecutorProvider {
+
+    companion object {
+        val logger: Logger = LoggerFactory.getLogger(DefaultSlackExecutorProvider::class.java)
+    }
 
     override fun asyncResponseExecutorFor(responseUrl: String): (SlackResponse) -> Unit = { response ->
         run {
@@ -61,14 +67,17 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
         headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
         val template = RestTemplate()
         val entity = HttpEntity<String>(headers)
-        val params = HashMap<String, String>()
-        params["token"] = accessToken
+
+        val builder = UriComponentsBuilder
+                .fromHttpUrl("$url/$method")
+                .queryParam("token", accessToken)
+
+
         if (!cursor.isNullOrEmpty()) {
-            params["cursor"] = cursor!!
+            builder.queryParam("cursor", cursor!!)
         }
 
-        val response = verified(template.exchange(
-                "$url/$method", HttpMethod.GET, entity, String::class.java, params))
+        val response = verified(template.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java))
 
         val webApiResponse = response.second
 
@@ -86,12 +95,14 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
 
     private fun verified(responseEntity: ResponseEntity<String>): Pair<String, SlackWebApiResponse> {
         if (responseEntity.statusCode != HttpStatus.OK) {
-            throw IllegalStateException("Unable to execute slack request with response $responseEntity")
+            logger.error("Unable to execute slack request with response $responseEntity")
+            throw IllegalStateException("Unable to execute slack request with response ${responseEntity.statusCode}")
         }
 
         val webApiResponse = SlackWebApiResponse.fromJson(responseEntity.body)
 
         if (!webApiResponse.ok) {
+            logger.error("The method slack request failed with response $responseEntity")
             throw IllegalStateException("The method slack request failed with response $webApiResponse")
         }
 
