@@ -12,7 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder
 
 @Component
 class DefaultSlackExecutorProvider : SlackExecutorProvider {
-    
+
     companion object {
         var logger: Logger = LoggerFactory.getLogger(DefaultSlackExecutorProvider::class.java)
     }
@@ -22,7 +22,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
             val responseBody = response.asJson()
             val template = RestTemplate()
             val headers = HttpHeaders()
-            headers.contentType = MediaType.APPLICATION_JSON
+            headers.contentType = MediaType.APPLICATION_JSON_UTF8
 
             val request = HttpEntity(responseBody, headers)
             val responseEntity = template.postForEntity(responseUrl, request, String::class.java)
@@ -50,7 +50,8 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
         run {
             val template = RestTemplate()
             val headers = HttpHeaders()
-            headers.contentType = MediaType.APPLICATION_JSON
+            headers.contentType = MediaType.APPLICATION_JSON_UTF8
+
             headers["Authorization"] = "Bearer $accessToken"
 
             val request = HttpEntity(jsonBody, headers)
@@ -61,7 +62,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
             } else {
                 logger.info("Executed Web API call for $method with response {}", responseEntity.body!!)
             }
-            
+
             responseEntity.body!!
         }
     }
