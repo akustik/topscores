@@ -184,15 +184,15 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                 block = { responseHelper ->
                     executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
                             triggerId = triggerId, text = text, responseHelper = responseHelper)
-                })
+                }).asJson()
     }
 
     private fun withSignatureValidation(teamDomain: String, slackSignature: String, slackTimestamp: String,
-                                        responseUrl: String, body: String, block: (SlackResponseHelper) -> Unit): String {
+                                        responseUrl: String, body: String, block: (SlackResponseHelper) -> Unit): SlackResponseHelper {
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
         if (env.getEnv()["token:$teamDomain"] == null) {
-            return responseHelper.asJson()
+            return responseHelper
         }
 
         val bypassSecret = env.getEnv()[EnvProvider.BYPASS_SLACK_SIGNING_SECRET]?.equals("true")
@@ -203,7 +203,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             responseHelper.internalMessage("Invalid signature. Please, review the application secret.")
         }
 
-        return responseHelper.asJson()
+        return responseHelper
     }
 
     private fun isSlackSignatureValid(slackSignature: String, slackTimestamp: String, body: String): Boolean {
@@ -214,11 +214,11 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val coded = "v0=" + String(Hex.encode(signature.asBytes()))
 
         val isValid = slackSignature.equals(coded, ignoreCase = true)
-        
-        if(!isValid) {
+
+        if (!isValid) {
             logger.error("Invalid signature for request with body $body")
         }
-        
+
         return isValid
     }
 
@@ -295,7 +295,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
     internal fun slackInteractive(@RequestParam payload: String,
                                   @RequestBody body: String,
                                   @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
-                                  @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+                                  @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String) {
 
         val decodedPayload = URLDecoder.decode(payload, "UTF-8")
         val parsedPayload = ObjectMapper().readTree(decodedPayload)
@@ -313,7 +313,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
         logger.info("command to run: $text")
 
-        return withSignatureValidation(
+        withSignatureValidation(
                 teamDomain = teamDomain,
                 slackSignature = slackSignature,
                 slackTimestamp = slackTimestamp,
@@ -322,7 +322,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                 block = { responseHelper ->
                     executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
                             triggerId = null, text = text, responseHelper = responseHelper)
-                })
+                }).currentResponseAsyncMessage()
     }
 
     @ApiOperation(value = "Ranks the players of a given tournament")

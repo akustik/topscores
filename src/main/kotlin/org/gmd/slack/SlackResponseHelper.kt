@@ -28,6 +28,10 @@ class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
     fun asyncMessage(text: String, attachments: List<String> = emptyList(), silent: Boolean = true) {
         asyncExecutor(responseOf(text, attachments, silent))
     }
+    
+    fun currentResponseAsyncMessage() {
+        asyncExecutor(slackResponse)
+    }
 
     private fun responseOf(text: String, attachments: List<String>, silent: Boolean): SlackResponse {
         return SlackResponse(
