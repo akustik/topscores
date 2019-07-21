@@ -78,6 +78,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
         }
 
         val response = verified(template.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java))
+        logger.info("Obtained response, next page ${response.first}")
 
         val webApiResponse = response.second
 
