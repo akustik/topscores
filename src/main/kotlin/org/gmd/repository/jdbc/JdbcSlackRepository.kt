@@ -15,7 +15,8 @@ open class JdbcSlackRepository : SlackRepository {
     override fun storeAuth(auth: SlackTeamAuth) {
         assert(auth.ok!!) { "Authentication failed" }
         val tableName = withTable()
-        jdbcTemplate.update("INSERT INTO $tableName(team_name, content) VALUES (?,?)", auth.teamName, auth.toJsonBytes())
+        jdbcTemplate.update("INSERT INTO $tableName(team_name, content) VALUES (?,?)", 
+                auth.teamName.toLowerCase(), auth.toJsonBytes())
     }
 
     override fun getAuth(teamName: String): SlackTeamAuth {
@@ -24,7 +25,7 @@ open class JdbcSlackRepository : SlackRepository {
                 """ 
                     SELECT created_at, content from $tableName
                     where team_name = ? order by created_at desc limit 1
-                    """, arrayOf(teamName), SlackAuthRowMapper()).first()!!.second
+                    """, arrayOf(teamName.toLowerCase()), SlackAuthRowMapper()).first()!!.second
     }
 
     private fun withTable(): String {

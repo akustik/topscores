@@ -10,6 +10,6 @@ class SlackAuthRowMapper : RowMapper<Pair<Instant, SlackTeamAuth>> {
         val createdAt = rs!!.getTimestamp("created_at").toInstant()
         val content = rs.getBytes("content")
 
-        return Pair(createdAt, SlackTeamAuth.Companion.fromJsonBytes(content))
+        return Pair(createdAt, SlackTeamAuth.fromJsonBytes(content))
     }
 }

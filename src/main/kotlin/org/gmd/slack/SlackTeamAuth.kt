@@ -31,6 +31,7 @@ class SlackTeamAuth() {
         this.teamId = teamId
         this.teamName = teamName
         this.userId = userId
+        this.bot = bot
     }
 
     fun toJsonBytes(): ByteArray {
