@@ -9,7 +9,7 @@ import org.gmd.slack.SlackResponseHelper
 
 class Dialog(
         val response: SlackResponseHelper,
-        val triggerId: String,
+        val triggerId: String?,
         val account: String, 
         val tournament: String) 
     : CliktCommand(help = "Open an interactive dialog"), SlackCommand {

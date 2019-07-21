@@ -171,7 +171,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             @RequestBody body: String,
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String,
-            @RequestParam(name = "trigger_id", required = false) triggerId: String): String {
+            @RequestParam(name = "trigger_id", required = false) triggerId: String?): String {
 
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
