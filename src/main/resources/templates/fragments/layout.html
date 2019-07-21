@@ -16,11 +16,16 @@
             <li th:classappend="${#httpServletRequest.getRequestURI() == '/' ? 'active':''}">
                 <a href="/"><span class="glyphicon glyphicon-home"></span> <span th:text="${account}"></span></a>
             </li>
-            <li th:each="tournament : ${tournaments}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/status/' + tournament + '/elo' ? 'active':''}">
-                <a th:href="@{'/web/status/' + ${tournament} + '/elo'}">
-                    <span class="glyphicon glyphicon-th-list"></span> 
-                    <span th:text="${tournament}"></span>
-                </a>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Tournaments <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li th:each="tournament : ${tournaments}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/status/' + tournament + '/elo' ? 'active':''}">
+                        <a th:href="@{'/web/status/' + ${tournament} + '/elo'}">
+                            <span class="glyphicon glyphicon-th-list"></span>
+                            <span th:text="${tournament}"></span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li>
                 <a th:href="@{'/web/create'}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/create' ? 'active':''}">
