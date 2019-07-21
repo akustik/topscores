@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import java.net.URLDecoder
 import java.nio.charset.Charset
 import java.time.Instant
 import java.time.format.DateTimeFormatter
@@ -35,7 +36,7 @@ import java.time.format.DateTimeFormatter
 class Topscores(private val env: EnvProvider, private val slackExecutorProvider: SlackExecutorProvider) {
 
     companion object {
-        var logger: Logger = LoggerFactory.getLogger(Topscores::class.java)
+        val logger: Logger = LoggerFactory.getLogger(Topscores::class.java)
     }
 
     @Autowired
@@ -179,47 +180,11 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             return responseHelper.asJson()
         }
 
-        val bypassSecret = env.getEnv()[EnvProvider.BYPASS_SLACK_SIGNING_SECRET]?.equals("true") ?: false
+        val bypassSecret = env.getEnv()[EnvProvider.BYPASS_SLACK_SIGNING_SECRET]?.equals("true")
+                ?: false
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
-
-            val cmd = Leaderboard().subcommands(
-                    AddGame(responseHelper, env, gameService, asyncService, teamDomain, channelName),
-                    PrintElo(responseHelper, asyncService, teamDomain, channelName),
-                    Ping(responseHelper, asyncService, teamDomain, channelName),
-                    PrintPlayerElo(responseHelper, asyncService, teamDomain, channelName, userName),
-                    PrintGames(responseHelper, gameService, teamDomain, channelName),
-                    DeleteGame(responseHelper, gameService, teamDomain, channelName),
-                    MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
-                    Dialog(responseHelper, slackService, triggerId, teamDomain, channelName)
-            )
-
-            try {
-
-                val arguments = if (text.isNotEmpty()) {
-                    val cleansedText = text
-                            .replace("\u201C", "\"") //fix quotes
-                            .replace("\u201D", "\"") //fix quotes
-                            .replace("@", "") //remove at
-                    StrTokenizer(cleansedText, ' ', '"').tokenList
-                } else {
-                    emptyList()
-                }
-
-                cmd.parse(arguments)
-
-            } catch (e: PrintHelpMessage) {
-                responseHelper.internalMessage(e.command.getFormattedHelp())
-            } catch (e: PrintMessage) {
-                responseHelper.internalMessage(e.message!!)
-            } catch (e: UsageError) {
-                val message = "Error: " + e.message
-                responseHelper.internalMessage(message)
-            } catch (e: CliktError) {
-                responseHelper.internalMessage(e.message!!)
-            } catch (e: Abort) {
-                responseHelper.internalMessage("Aborted!")
-            }
-
+            executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
+                    triggerId = triggerId, text = text, responseHelper = responseHelper)
         } else {
             responseHelper.internalMessage("Invalid signature. Please, review the application secret.")
         }
@@ -235,6 +200,48 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val coded = "v0=" + String(Hex.encode(signature.asBytes()))
 
         return slackSignature.equals(coded, ignoreCase = true)
+    }
+
+    private fun executeSlackCommand(teamDomain: String, channelName: String, userName: String,
+                                    triggerId: String?, text: String, responseHelper: SlackResponseHelper) {
+        val cmd = Leaderboard().subcommands(
+                AddGame(responseHelper, env, gameService, asyncService, teamDomain, channelName),
+                PrintElo(responseHelper, asyncService, teamDomain, channelName),
+                Ping(responseHelper, asyncService, teamDomain, channelName),
+                PrintPlayerElo(responseHelper, asyncService, teamDomain, channelName, userName),
+                PrintGames(responseHelper, gameService, teamDomain, channelName),
+                DeleteGame(responseHelper, gameService, teamDomain, channelName),
+                MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
+                Dialog(responseHelper, slackService, triggerId, teamDomain, channelName)
+        )
+
+        try {
+
+            val arguments = if (text.isNotEmpty()) {
+                val cleansedText = text
+                        .replace("\u201C", "\"") //fix quotes
+                        .replace("\u201D", "\"") //fix quotes
+                        .replace("@", "") //remove at
+                StrTokenizer(cleansedText, ' ', '"').tokenList
+            } else {
+                emptyList()
+            }
+
+            cmd.parse(arguments)
+
+        } catch (e: PrintHelpMessage) {
+            responseHelper.internalMessage(e.command.getFormattedHelp())
+        } catch (e: PrintMessage) {
+            responseHelper.internalMessage(e.message!!)
+        } catch (e: UsageError) {
+            val message = "Error: " + e.message
+            responseHelper.internalMessage(message)
+        } catch (e: CliktError) {
+            responseHelper.internalMessage(e.message!!)
+        } catch (e: Abort) {
+            responseHelper.internalMessage("Aborted!")
+        }
+
     }
 
     @RequestMapping("/web/slack/oauth", method = arrayOf(RequestMethod.GET))
@@ -256,7 +263,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
     internal fun slackEvent(@RequestBody body: String): String {
         logger.info("event: $body")
         val tree = ObjectMapper().readTree(body)
-        return if(tree.get("challenge") != null) {
+        return if (tree.get("challenge") != null) {
             tree.get("challenge").asText()
         } else {
             "ok"
@@ -265,17 +272,33 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     @RequestMapping("/slack/interactive", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun slackInteractive(@RequestParam allParams: Map<String,String>,
-                                  @RequestBody body: String): String {
-        logger.info("interactive: $body")
-        val tree = ObjectMapper().readTree(body)
-        return if(tree.get("challenge") != null) {
-            tree.get("challenge").asText()
-        } else {
-            "ok"
+    internal fun slackInteractive(@RequestParam payload: String): String {
+        //FIXME: Check incoming token/signature to validate that this request is from slack
+        val decodedPayload = URLDecoder.decode(payload, "UTF-8")
+        val parsedPayload = ObjectMapper().readTree(decodedPayload)
+        logger.info("interactive: $parsedPayload")
+
+        val teamDomain = parsedPayload["team"]["domain"].asText()
+        val channelName = parsedPayload["channel"]["name"].asText()
+        val userName = parsedPayload["user"]["name"].asText()
+        val callbackId = parsedPayload["callback_id"].asText()
+        val submission = parsedPayload["submission"]
+        val responseUrl = parsedPayload["response_url"].asText()
+
+        val players = Dialog.playerList(callbackId = callbackId, submission = submission).joinToString(separator = " ")
+
+        val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
+
+        if (env.getEnv()["token:$teamDomain"] == null) {
+            return responseHelper.asJson()
         }
+
+        executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
+                triggerId = null, text = "addgame $players", responseHelper = responseHelper)
+
+        return responseHelper.asJson()
     }
-    
+
     @ApiOperation(value = "Ranks the players of a given tournament")
     @RequestMapping("/scores/{tournament}/players", method = arrayOf(RequestMethod.GET))
     @ResponseBody
