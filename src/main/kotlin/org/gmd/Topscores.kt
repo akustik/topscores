@@ -1,6 +1,5 @@
 package org.gmd
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.ajalt.clikt.core.*
 import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
@@ -18,6 +17,7 @@ import org.gmd.service.GameService
 import org.gmd.service.SlackService
 import org.gmd.slack.SlackExecutorProvider
 import org.gmd.slack.SlackResponseHelper
+import org.gmd.util.JsonUtils.Companion.JSON
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -189,7 +189,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     private fun withSignatureValidation(teamDomain: String, slackSignature: String, slackTimestamp: String,
                                         responseUrl: String, body: String, block: (SlackResponseHelper) -> Unit): SlackResponseHelper {
-        
+
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
         if (env.getEnv()["token:$teamDomain"] == null) {
@@ -283,7 +283,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
     @ResponseBody
     internal fun slackEvent(@RequestBody body: String): String {
         logger.info("event: $body")
-        val tree = ObjectMapper().readTree(body)
+        val tree = JSON.readTree(body)
         return if (tree.get("challenge") != null) {
             tree.get("challenge").asText()
         } else {
@@ -299,8 +299,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                                   @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String) {
 
         val decodedPayload = URLDecoder.decode(payload, "UTF-8")
-        val parsedPayload = ObjectMapper().readTree(decodedPayload)
-        logger.info("interactive: $parsedPayload")
+        val parsedPayload = JSON.readTree(decodedPayload)
 
         val teamDomain = parsedPayload["team"]["domain"].asText()
         val channelName = parsedPayload["channel"]["name"].asText()
@@ -310,7 +309,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val responseUrl = parsedPayload["response_url"].asText()
 
         val allUsers = slackService.getWebApi(teamName = teamDomain, method = "users.list")
-                .flatMap { r -> ObjectMapper().readTree(r)["members"].map { it["id"].asText() to it["name"].asText() } }
+                .flatMap { r -> JSON.readTree(r)["members"].map { it["id"].asText() to it["name"].asText() } }
                 .toMap()
 
 

@@ -1,13 +1,13 @@
 package org.gmd.slack
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
+import org.gmd.util.JsonUtils.Companion.JSON
 
 class SlackOpenDialog() {
 
     @JsonProperty("trigger_id")
     lateinit var triggerId: String
-    
+
     lateinit var dialog: SlackDialog
 
     constructor(triggerId: String, dialog: SlackDialog) : this() {
@@ -16,7 +16,7 @@ class SlackOpenDialog() {
     }
 
     fun asJson(): String {
-        return ObjectMapper().writeValueAsString(this)
+        return JSON.writeValueAsString(this)
     }
 }
 

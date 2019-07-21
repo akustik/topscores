@@ -1,6 +1,6 @@
 package org.gmd.slack
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import org.gmd.util.JsonUtils.Companion.JSON
 import org.junit.Assert
 import org.junit.Test
 
@@ -19,7 +19,7 @@ class SlackTeamAuthTest {
 
     @Test
     fun shouldDeserialize() {
-        val o = ObjectMapper().readValue(example, SlackTeamAuth::class.java)
+        val o = JSON.readValue(example, SlackTeamAuth::class.java)
         Assert.assertEquals(true, o.ok)
         Assert.assertEquals("identify,commands", o.scope)
         Assert.assertEquals("fake", o.accessToken)

@@ -1,7 +1,7 @@
 package org.gmd.slack
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
+import org.gmd.util.JsonUtils.Companion.JSON_W_UNKNOWN
 
 class SlackWebApiResponse() {
 
@@ -19,7 +19,7 @@ class SlackWebApiResponse() {
 
     companion object {
         fun fromJson(json: String): SlackWebApiResponse {
-            return ObjectMapper().readValue(json, SlackWebApiResponse::class.java)
+            return JSON_W_UNKNOWN.readValue(json, SlackWebApiResponse::class.java)
         }
     }
 

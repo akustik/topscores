@@ -1,7 +1,7 @@
 package org.gmd.slack
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ObjectMapper
+import org.gmd.util.JsonUtils.Companion.JSON
 
 class SlackResponse(val text: String = "Something went wrong!",
                     @get:JsonProperty("response_type")
@@ -14,7 +14,7 @@ class SlackResponse(val text: String = "Something went wrong!",
     }
 
     fun asJson(): String {
-        return ObjectMapper().writeValueAsString(this)
+        return JSON.writeValueAsString(this)
     }
 }
 
