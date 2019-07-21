@@ -190,7 +190,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                     PrintGames(responseHelper, gameService, teamDomain, channelName),
                     DeleteGame(responseHelper, gameService, teamDomain, channelName),
                     MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
-                    Dialog(responseHelper, triggerId, teamDomain, channelName)
+                    Dialog(responseHelper, slackService, triggerId, teamDomain, channelName)
             )
 
             try {

@@ -19,7 +19,12 @@ open class JdbcSlackRepository : SlackRepository {
     }
 
     override fun getAuth(teamName: String): SlackTeamAuth {
-        TODO("not implemented")
+        val tableName = withTable()
+        return jdbcTemplate.query(
+                """ 
+                    SELECT created_at, content from $tableName
+                    where team_name = ? order by created_at desc limit 1
+                    """, arrayOf(teamName), SlackAuthRowMapper()).first()!!.second
     }
 
     private fun withTable(): String {

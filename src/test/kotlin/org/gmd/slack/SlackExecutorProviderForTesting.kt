@@ -12,4 +12,8 @@ class SlackExecutorProviderForTesting : SlackExecutorProvider {
     override fun oauthExecutor(oauthUrl: String): (clientId: String, clientSecret: String, code: String) -> SlackTeamAuth {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun webApiExecutor(url: String): (method: String, jsonBody: String, accessToken: String) -> String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }

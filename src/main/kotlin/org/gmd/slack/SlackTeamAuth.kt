@@ -15,13 +15,16 @@ class SlackTeamAuth() {
     lateinit var teamName: String
     @JsonProperty("user_id")
     lateinit var userId: String
+    @JsonProperty("bot")
+    lateinit var bot: SlackTeamBotAuth
 
     constructor(ok: Boolean,
                 accessToken: String,
                 scope: String,
                 teamId: String,
-                teamName: String, 
-                userId: String): this() {
+                teamName: String,
+                userId: String,
+                bot: SlackTeamBotAuth) : this() {
         this.ok = ok
         this.accessToken = accessToken
         this.scope = scope
@@ -29,15 +32,19 @@ class SlackTeamAuth() {
         this.teamName = teamName
         this.userId = userId
     }
-    
+
     fun toJsonBytes(): ByteArray {
         return ObjectMapper().writeValueAsBytes(this)
     }
 
     override fun toString(): String {
-        return "SlackTeamAuth(ok=$ok, accessToken='<HIDDEN>', scope='$scope', teamId='$teamId', teamName='$teamName', userId='$userId')"
+        return "SlackTeamAuth(ok=$ok, accessToken='<HIDDEN>', scope='$scope', teamId='$teamId', teamName='$teamName', userId='$userId', bot=$bot)"
     }
 
-
+    companion object {
+        fun fromJsonBytes(bytes: ByteArray): SlackTeamAuth {
+            return ObjectMapper().readValue(bytes, SlackTeamAuth::class.java)
+        }
+    }
 }
 
