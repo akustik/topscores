@@ -8,4 +8,6 @@ interface SlackExecutorProvider {
     
     fun webApiExecutor(url: String = "https://slack.com/api/"):
             (method: String, jsonBody: String, accessToken: String) -> String
+
+    fun webApiPaginatedExecutor(url: String = "https://slack.com/api/"): (method: String, accessToken: String) -> List<String>
 }

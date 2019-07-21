@@ -1,6 +1,7 @@
 package org.gmd.slack
 
 class SlackExecutorProviderForTesting : SlackExecutorProvider {
+
     val accumulatedResponses = HashMap<String, SlackResponse>()
 
     override fun asyncResponseExecutorFor(responseUrl: String): (SlackResponse) -> Unit = { response ->
@@ -16,4 +17,9 @@ class SlackExecutorProviderForTesting : SlackExecutorProvider {
     override fun webApiExecutor(url: String): (method: String, jsonBody: String, accessToken: String) -> String {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun webApiPaginatedExecutor(url: String): (method: String, accessToken: String) -> List<String> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }
