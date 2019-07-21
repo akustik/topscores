@@ -174,6 +174,21 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String,
             @RequestParam(name = "trigger_id", required = false) triggerId: String?): String {
 
+
+        return withSignatureValidation(
+                teamDomain = teamDomain,
+                slackSignature = slackSignature,
+                slackTimestamp = slackTimestamp,
+                body = body,
+                responseUrl = responseUrl,
+                block = { responseHelper ->
+                    executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
+                            triggerId = triggerId, text = text, responseHelper = responseHelper)
+                })
+    }
+
+    private fun withSignatureValidation(teamDomain: String, slackSignature: String, slackTimestamp: String,
+                                        responseUrl: String, body: String, block: (SlackResponseHelper) -> Unit): String {
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
         if (env.getEnv()["token:$teamDomain"] == null) {
@@ -183,8 +198,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val bypassSecret = env.getEnv()[EnvProvider.BYPASS_SLACK_SIGNING_SECRET]?.equals("true")
                 ?: false
         if (bypassSecret || isSlackSignatureValid(slackSignature, slackTimestamp, body)) {
-            executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
-                    triggerId = triggerId, text = text, responseHelper = responseHelper)
+            block(responseHelper)
         } else {
             responseHelper.internalMessage("Invalid signature. Please, review the application secret.")
         }
@@ -272,8 +286,11 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     @RequestMapping("/slack/interactive", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun slackInteractive(@RequestParam payload: String): String {
-        //FIXME: Check incoming token/signature to validate that this request is from slack
+    internal fun slackInteractive(@RequestParam payload: String,
+                                  @RequestBody body: String,
+                                  @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
+                                  @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+
         val decodedPayload = URLDecoder.decode(payload, "UTF-8")
         val parsedPayload = ObjectMapper().readTree(decodedPayload)
         logger.info("interactive: $parsedPayload")
@@ -286,17 +303,20 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val responseUrl = parsedPayload["response_url"].asText()
 
         val players = Dialog.playerList(callbackId = callbackId, submission = submission).joinToString(separator = " ")
+        val text = "addgame $players"
 
-        val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
+        logger.info("command to run: $text")
 
-        if (env.getEnv()["token:$teamDomain"] == null) {
-            return responseHelper.asJson()
-        }
-
-        executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
-                triggerId = null, text = "addgame $players", responseHelper = responseHelper)
-
-        return responseHelper.asJson()
+        return withSignatureValidation(
+                teamDomain = teamDomain,
+                slackSignature = slackSignature,
+                slackTimestamp = slackTimestamp,
+                body = body,
+                responseUrl = responseUrl,
+                block = { responseHelper ->
+                    executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
+                            triggerId = null, text = text, responseHelper = responseHelper)
+                })
     }
 
     @ApiOperation(value = "Ranks the players of a given tournament")
