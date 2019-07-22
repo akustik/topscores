@@ -77,18 +77,20 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
             builder = builder.queryParam("cursor", cursor!!)
         }
 
+        logger.info("Checking page with cursor $cursor")
         val response = verified(template.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java))
-
+        logger.info("Obtained page with cursor $cursor")
+        
         val webApiResponse = response.second
 
         return if (webApiResponse.responseMetadata == null || webApiResponse.responseMetadata!!.nextCursor.isNullOrEmpty()) {
             acc + response.first
         } else {
             doPaginateWebApi(
-                    url, method,
-                    accessToken,
-                    webApiResponse.responseMetadata!!.nextCursor!!,
-                    acc + response.first)
+                    url=url, method=method,
+                    accessToken = accessToken,
+                    cursor = webApiResponse.responseMetadata!!.nextCursor,
+                    acc = acc + response.first)
         }
 
     }
