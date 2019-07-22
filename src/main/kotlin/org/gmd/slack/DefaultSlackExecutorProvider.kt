@@ -78,7 +78,6 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
         }
 
         val response = verified(template.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java))
-        logger.info("Obtained response, next page ${response.second.responseMetadata}")
 
         val webApiResponse = response.second
 
@@ -87,8 +86,8 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
         } else {
             doPaginateWebApi(
                     url, method,
-                    webApiResponse.responseMetadata!!.nextCursor!!,
                     accessToken,
+                    webApiResponse.responseMetadata!!.nextCursor!!,
                     acc + response.first)
         }
 
