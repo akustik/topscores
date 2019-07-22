@@ -6,6 +6,7 @@ import org.springframework.http.*
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
+import java.net.URLEncoder
 
 
 @Component
@@ -74,7 +75,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
 
 
         if (!cursor.isNullOrEmpty()) {
-            builder = builder.queryParam("cursor", cursor!!)
+            builder = builder.queryParam("cursor", URLEncoder.encode(cursor!!, "UTF-8"))
         }
 
         logger.info("Checking page with cursor $cursor")
