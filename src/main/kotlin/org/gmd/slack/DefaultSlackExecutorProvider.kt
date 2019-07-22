@@ -6,6 +6,7 @@ import org.springframework.http.*
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
+import java.net.URLDecoder
 import java.net.URLEncoder
 
 
@@ -72,16 +73,16 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
         var builder = UriComponentsBuilder
                 .fromHttpUrl("$url/$method")
                 .queryParam("token", accessToken)
-
-
+                .queryParam("limit", "1000")
+        
         if (!cursor.isNullOrEmpty()) {
-            builder = builder.queryParam("cursor", URLEncoder.encode(cursor!!, "UTF-8"))
+            builder = builder.queryParam("cursor", cursor!!)
         }
 
-        logger.info("Checking page with cursor $cursor")
-        val response = verified(template.exchange(builder.toUriString(), HttpMethod.GET, entity, String::class.java))
-        logger.info("Obtained page with cursor $cursor")
+        val uri = builder.toUriString()
+        val fullUrl = URLDecoder.decode(uri, "UTF-8")
         
+        val response = verified(template.exchange(fullUrl, HttpMethod.GET, entity, String::class.java))
         val webApiResponse = response.second
 
         return if (webApiResponse.responseMetadata == null || webApiResponse.responseMetadata!!.nextCursor.isNullOrEmpty()) {
