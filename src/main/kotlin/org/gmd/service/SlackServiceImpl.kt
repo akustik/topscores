@@ -19,9 +19,10 @@ class SlackServiceImpl(private val env: EnvProvider,
         return response
     }
 
-    override fun postWebApi(teamName: String, method: String, jsonBody: String): String {
+    override fun postWebApi(teamName: String, method: String, jsonBody: String, useBotToken: Boolean): String {
         val auth = slackRepository.getAuth(teamName)
-        return slackExecutorProvider.webApiExecutor()(method, jsonBody, auth.accessToken)
+        val token = if(useBotToken) auth.bot.botAccessToken else auth.accessToken
+        return slackExecutorProvider.webApiExecutor()(method, jsonBody, token)
     }
 
     override fun getWebApi(teamName: String, method: String): List<String> {
