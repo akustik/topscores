@@ -185,7 +185,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                 block = { responseHelper ->
                     executeSlackCommand(teamDomain = teamDomain, channelId = channelId, channelName = channelName, userName = userName,
                             triggerId = triggerId, text = text, responseHelper = responseHelper)
-                }).asJson()
+                }).asJson() ?: ""
     }
 
     private fun withSignatureValidation(teamDomain: String, slackSignature: String, slackTimestamp: String,

@@ -31,7 +31,7 @@ class Taunt(
         val message = SlackPostMessage(channelId = channelId, text = text).asJson()
 
         service.postWebApi(account, "chat.postMessage", message, useBotToken = true)
-        response.asyncDefaultResponse()
+        response.emptyResponse()
     }
 
     private fun createUserId(allUsers: Map<String, String>, name: String): String {

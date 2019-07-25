@@ -3,7 +3,7 @@ package org.gmd.slack
 
 class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
 
-    var slackResponse = SlackResponse()
+    var slackResponse: SlackResponse? = SlackResponse()
 
     fun internalMessage(text: String) {
         message(text = text, silent = true)
@@ -17,12 +17,16 @@ class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
         slackResponse = responseOf(text, attachments, silent)
     }
 
-    fun asJson(): String {
-        return slackResponse.asJson()
+    fun asJson(): String? {
+        return slackResponse?.asJson()
     }
 
     fun asyncDefaultResponse() {
         internalMessage("ACK! You will get the response in a few seconds.")
+    }
+
+    fun emptyResponse() {
+        slackResponse = null
     }
 
     fun asyncMessage(text: String, attachments: List<String> = emptyList(), silent: Boolean = true) {
@@ -30,7 +34,7 @@ class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
     }
     
     fun currentResponseAsyncMessage() {
-        asyncExecutor(slackResponse)
+        asyncExecutor(slackResponse!!)
     }
 
     private fun responseOf(text: String, attachments: List<String>, silent: Boolean): SlackResponse {

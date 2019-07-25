@@ -44,9 +44,9 @@ class AddGameTest {
                 tournament = addedGame.tournament)
                 .parse(listOf(player1, player2))
 
-        Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse.text)
-        Assert.assertEquals("1. player1\n2. player2", helper.slackResponse.attachments.first().text)
-        Assert.assertEquals("in_channel", helper.slackResponse.responseType)
+        Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse!!.text)
+        Assert.assertEquals("1. player1\n2. player2", helper.slackResponse!!.attachments.first().text)
+        Assert.assertEquals("in_channel", helper.slackResponse!!.responseType)
     }
 
     @Test
@@ -79,10 +79,10 @@ class AddGameTest {
                 tournament = addedGame.tournament)
                 .parse(listOf(player1, player2))
 
-        Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse.text)
-        Assert.assertEquals("1. player1\n2. player2", helper.slackResponse.attachments.first().text)
+        Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse!!.text)
+        Assert.assertEquals("1. player1\n2. player2", helper.slackResponse!!.attachments.first().text)
         Assert.assertEquals("1. player1 (1213, +13)\n2. player2 (1193, -7)", asyncResponse!!.attachments.first().text)
-        Assert.assertEquals("in_channel", helper.slackResponse.responseType)
+        Assert.assertEquals("in_channel", helper.slackResponse!!.responseType)
 
     }
 }
