@@ -168,6 +168,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             @RequestParam(name = "user_name") userName: String,
             @RequestParam(name = "text", defaultValue = "") text: String,
             @RequestParam(name = "team_domain") teamDomain: String,
+            @RequestParam(name = "channel_id") channelId: String,
             @RequestParam(name = "channel_name") channelName: String,
             @RequestBody body: String,
             @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
@@ -182,7 +183,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                 body = body,
                 responseUrl = responseUrl,
                 block = { responseHelper ->
-                    executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
+                    executeSlackCommand(teamDomain = teamDomain, channelId = channelId, channelName = channelName, userName = userName,
                             triggerId = triggerId, text = text, responseHelper = responseHelper)
                 }).asJson()
     }
@@ -223,7 +224,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return isValid
     }
 
-    private fun executeSlackCommand(teamDomain: String, channelName: String, userName: String,
+    private fun executeSlackCommand(teamDomain: String, channelId: String, channelName: String, userName: String,
                                     triggerId: String?, text: String, responseHelper: SlackResponseHelper) {
         val cmd = Leaderboard().subcommands(
                 AddGame(responseHelper, env, gameService, asyncService, teamDomain, channelName),
@@ -233,7 +234,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                 PrintGames(responseHelper, gameService, teamDomain, channelName),
                 DeleteGame(responseHelper, gameService, teamDomain, channelName),
                 MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
-                Dialog(responseHelper, slackService, triggerId, teamDomain, channelName)
+                Dialog(responseHelper, slackService, triggerId, teamDomain, channelName),
+                Taunt(responseHelper, slackService, teamDomain, channelId)
         )
 
         try {
@@ -302,6 +304,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val parsedPayload = JSON.readTree(decodedPayload)
 
         val teamDomain = parsedPayload["team"]["domain"].asText()
+        val channelId = parsedPayload["channel"]["id"].asText()
         val channelName = parsedPayload["channel"]["name"].asText()
         val userName = parsedPayload["user"]["name"].asText()
         val callbackId = parsedPayload["callback_id"].asText()
@@ -328,7 +331,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                 body = body,
                 responseUrl = responseUrl,
                 block = { responseHelper ->
-                    executeSlackCommand(teamDomain = teamDomain, channelName = channelName, userName = userName,
+                    executeSlackCommand(teamDomain = teamDomain, channelId = channelId, channelName = channelName, userName = userName,
                             triggerId = null, text = text, responseHelper = responseHelper)
                 }).currentResponseAsyncMessage()
     }

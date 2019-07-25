@@ -6,7 +6,7 @@ interface SlackService {
 
     fun oauth(code: String): SlackTeamAuth
 
-    fun postWebApi(teamName: String, method: String, jsonBody: String): String
+    fun postWebApi(teamName: String, method: String, jsonBody: String, useBotToken: Boolean = false): String
     
     fun getWebApi(teamName: String, method: String): List<String>
 }
