@@ -1,4 +1,4 @@
-package org.gmd.slack
+package org.gmd.slack.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.gmd.util.JsonUtils.Companion.JSON_W_UNKNOWN

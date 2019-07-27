@@ -6,7 +6,9 @@ import org.gmd.repository.GameRepositoryForTesting
 import org.gmd.service.*
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
-import org.gmd.slack.SlackExecutorProviderForTesting
+import org.gmd.slack.executor.SlackExecutorProviderForTesting
+import org.gmd.slack.service.SlackService
+import org.gmd.slack.service.SlackServiceForTesting
 import org.gmd.util.JsonUtils.Companion.JSON
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description

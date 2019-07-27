@@ -3,8 +3,8 @@ package org.gmd.command
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import org.gmd.service.SlackService
-import org.gmd.slack.SlackPostMessage
+import org.gmd.slack.service.SlackService
+import org.gmd.slack.model.SlackPostMessage
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.util.JsonUtils
 

@@ -1,9 +1,9 @@
-package org.gmd.service
+package org.gmd.slack.service
 
 import org.gmd.EnvProvider
-import org.gmd.repository.SlackRepository
-import org.gmd.slack.SlackExecutorProvider
-import org.gmd.slack.SlackTeamAuth
+import org.gmd.slack.repository.SlackRepository
+import org.gmd.slack.executor.SlackExecutorProvider
+import org.gmd.slack.model.SlackTeamAuth
 import org.springframework.stereotype.Component
 
 @Component

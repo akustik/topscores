@@ -1,4 +1,4 @@
-package org.gmd.slack
+package org.gmd.slack.model
 
 import org.gmd.util.JsonUtils.Companion.JSON
 import org.junit.Assert

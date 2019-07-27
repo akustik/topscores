@@ -1,6 +1,6 @@
-package org.gmd.repository
+package org.gmd.slack.repository
 
-import org.gmd.slack.SlackTeamAuth
+import org.gmd.slack.model.SlackTeamAuth
 
 interface SlackRepository {
 

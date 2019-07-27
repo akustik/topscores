@@ -1,6 +1,7 @@
-package org.gmd.service
+package org.gmd.slack.service
 
-import org.gmd.slack.SlackTeamAuth
+import org.gmd.slack.model.SlackTeamAuth
+import org.gmd.slack.service.SlackService
 
 class SlackServiceForTesting : SlackService {
     override fun oauth(code: String): SlackTeamAuth {

@@ -1,5 +1,8 @@
 package org.gmd.slack
 
+import org.gmd.slack.model.SlackAttachment
+import org.gmd.slack.model.SlackResponse
+
 
 class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
 

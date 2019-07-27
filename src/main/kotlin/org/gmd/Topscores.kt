@@ -14,8 +14,8 @@ import org.gmd.model.TournamentMetrics
 import org.gmd.model.TournamentStatus
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
-import org.gmd.service.SlackService
-import org.gmd.slack.SlackExecutorProvider
+import org.gmd.slack.service.SlackService
+import org.gmd.slack.executor.SlackExecutorProvider
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.util.JsonUtils.Companion.JSON
 import org.slf4j.Logger

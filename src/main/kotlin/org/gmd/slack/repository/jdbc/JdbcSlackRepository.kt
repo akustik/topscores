@@ -1,7 +1,7 @@
-package org.gmd.repository.jdbc
+package org.gmd.slack.repository.jdbc
 
-import org.gmd.repository.SlackRepository
-import org.gmd.slack.SlackTeamAuth
+import org.gmd.slack.repository.SlackRepository
+import org.gmd.slack.model.SlackTeamAuth
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Component
