@@ -5,6 +5,8 @@ import org.gmd.slack.executor.SlackExecutorProvider
 import org.gmd.slack.model.SlackTeamAuth
 import org.gmd.slack.repository.SlackRepository
 import org.gmd.util.JsonUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
@@ -14,6 +16,10 @@ class SlackServiceImpl(private val env: EnvProvider,
                        private val slackExecutorProvider: SlackExecutorProvider,
                        private val slackRepository: SlackRepository,
                        private val jedisPool: JedisPool?) : SlackService {
+
+    companion object {
+        val logger: Logger = LoggerFactory.getLogger(SlackServiceImpl::class.java)
+    }
 
     override fun oauth(code: String): SlackTeamAuth {
         val slackSecret = env.getEnv()[EnvProvider.SLACK_CLIENT_SECRET]
@@ -34,7 +40,7 @@ class SlackServiceImpl(private val env: EnvProvider,
         return slackExecutorProvider.webApiPaginatedExecutor()(method, auth.accessToken)
     }
 
-    override fun getUserNameById(teamName: String, id: String): String? = 
+    override fun getUserNameById(teamName: String, id: String): String? =
             getUserByKey(teamName = teamName, redisKey = idRedisKey(teamName = teamName, id = id))
 
     override fun getUserIdByName(teamName: String, name: String): String? =
@@ -57,11 +63,13 @@ class SlackServiceImpl(private val env: EnvProvider,
     private fun idRedisName(teamName: String, name: String) = "$teamName#${name.toLowerCase()}"
 
     private fun recoverTeamUsers(jedis: Jedis, teamName: String) {
+        logger.info("Going to recover all users for $teamName")
         val allUsers = getAllUsersById(teamName)
         val idToName = allUsers.flatMap { listOf(idRedisKey(teamName = teamName, id = it.key), it.value) }
         val nameToId = allUsers.flatMap { listOf(idRedisName(teamName = teamName, name = it.value), it.key) }
         val allEntries = (idToName + nameToId).toTypedArray()
         jedis.mset(*allEntries)
+        logger.info("Recovered and updated ${allUsers.size} users for $teamName")
     }
 
     private fun getAllUsersById(teamName: String): Map<String, String> {
