@@ -2,10 +2,10 @@ package org.gmd.command
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.ajalt.clikt.core.CliktCommand
-import org.gmd.service.SlackService
-import org.gmd.slack.SlackDialog
-import org.gmd.slack.SlackDialogSelectUserElement
-import org.gmd.slack.SlackOpenDialog
+import org.gmd.slack.service.SlackService
+import org.gmd.slack.model.SlackDialog
+import org.gmd.slack.model.SlackDialogSelectUserElement
+import org.gmd.slack.model.SlackOpenDialog
 import org.gmd.slack.SlackResponseHelper
 
 class Dialog(

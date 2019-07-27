@@ -8,7 +8,7 @@ import org.gmd.TestData.Companion.player2
 import org.gmd.model.Evolution
 import org.gmd.service.AsyncGameServiceForTesting
 import org.gmd.service.GameService
-import org.gmd.slack.SlackResponse
+import org.gmd.slack.model.SlackResponse
 import org.gmd.slack.SlackResponseHelper
 import org.junit.Assert
 import org.junit.Test

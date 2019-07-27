@@ -1,5 +1,8 @@
-package org.gmd.slack
+package org.gmd.slack.executor
 
+import org.gmd.slack.model.SlackResponse
+import org.gmd.slack.model.SlackTeamAuth
+import org.gmd.slack.model.SlackWebApiResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.*
@@ -7,7 +10,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URLDecoder
-import java.net.URLEncoder
 
 
 @Component

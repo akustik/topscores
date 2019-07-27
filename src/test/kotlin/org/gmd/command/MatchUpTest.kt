@@ -4,7 +4,7 @@ import org.gmd.TestData.Companion.dummy
 import org.gmd.TestData.Companion.player1
 import org.gmd.TestData.Companion.player2
 import org.gmd.service.GameService
-import org.gmd.slack.SlackResponse
+import org.gmd.slack.model.SlackResponse
 import org.gmd.slack.SlackResponseHelper
 import org.junit.Assert
 import org.junit.Test

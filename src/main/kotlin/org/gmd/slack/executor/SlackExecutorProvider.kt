@@ -1,4 +1,7 @@
-package org.gmd.slack
+package org.gmd.slack.executor
+
+import org.gmd.slack.model.SlackResponse
+import org.gmd.slack.model.SlackTeamAuth
 
 interface SlackExecutorProvider {
     fun asyncResponseExecutorFor(responseUrl: String): (SlackResponse) -> Unit

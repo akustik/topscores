@@ -1,6 +1,6 @@
-package org.gmd.repository.jdbc
+package org.gmd.slack.repository.jdbc
 
-import org.gmd.slack.SlackTeamAuth
+import org.gmd.slack.model.SlackTeamAuth
 import org.springframework.jdbc.core.RowMapper
 import java.sql.ResultSet
 import java.time.Instant
