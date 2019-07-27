@@ -313,7 +313,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         
         val players = Dialog.playerList(callbackId = callbackId, submission = submission)
                 .joinToString(separator = " ")
-                { slackService.getUserNameById(teamName = teamDomain, id = it) ?: "default" }
+                { slackService.getUserNameById(teamName = teamDomain, id = it) ?: "undefined" }
 
         val text = "addgame $players"
 
