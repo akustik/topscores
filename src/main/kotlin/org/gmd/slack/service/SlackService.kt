@@ -9,4 +9,8 @@ interface SlackService {
     fun postWebApi(teamName: String, method: String, jsonBody: String, useBotToken: Boolean = false): String
     
     fun getWebApi(teamName: String, method: String): List<String>
+    
+    fun getUserNameById(teamName: String, id: String): String?
+    
+    fun getUserIdByName(teamName: String, name: String): String?
 }

@@ -3,10 +3,9 @@ package org.gmd.command
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import org.gmd.slack.service.SlackService
-import org.gmd.slack.model.SlackPostMessage
 import org.gmd.slack.SlackResponseHelper
-import org.gmd.util.JsonUtils
+import org.gmd.slack.model.SlackPostMessage
+import org.gmd.slack.service.SlackService
 
 class Taunt(
         val response: SlackResponseHelper,
@@ -20,13 +19,8 @@ class Taunt(
     override fun run() {
         val normalizedPlayers = normalizePlayers(players)
 
-        val allUsers = service.getWebApi(teamName = account, method = "users.list")
-                .flatMap { r -> JsonUtils.JSON.readTree(r)["members"].map { it["name"].asText().toLowerCase() to it["id"].asText() } }
-                .toMap()
-
-        val text = normalizedPlayers
-                .joinToString(" and ", "Hey ", ", what about a game?!")
-                { p -> createUserId(allUsers, p) }
+        val text = normalizedPlayers.joinToString(" and ", "Hey ", ", what about a game?!") 
+            { createUserId(service.getUserIdByName(teamName = account, name = it), it) }
 
         val message = SlackPostMessage(channelId = channelId, text = text).asJson()
 
@@ -34,9 +28,9 @@ class Taunt(
         response.emptyResponse()
     }
 
-    private fun createUserId(allUsers: Map<String, String>, name: String): String {
-        return if (allUsers.containsKey(name)) {
-            "<@${allUsers[name]}>"
+    private fun createUserId(id: String?, name: String): String {
+        return if (id != null) {
+            "<@$id>"
         } else {
             name
         }

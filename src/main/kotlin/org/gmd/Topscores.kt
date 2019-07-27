@@ -14,9 +14,9 @@ import org.gmd.model.TournamentMetrics
 import org.gmd.model.TournamentStatus
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
-import org.gmd.slack.service.SlackService
-import org.gmd.slack.executor.SlackExecutorProvider
 import org.gmd.slack.SlackResponseHelper
+import org.gmd.slack.executor.SlackExecutorProvider
+import org.gmd.slack.service.SlackService
 import org.gmd.util.JsonUtils.Companion.JSON
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -310,15 +310,10 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         val callbackId = parsedPayload["callback_id"].asText()
         val submission = parsedPayload["submission"]
         val responseUrl = parsedPayload["response_url"].asText()
-
-        val allUsers = slackService.getWebApi(teamName = teamDomain, method = "users.list")
-                .flatMap { r -> JSON.readTree(r)["members"].map { it["id"].asText() to it["name"].asText() } }
-                .toMap()
-
-
+        
         val players = Dialog.playerList(callbackId = callbackId, submission = submission)
                 .joinToString(separator = " ")
-                { allUsers.getOrDefault(it, "undefined") }
+                { slackService.getUserNameById(teamName = teamDomain, id = it) ?: "default" }
 
         val text = "addgame $players"
 
@@ -335,7 +330,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                             triggerId = null, text = text, responseHelper = responseHelper)
                 }).currentResponseAsyncMessage()
     }
-
+    
     @ApiOperation(value = "Ranks the players of a given tournament")
     @RequestMapping("/scores/{tournament}/players", method = arrayOf(RequestMethod.GET))
     @ResponseBody

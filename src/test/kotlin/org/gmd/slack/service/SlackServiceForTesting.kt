@@ -15,4 +15,13 @@ class SlackServiceForTesting : SlackService {
     override fun getWebApi(teamName: String, method: String): List<String> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun getUserIdByName(teamName: String, name: String): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getUserNameById(teamName: String, id: String): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
 }
