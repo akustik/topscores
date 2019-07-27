@@ -22,3 +22,7 @@ prod-db-backup:
 
 prod-env:
 	heroku config
+	
+prod-redis-maxmemory-policy:
+	heroku redis:maxmemory --policy allkeys-lru
+  
