@@ -26,3 +26,8 @@ prod-env:
 prod-redis-maxmemory-policy:
 	heroku redis:maxmemory --policy allkeys-lru
   
+prod-redis-info:
+	heroku redis:info
+	
+prod-redis-cli:
+	heroku redis:cli
