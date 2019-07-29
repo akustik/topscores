@@ -1,6 +1,6 @@
 package org.gmd.slack.model
 
-import org.gmd.util.JsonUtils.Companion.JSON
+import org.gmd.util.JsonUtils
 import org.junit.Assert
 import org.junit.Test
 
@@ -19,7 +19,7 @@ class SlackTeamAuthTest {
 
     @Test
     fun shouldDeserialize() {
-        val o = JSON.readValue(example, SlackTeamAuth::class.java)
+        val o = JsonUtils.readValue(example, SlackTeamAuth::class.java)
         Assert.assertEquals(true, o.ok)
         Assert.assertEquals("identify,commands", o.scope)
         Assert.assertEquals("fake", o.accessToken)

@@ -1,7 +1,7 @@
 package org.gmd.slack.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.gmd.util.JsonUtils.Companion.JSON
+import org.gmd.util.JsonUtils.Companion.writeValueAsString
 
 class SlackResponse(val text: String = "Something went wrong!",
                     @get:JsonProperty("response_type")
@@ -14,7 +14,7 @@ class SlackResponse(val text: String = "Something went wrong!",
     }
 
     fun asJson(): String {
-        return JSON.writeValueAsString(this)
+        return writeValueAsString(this)
     }
 }
 

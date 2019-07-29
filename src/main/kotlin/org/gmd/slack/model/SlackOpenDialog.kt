@@ -1,8 +1,7 @@
 package org.gmd.slack.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.gmd.slack.model.SlackDialog
-import org.gmd.util.JsonUtils.Companion.JSON
+import org.gmd.util.JsonUtils.Companion.writeValueAsString
 
 class SlackOpenDialog() {
 
@@ -17,7 +16,7 @@ class SlackOpenDialog() {
     }
 
     fun asJson(): String {
-        return JSON.writeValueAsString(this)
+        return writeValueAsString(this)
     }
 }
 

@@ -74,7 +74,7 @@ class SlackServiceImpl(private val env: EnvProvider,
 
     private fun getAllUsersById(teamName: String): Map<String, String> {
         return getWebApi(teamName = teamName, method = "users.list")
-                .flatMap { r -> JsonUtils.JSON.readTree(r)["members"].map { it["id"].asText() to it["name"].asText().toLowerCase()  } }
+                .flatMap { r -> JsonUtils.readTree(r)["members"].map { it["id"].asText() to it["name"].asText().toLowerCase()  } }
                 .toMap()
     }
 

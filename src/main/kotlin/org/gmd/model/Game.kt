@@ -3,8 +3,8 @@ package org.gmd.model
 import io.swagger.annotations.ApiModelProperty
 import org.gmd.EnvProvider
 import org.gmd.form.SimpleGame
-import org.gmd.util.JsonUtils.Companion.JSON
-
+import org.gmd.util.JsonUtils.Companion.readValue
+import org.gmd.util.JsonUtils.Companion.writeValueAsBytes
 
 class Game() {
     @ApiModelProperty(notes = "Tournaments are used to have different scores and metrics per player.")
@@ -34,7 +34,7 @@ class Game() {
     fun partiesDescendingByScore(): List<Party> = parties.sortedByDescending { p -> p.score }
 
     fun toJsonBytes(): ByteArray {
-        return JSON.writeValueAsBytes(this)
+        return writeValueAsBytes(this)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -64,7 +64,7 @@ class Game() {
 
     companion object {
         fun fromJsonBytes(bytes: ByteArray): Game {
-            return JSON.readValue(bytes, Game::class.java)
+            return readValue(bytes, Game::class.java)
         }
 
         fun playerOrderedListToGame(tournament: String, players: List<String>): Game {

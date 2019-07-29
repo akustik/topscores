@@ -1,7 +1,8 @@
 package org.gmd.slack.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.gmd.util.JsonUtils.Companion.JSON
+import org.gmd.util.JsonUtils.Companion.readValue
+import org.gmd.util.JsonUtils.Companion.writeValueAsBytes
 
 class SlackTeamAuth() {
 
@@ -35,7 +36,7 @@ class SlackTeamAuth() {
     }
 
     fun toJsonBytes(): ByteArray {
-        return JSON.writeValueAsBytes(this)
+        return writeValueAsBytes(this)
     }
 
     override fun toString(): String {
@@ -44,7 +45,7 @@ class SlackTeamAuth() {
 
     companion object {
         fun fromJsonBytes(bytes: ByteArray): SlackTeamAuth {
-            return JSON.readValue(bytes, SlackTeamAuth::class.java)
+            return readValue(bytes, SlackTeamAuth::class.java)
         }
     }
 }

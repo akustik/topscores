@@ -17,7 +17,7 @@ import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.slack.executor.SlackExecutorProvider
 import org.gmd.slack.service.SlackService
-import org.gmd.util.JsonUtils.Companion.JSON
+import org.gmd.util.JsonUtils.Companion.readTree
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -285,7 +285,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
     @ResponseBody
     internal fun slackEvent(@RequestBody body: String): String {
         logger.info("event: $body")
-        val tree = JSON.readTree(body)
+        val tree = readTree(body)
         return if (tree.get("challenge") != null) {
             tree.get("challenge").asText()
         } else {
@@ -301,7 +301,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                                   @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String) {
 
         val decodedPayload = URLDecoder.decode(payload, "UTF-8")
-        val parsedPayload = JSON.readTree(decodedPayload)
+        val parsedPayload = readTree(decodedPayload)
 
         val teamDomain = parsedPayload["team"]["domain"].asText()
         val channelId = parsedPayload["channel"]["id"].asText()

@@ -9,7 +9,7 @@ import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.gmd.slack.executor.SlackExecutorProviderForTesting
 import org.gmd.slack.service.SlackService
 import org.gmd.slack.service.SlackServiceForTesting
-import org.gmd.util.JsonUtils.Companion.JSON
+import org.gmd.util.JsonUtils
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.junit.Assert
@@ -263,7 +263,7 @@ class TimestampExists : BaseMatcher<String>() {
 
     override fun matches(item: Any?): Boolean {
         if (item is String) {
-            return JSON.readValue(item, Game::class.java).timestamp!! > 0
+            return JsonUtils.readValue(item, Game::class.java).timestamp!! > 0
         }
 
         return false
