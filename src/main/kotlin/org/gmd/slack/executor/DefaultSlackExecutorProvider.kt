@@ -76,14 +76,14 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
                 .fromHttpUrl("$url/$method")
                 .queryParam("token", accessToken)
                 .queryParam("limit", "1000")
-        
+
         if (!cursor.isNullOrEmpty()) {
             builder = builder.queryParam("cursor", cursor!!)
         }
 
         val uri = builder.toUriString()
         val fullUrl = URLDecoder.decode(uri, "UTF-8")
-        
+
         val response = verified(template.exchange(fullUrl, HttpMethod.GET, entity, String::class.java))
         val webApiResponse = response.second
 
@@ -91,7 +91,7 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
             acc + response.first
         } else {
             doPaginateWebApi(
-                    url=url, method=method,
+                    url = url, method = method,
                     accessToken = accessToken,
                     cursor = webApiResponse.responseMetadata!!.nextCursor,
                     acc = acc + response.first)
@@ -104,8 +104,12 @@ class DefaultSlackExecutorProvider : SlackExecutorProvider {
             logger.error("Unable to execute slack request with response $responseEntity")
             throw IllegalStateException("Unable to execute slack request with response ${responseEntity.statusCode}")
         }
-
-        val webApiResponse = SlackWebApiResponse.fromJson(responseEntity.body)
+        
+        val webApiResponse = if (responseEntity.body == "ok") {
+            SlackWebApiResponse(ok = true)
+        } else {
+            SlackWebApiResponse.fromJson(responseEntity.body)
+        }
 
         if (!webApiResponse.ok) {
             logger.error("The method slack request failed with response $responseEntity")
