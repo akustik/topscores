@@ -11,7 +11,7 @@ class SlackWebApiResponse() {
     @JsonProperty("response_metadata")
     var responseMetadata: SlackWebApiResponseMetadata? = null
 
-    constructor(ok: Boolean, error: String, responseMetadata: SlackWebApiResponseMetadata) : this() {
+    constructor(ok: Boolean, error: String? = null, responseMetadata: SlackWebApiResponseMetadata? = null) : this() {
         this.ok = ok
         this.error = error
         this.responseMetadata = responseMetadata
