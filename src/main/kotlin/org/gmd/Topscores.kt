@@ -161,6 +161,12 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return addedGames
     }
 
+    @RequestMapping("/health/check", method = arrayOf(RequestMethod.GET))
+    @ResponseBody
+    internal fun healthCheck(): String {
+        return "OK"
+    }
+
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
