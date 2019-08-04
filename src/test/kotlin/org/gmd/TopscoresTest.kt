@@ -1,16 +1,15 @@
 package org.gmd
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.gmd.model.Game
 import org.gmd.repository.GameRepository
 import org.gmd.repository.GameRepositoryForTesting
-import org.gmd.service.AsyncGameService
-import org.gmd.service.AsyncGameServiceForTesting
-import org.gmd.service.GameService
-import org.gmd.service.GameServiceImpl
+import org.gmd.service.*
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
-import org.gmd.slack.SlackAsyncExecutorProviderForTesting
+import org.gmd.slack.executor.SlackExecutorProviderForTesting
+import org.gmd.slack.service.SlackService
+import org.gmd.slack.service.SlackServiceForTesting
+import org.gmd.util.JsonUtils
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.junit.Assert
@@ -37,7 +36,7 @@ import java.util.*
 class TopscoresTest {
 
     companion object {
-        val slackAsyncExecutorProviderForTesting = SlackAsyncExecutorProviderForTesting()
+        val slackAsyncExecutorProviderForTesting = SlackExecutorProviderForTesting()
     }
 
     @Autowired
@@ -73,6 +72,11 @@ class TopscoresTest {
         @Bean
         open fun gameService(): GameService {
             return GameServiceImpl(repository, AdderMemberRatingAlgorithm(), ELOMemberRatingAlgorithm())
+        }
+
+        @Bean
+        open fun slackService(): SlackService {
+            return SlackServiceForTesting()
         }
 
         @Bean
@@ -210,7 +214,7 @@ class TopscoresTest {
         val request = post("/slack/command")
                 .header("X-Slack-Signature", "fake")
                 .header("X-Slack-Request-Timestamp", "123456789")
-                .content("text=addgame+%E2%80%9Cbaby+mario%E2%80%9D+mario&user_name=mario&team_domain=scopely&channel_name=mario_kart&response_url=url")
+                .content("text=addgame+%E2%80%9Cbaby+mario%E2%80%9D+mario&user_name=mario&team_domain=scopely&channel_id=ABC&channel_name=mario_kart&response_url=url")
                 .contentType("application/x-www-form-urlencoded")
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
@@ -223,7 +227,7 @@ class TopscoresTest {
         val request = post("/slack/command")
                 .header("X-Slack-Signature", "fake")
                 .header("X-Slack-Request-Timestamp", "123456789")
-                .content("text=addgame+%E2%80%9Cguillem%E2%80%9D+uri&user_name=mario&team_domain=patxanga&channel_name=patxanga&response_url=url")
+                .content("text=addgame+%E2%80%9Cguillem%E2%80%9D+uri&user_name=mario&team_domain=patxanga&channel_id=ABC&channel_name=patxanga&response_url=url")
                 .contentType("application/x-www-form-urlencoded")
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
@@ -240,7 +244,7 @@ class TopscoresTest {
         val request = post("/slack/command")
                 .header("X-Slack-Signature", "fake")
                 .header("X-Slack-Request-Timestamp", "123456789")
-                .content("text=addgame+%E2%80%9Cbaby+mario%E2%80%9D+mario&user_name=mario&team_domain=company&channel_name=mario_kart&response_url=url")
+                .content("text=addgame+%E2%80%9Cbaby+mario%E2%80%9D+mario&user_name=mario&team_domain=company&channel_id=ABC&channel_name=mario_kart&response_url=url")
                 .contentType("application/x-www-form-urlencoded")
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
@@ -259,7 +263,7 @@ class TimestampExists : BaseMatcher<String>() {
 
     override fun matches(item: Any?): Boolean {
         if (item is String) {
-            return ObjectMapper().readValue(item, Game::class.java).timestamp!! > 0
+            return JsonUtils.readValue(item, Game::class.java).timestamp!! > 0
         }
 
         return false

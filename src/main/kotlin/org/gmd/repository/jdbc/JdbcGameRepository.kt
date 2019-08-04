@@ -12,7 +12,7 @@ import java.time.Instant
 open class JdbcGameRepository : GameRepository {
 
     companion object {
-        private val MODEL_VERSION = 2
+        private const val MODEL_VERSION = 2
         private val ACCOUNT_PATTERN = Regex("\\w+")
     }
 

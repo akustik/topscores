@@ -1,8 +1,10 @@
 package org.gmd.model
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.ApiModelProperty
-
+import org.gmd.EnvProvider
+import org.gmd.form.SimpleGame
+import org.gmd.util.JsonUtils.Companion.readValue
+import org.gmd.util.JsonUtils.Companion.writeValueAsBytes
 
 class Game() {
     @ApiModelProperty(notes = "Tournaments are used to have different scores and metrics per player.")
@@ -29,8 +31,10 @@ class Game() {
         return parties.any { party -> party.team == team }
     }
 
+    fun partiesDescendingByScore(): List<Party> = parties.sortedByDescending { p -> p.score }
+
     fun toJsonBytes(): ByteArray {
-        return ObjectMapper().writeValueAsBytes(this)
+        return writeValueAsBytes(this)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -60,7 +64,52 @@ class Game() {
 
     companion object {
         fun fromJsonBytes(bytes: ByteArray): Game {
-            return ObjectMapper().readValue(bytes, Game::class.java)
+            return readValue(bytes, Game::class.java)
+        }
+
+        fun playerOrderedListToGame(tournament: String, players: List<String>): Game {
+            val parties = players.reversed().mapIndexed { index, player ->
+                Party(
+                        team = Team(player),
+                        members = listOf(TeamMember(player)),
+                        score = index + 1,
+                        metrics = emptyList(),
+                        tags = emptyList()
+                )
+            }
+
+            return Game(
+                    tournament = tournament,
+                    parties = parties,
+                    timestamp = null
+            )
+        }
+
+        fun simpleGame(game: SimpleGame): Game {
+            val parties = game.teams.map { t ->
+                Party(
+                        team = Team(name = t.team),
+                        members = t.players.map { player -> TeamMember(name = player) },
+                        score = t.score,
+                        metrics = t.metrics.flatMap { metric -> metric.players.map { player -> Metric("${metric.metric}:${player}", metric.value) } },
+                        tags = emptyList()
+                )
+            }
+            return Game(
+                    tournament = game.tournament,
+                    parties = parties,
+                    timestamp = null
+            )
+        }
+
+        fun withCollectionTimeIfTimestampIsNotPresent(env: EnvProvider, game: Game): Game {
+            game.timestamp = game.timestamp?.let { game.timestamp } ?: env.getCurrentTimeInMillis()
+            return game
+        }
+
+        fun withTimestamp(timestamp: Long, game: Game): Game {
+            game.timestamp = timestamp
+            return game
         }
     }
 }

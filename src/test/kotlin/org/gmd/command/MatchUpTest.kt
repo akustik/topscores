@@ -1,11 +1,10 @@
 package org.gmd.command
 
-import org.gmd.model.Game
-import org.gmd.model.Party
-import org.gmd.model.Team
-import org.gmd.model.TeamMember
+import org.gmd.TestData.Companion.dummy
+import org.gmd.TestData.Companion.player1
+import org.gmd.TestData.Companion.player2
 import org.gmd.service.GameService
-import org.gmd.slack.SlackResponse
+import org.gmd.slack.model.SlackResponse
 import org.gmd.slack.SlackResponseHelper
 import org.junit.Assert
 import org.junit.Test
@@ -24,31 +23,8 @@ class MatchUpTest {
     @MockBean
     lateinit var gameService: GameService
 
-    val player1 = "player1"
-    val player2 = "player2"
     val account = "test"
-    val tournament = "patxanga"
-    val timestamp = 12345L
-    val addedGame = Game(
-            tournament = tournament,
-            parties = listOf(
-                    Party(
-                            team = Team(player2),
-                            members = listOf(TeamMember(player2)),
-                            metrics = listOf(),
-                            tags = listOf(),
-                            score = 1
-                    ),
-                    Party(
-                            team = Team(player1),
-                            members = listOf(TeamMember(player1)),
-                            metrics = listOf(),
-                            tags = listOf(),
-                            score = 2
-                    )
-            ),
-            timestamp = timestamp
-    )
+    val addedGame = dummy()
 
     @Test
     fun testSlackResponse() {
@@ -86,10 +62,10 @@ class MatchUpTest {
         Assert.assertEquals("No matches found", response.text)
     }
 
-    private fun createTestMatchUp(completableFuture: CompletableFuture<SlackResponse>, matchUpTournament: String = tournament): MatchUp {
+    private fun createTestMatchUp(completableFuture: CompletableFuture<SlackResponse>, matchUpTournament: String = addedGame.tournament): MatchUp {
         val helper = SlackResponseHelper { response -> completableFuture.complete(response) }
 
-        Mockito.`when`(gameService.listGames(account, tournament, 1000)).thenReturn(listOf(addedGame))
+        Mockito.`when`(gameService.listGames(account, addedGame.tournament, 1000)).thenReturn(listOf(addedGame))
         return MatchUp(helper, gameService, account, matchUpTournament, "player")
     }
 }
