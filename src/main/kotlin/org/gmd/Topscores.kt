@@ -302,7 +302,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
             // Register channel recent activity
             // Find how to map a channel id to a channel name, using a command?
-            // Use this information to provide daily insights
+            // Use this information to provide daily insights with an external call
 
             "ok"
         }
