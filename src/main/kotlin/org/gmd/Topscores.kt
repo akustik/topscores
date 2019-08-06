@@ -295,6 +295,15 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return if (tree.get("challenge") != null) {
             tree.get("challenge").asText()
         } else {
+            //FIXME: Verify signature
+            // Do use payload parameter?
+            val channelId = tree["event"]["channel"].asText()
+            val teamId = tree["team_id"].asText()
+
+            // Register channel recent activity
+            // Find how to map a channel id to a channel name, using a command?
+            // Use this information to provide daily insights
+
             "ok"
         }
     }
