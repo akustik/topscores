@@ -184,12 +184,13 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             asyncService.consumeTournamentMemberScoreEvolution(
                     account = account,
                     tournament = tournament,
+                    alg = Algorithm.ELO,
                     consumer = {
                         val evolutionsToConsider = it.filter { e -> e.score.size > 3 }
-                        val evolution = AddGame.computeRatingChanges(evolutionsToConsider)
+                        val evolution = AddGame.computeRatingChanges(evolutionsToConsider, numberOfGames = 3)
                         val message = SlackPostMessage(
                                 channelId = channelId,
-                                text = "Find below the last 3 games evolution per player",
+                                text = "Hey! These are the latest trends for the tournament",
                                 attachments = listOf(SlackAttachment(evolution))
                         ).asJson()
                         slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
