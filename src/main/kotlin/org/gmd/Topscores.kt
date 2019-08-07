@@ -192,7 +192,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                         if(evolution.trim().isNotEmpty()) {
                             val message = SlackPostMessage(
                                     channelId = channelId,
-                                    text = "Hey! These are the latest trends for the tournament",
+                                    text = "Hey! These are the ELO changes for the last $hours hours",
                                     attachments = listOf(SlackAttachment(evolution))
                             ).asJson()
                             slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
