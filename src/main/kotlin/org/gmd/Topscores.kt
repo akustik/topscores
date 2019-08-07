@@ -170,12 +170,13 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return "OK"
     }
 
-    @RequestMapping("/trigger/{account}/{tournament}/summary", method = arrayOf(RequestMethod.GET))
+    @RequestMapping("/trigger/slack/{tournament}/summary", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun triggerChannelSummary(
-            @PathVariable("account") account: String,
+            authentication: Authentication,
             @PathVariable("tournament") tournament: String): String {
 
+        val account = authentication.name
         val channelId = slackService.getChannelIdByName(teamName = account, channelName = tournament)
         if(channelId != null) {
             logger.info("Triggering slack summary action for $account and $tournament ($channelId)")
