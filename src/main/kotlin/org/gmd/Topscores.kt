@@ -170,11 +170,12 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return "OK"
     }
 
-    @RequestMapping("/trigger/slack/{tournament}/summary", method = arrayOf(RequestMethod.GET))
+    @RequestMapping("/trigger/slack/{tournament}/summary/{hours}", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun triggerChannelSummary(
             authentication: Authentication,
-            @PathVariable("tournament") tournament: String): String {
+            @PathVariable("tournament") tournament: String,
+            @PathVariable("hours") hours: Int): String {
 
         val account = authentication.name
         val channelId = slackService.getChannelIdByName(teamName = account, channelName = tournament)
@@ -187,7 +188,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                     alg = Algorithm.ELO,
                     consumer = {
                         val evolutionsToConsider = it.filter { e -> e.score.size > 3 }
-                        val evolution = AddGame.computeRatingChanges(evolutionsToConsider, numberOfGames = 3)
+                        val evolution = AddGame.computeRatingChangesForTime(evolutionsToConsider,
+                                minTimestamp = env.getCurrentTimeInMillis() - hours * 3600 * 1000)
                         val message = SlackPostMessage(
                                 channelId = channelId,
                                 text = "Hey! These are the latest trends for the tournament",

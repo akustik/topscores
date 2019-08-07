@@ -9,33 +9,34 @@ import org.springframework.stereotype.Component
 open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
     
     override fun rate(games: List<Game>): List<Score> {
-        val ratedPlayers = mutableMapOf<String, List<Double>>()
+        val ratedPlayers = mutableMapOf<String, List<Pair<Double, Long>>>()
         ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
         return ratedPlayers.map {
             rating ->
-            Score(rating.key, Math.round(rating.value.last()).toInt(), rating.value.size - 1)
+            Score(rating.key, Math.round(rating.value.last().first).toInt(), rating.value.size - 1)
         }
     }
 
     override fun evolution(games: List<Game>): List<Evolution> {
-        val ratedPlayers = mutableMapOf<String, List<Double>>()
+        val ratedPlayers = mutableMapOf<String, List<Pair<Double, Long>>>()
         ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
         return ratedPlayers.map {
             rating ->
-            Evolution(rating.key, rating.value.map { v -> Math.round(v).toInt()  } )
+            Evolution(rating.key, rating.value.map { v -> Pair(Math.round(v.first).toInt(), v.second)  } )
         }
     }
 
 
-    class RatedMember(val name: String, val score: Int, val rating: List<Double>)
+    class RatedMember(val name: String, val score: Int, val rating: List<Pair<Double, Long>>)
 
-    private tailrec fun ratePlayersInGame(ratings: MutableMap<String, List<Double>>, games: List<Game>): MutableMap<String, List<Double>> {
+    private tailrec fun ratePlayersInGame(ratings: MutableMap<String, List<Pair<Double, Long>>>, games: List<Game>): MutableMap<String, List<Pair<Double, Long>>> {
         return when {
             games.isNotEmpty() -> {
-                val currentStatus = games.first().parties.flatMap { party ->
+                val firstGame = games.first()
+                val currentStatus = firstGame.parties.flatMap { party ->
                     party.members.map {
                         member ->
-                        RatedMember(member.name, party.score, ratings.getOrDefault(member.name, listOf(1200.0)))
+                        RatedMember(member.name, party.score, ratings.getOrDefault(member.name, listOf(Pair(1200.0, 0L))))
                     }
                 }
 
@@ -50,8 +51,8 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
                             eloRatingDeltaForA(member, m)
                         }
 
-                        val newRating = member.rating.last() + differentScoreDeltas.sum() / differentScoreDeltas.size
-                        ratings.put(member.name, member.rating + newRating)
+                        val newRating = member.rating.last().first + differentScoreDeltas.sum() / differentScoreDeltas.size
+                        ratings.put(member.name, member.rating + Pair(newRating, firstGame.timestamp!!))
                     }
                 }
 
@@ -72,6 +73,6 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
 
     private fun probabilityOfWinForB(a: RatedMember, b: RatedMember): Double {
         return 1.0 * 1.0 / (1 + 1.0 *
-                Math.pow(10.0, 1.0 * (a.rating.last() - b.rating.last()) / 400))
+                Math.pow(10.0, 1.0 * (a.rating.last().first - b.rating.last().first) / 400))
     }
 }

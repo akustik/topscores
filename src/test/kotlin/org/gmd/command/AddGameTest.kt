@@ -59,8 +59,8 @@ class AddGameTest {
             }
         }
         val evolutions = listOf(
-                Evolution(player1, listOf(1200, 1213)),
-                Evolution(player2, listOf(1200, 1193))
+                Evolution(player1, listOf(Pair(1200, 0L), Pair(1213, 0L))),
+                Evolution(player2, listOf(Pair(1200, 0L), Pair(1193, 0L)))
         )
 
         Mockito.`when`(gameService.addGame(account, addedGame)).thenReturn(addedGame)
