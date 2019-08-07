@@ -38,7 +38,7 @@ class AddGame(
 
         fun computeRatingChanges(evolution: List<Evolution>, numberOfGames: Int = 1): String {
             val eloUpdate = evolution
-                    .map { e -> Triple(e.member, e.score.last(), e.score.last() - e.score.dropLast(numberOfGames).last()) }
+                    .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropLast(numberOfGames).last().first) }
                     .sortedByDescending { p -> p.third }
 
             return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")

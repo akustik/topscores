@@ -1,14 +1,14 @@
 package org.gmd.model
 
-class Evolution(val member: String, val score: List<Int>) {
-    
+class Evolution(val member: String, val score: List<Pair<Int, Long>>) {
+
     override fun toString(): String {
         return "Evolution(member='$member', score=$score)"
     }
-    
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other?.javaClass != javaClass) return false
+        if (javaClass != other?.javaClass) return false
 
         other as Evolution
 
@@ -23,5 +23,4 @@ class Evolution(val member: String, val score: List<Int>) {
         result = 31 * result + score.hashCode()
         return result
     }
-
 }
