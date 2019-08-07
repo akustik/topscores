@@ -334,10 +334,9 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         } else {
             val channelId = tree["event"]["channel"].asText()
             val teamId = tree["team_id"].asText()
-            val teamName = slackService.getTeamName(teamId)
 
             //Check slack signature
-            logger.info("channel $channelId event received, team $teamName ($teamId), signature validity: false")
+            logger.info("channel $channelId event received, team id $teamId, signature validity: false")
 
             "ok"
         }
