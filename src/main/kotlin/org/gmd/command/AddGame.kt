@@ -49,9 +49,8 @@ class AddGame(
         }
 
         fun computeRatingChangesForTime(evolution: List<Evolution>, minTimestamp: Long = 0L): String {
-            logger.info("min is $minTimestamp, evolution is $evolution")
             val eloUpdate = evolution
-                    .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropWhile {p -> p.second > minTimestamp}.last().first) }
+                    .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropLastWhile {p -> p.second > minTimestamp}.last().first) }
                     .sortedByDescending { p -> p.third }
 
             return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
