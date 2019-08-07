@@ -17,7 +17,7 @@ class SlackServiceForTesting : SlackService {
     }
 
     override fun registerChannelActivity(teamName: String, channelId: String, channelName: String) {
-        
+
     }
 
     override fun getChannelIdByName(teamName: String, channelName: String): String? {

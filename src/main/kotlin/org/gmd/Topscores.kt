@@ -16,6 +16,8 @@ import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.slack.executor.SlackExecutorProvider
+import org.gmd.slack.model.SlackAttachment
+import org.gmd.slack.model.SlackPostMessage
 import org.gmd.slack.service.SlackService
 import org.gmd.util.JsonUtils.Companion.readTree
 import org.slf4j.Logger
@@ -168,18 +170,34 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return "OK"
     }
 
-    @RequestMapping("/trigger/{teamName}/{channelName}/summary", method = arrayOf(RequestMethod.GET))
+    @RequestMapping("/trigger/{account}/{tournament}/summary", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun triggerChannelSummary(
-            @PathVariable("teamName") teamName: String,
-            @PathVariable("channelName") channelName: String): String {
+            @PathVariable("account") account: String,
+            @PathVariable("tournament") tournament: String): String {
 
-        val channelId = slackService.getChannelIdByName(teamName = teamName, channelName = channelName)
+        val channelId = slackService.getChannelIdByName(teamName = account, channelName = tournament)
         if(channelId != null) {
-            logger.info("Triggering summary action for $teamName and $channelName ($channelId)")
+            logger.info("Triggering slack summary action for $account and $tournament ($channelId)")
+
+            asyncService.consumeTournamentMemberScoreEvolution(
+                    account = account,
+                    tournament = tournament,
+                    consumer = {
+                        val evolutionsToConsider = it.filter { e -> e.score.size > 3 }
+                        val evolution = AddGame.computeRatingChanges(evolutionsToConsider)
+                        val message = SlackPostMessage(
+                                channelId = channelId,
+                                text = "Find below the last 3 games evolution per player",
+                                attachments = listOf(SlackAttachment(evolution))
+                        ).asJson()
+                        slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
+                    }
+            )
+
             return "OK"
         } else {
-            throw IllegalStateException("Unable to trigger summary for $channelName in team $teamName")
+            throw IllegalStateException("Unable to trigger summary for $account in team $tournament")
         }
     }
 
