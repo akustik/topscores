@@ -31,6 +31,28 @@ class AddGame(
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
 
 
+    companion object {
+        private fun variationToString(value: Int): String {
+            return if (value > 0) "+$value" else "$value"
+        }
+
+        fun computeRatingChanges(evolution: List<Evolution>, numberOfGames: Int = 1): String {
+            val eloUpdate = evolution
+                    .map { e -> Triple(e.member, e.score.last(), e.score.last() - e.score.dropLast(numberOfGames).last()) }
+                    .sortedByDescending { p -> p.third }
+
+            return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
+        }
+
+        fun computePlayerOrder(game: Game): String {
+            val storedPlayers = game.parties
+                    .sortedByDescending { party -> party.score }
+                    .flatMap { p -> p.members.map { m -> m.name } }
+
+            return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
+        }
+    }
+
     override fun run() {
         val normalizedPlayers = normalizePlayers(players)
         val algorithm = parseAlgorithm(alg)
@@ -96,25 +118,5 @@ class AddGame(
                 }
         )
         return listOf(computePlayerOrder(storedGame))
-    }
-
-    private fun variationToString(value: Int): String {
-        return if (value > 0) "+$value" else "$value"
-    }
-
-    private fun computeRatingChanges(evolution: List<Evolution>): String {
-        val eloUpdate = evolution
-                .map { e -> Triple(e.member, e.score.last(), e.score.last() - e.score.dropLast(1).last()) }
-                .sortedByDescending { p -> p.third }
-
-        return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
-    }
-
-    private fun computePlayerOrder(game: Game): String {
-        val storedPlayers = game.parties
-                .sortedByDescending { party -> party.score }
-                .flatMap { p -> p.members.map { m -> m.name } }
-
-        return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
     }
 }

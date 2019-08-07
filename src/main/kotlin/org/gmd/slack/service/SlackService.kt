@@ -13,4 +13,11 @@ interface SlackService {
     fun getUserNameById(teamName: String, id: String): String?
     
     fun getUserIdByName(teamName: String, name: String): String?
+
+    fun getTeamName(teamId: String): String
+
+    fun registerChannelActivity(teamName: String, channelId: String, channelName: String)
+
+    fun getChannelIdByName(teamName: String, channelName: String): String?
+
 }

@@ -16,6 +16,8 @@ import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.slack.executor.SlackExecutorProvider
+import org.gmd.slack.model.SlackAttachment
+import org.gmd.slack.model.SlackPostMessage
 import org.gmd.slack.service.SlackService
 import org.gmd.util.JsonUtils.Companion.readTree
 import org.slf4j.Logger
@@ -26,6 +28,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import java.lang.IllegalStateException
 import java.net.URLDecoder
 import java.nio.charset.Charset
 import java.time.Instant
@@ -167,6 +170,38 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return "OK"
     }
 
+    @RequestMapping("/trigger/slack/{tournament}/summary", method = arrayOf(RequestMethod.GET))
+    @ResponseBody
+    internal fun triggerChannelSummary(
+            authentication: Authentication,
+            @PathVariable("tournament") tournament: String): String {
+
+        val account = authentication.name
+        val channelId = slackService.getChannelIdByName(teamName = account, channelName = tournament)
+        if(channelId != null) {
+            logger.info("Triggering slack summary action for $account and $tournament ($channelId)")
+
+            asyncService.consumeTournamentMemberScoreEvolution(
+                    account = account,
+                    tournament = tournament,
+                    consumer = {
+                        val evolutionsToConsider = it.filter { e -> e.score.size > 3 }
+                        val evolution = AddGame.computeRatingChanges(evolutionsToConsider)
+                        val message = SlackPostMessage(
+                                channelId = channelId,
+                                text = "Find below the last 3 games evolution per player",
+                                attachments = listOf(SlackAttachment(evolution))
+                        ).asJson()
+                        slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
+                    }
+            )
+
+            return "OK"
+        } else {
+            throw IllegalStateException("Unable to trigger summary for $account in team $tournament")
+        }
+    }
+
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
@@ -196,7 +231,6 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     private fun withSignatureValidation(teamDomain: String, slackSignature: String, slackTimestamp: String,
                                         responseUrl: String, body: String, block: (SlackResponseHelper) -> Unit): SlackResponseHelper {
-
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
         if (env.getEnv()["token:$teamDomain"] == null) {
@@ -232,6 +266,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     private fun executeSlackCommand(teamDomain: String, channelId: String, channelName: String, userName: String,
                                     triggerId: String?, text: String, responseHelper: SlackResponseHelper) {
+        slackService.registerChannelActivity(teamName = teamDomain, channelId = channelId, channelName = channelName)
+
         val cmd = Leaderboard().subcommands(
                 AddGame(responseHelper, env, gameService, asyncService, teamDomain, channelName),
                 PrintElo(responseHelper, asyncService, teamDomain, channelName),
@@ -289,20 +325,22 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     @RequestMapping("/slack/event", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun slackEvent(@RequestBody body: String): String {
-        logger.info("event: $body")
+    internal fun slackEvent(@RequestParam payload: String,
+                            @RequestBody body: String,
+                            @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
+                            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+
         val tree = readTree(body)
         return if (tree.get("challenge") != null) {
             tree.get("challenge").asText()
         } else {
-            //FIXME: Verify signature
-            // Do use payload parameter?
             val channelId = tree["event"]["channel"].asText()
             val teamId = tree["team_id"].asText()
+            val teamName = slackService.getTeamName(teamId)
 
-            // Register channel recent activity
-            // Find how to map a channel id to a channel name, using a command?
-            // Use this information to provide daily insights
+            val isValid = isSlackSignatureValid(slackSignature, slackTimestamp, body)
+
+            logger.info("channel $channelId event received, team $teamName ($teamId), signature validity: $isValid")
 
             "ok"
         }
