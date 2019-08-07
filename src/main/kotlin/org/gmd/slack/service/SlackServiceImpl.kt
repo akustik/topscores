@@ -7,6 +7,7 @@ import org.gmd.slack.repository.SlackRepository
 import org.gmd.util.JsonUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.JedisPool
@@ -18,6 +19,7 @@ class SlackServiceImpl(private val env: EnvProvider,
                        private val jedisPool: JedisPool?) : SlackService {
 
     companion object {
+        val oneWeekInSeconds = 7 * 24 * 3600
         val logger: Logger = LoggerFactory.getLogger(SlackServiceImpl::class.java)
     }
 
@@ -40,13 +42,32 @@ class SlackServiceImpl(private val env: EnvProvider,
         return slackExecutorProvider.webApiPaginatedExecutor()(method, auth.accessToken)
     }
 
+    @Async
+    override fun registerChannelActivity(teamName: String, channelId: String, channelName: String) {
+        jedisPool!!.resource.use {
+            it.setex(channelIdRedisKey(teamName = teamName, channelName = channelName), oneWeekInSeconds, channelId)
+        }
+    }
+
+    override fun getChannelIdByName(teamName: String, channelName: String): String? {
+        jedisPool!!.resource.use {
+            return it.get(channelIdRedisKey(teamName = teamName, channelName = channelName))
+        }
+    }
+
+    private fun channelIdRedisKey(teamName: String, channelName: String) = "$teamName#$channelName"
+
+    override fun getTeamName(teamId: String): String {
+       return slackRepository.getAuthByTeamId(teamId).teamName
+    }
+
     override fun getUserNameById(teamName: String, id: String): String? =
-            getUserByKey(teamName = teamName, redisKey = idRedisKey(teamName = teamName, id = id))
+            getRedisUserByKey(teamName = teamName, redisKey = userIdRedisKey(teamName = teamName, id = id))
 
     override fun getUserIdByName(teamName: String, name: String): String? =
-            getUserByKey(teamName = teamName, redisKey = idRedisName(teamName = teamName, name = name))
+            getRedisUserByKey(teamName = teamName, redisKey = userNameRedisKey(teamName = teamName, name = name))
 
-    private fun getUserByKey(teamName: String, redisKey: String): String? {
+    private fun getRedisUserByKey(teamName: String, redisKey: String): String? {
         jedisPool!!.resource.use {
             val value = it!!.get(redisKey)
             return if (value == null) {
@@ -58,15 +79,15 @@ class SlackServiceImpl(private val env: EnvProvider,
         }
     }
 
-    private fun idRedisKey(teamName: String, id: String) = "$teamName#$id"
+    private fun userIdRedisKey(teamName: String, id: String) = "$teamName#$id"
 
-    private fun idRedisName(teamName: String, name: String) = "$teamName#${name.toLowerCase()}"
+    private fun userNameRedisKey(teamName: String, name: String) = "$teamName#${name.toLowerCase()}"
 
     private fun recoverTeamUsers(jedis: Jedis, teamName: String) {
         logger.info("Going to recover all users for $teamName")
         val allUsers = getAllUsersById(teamName)
-        val idToName = allUsers.flatMap { listOf(idRedisKey(teamName = teamName, id = it.key), it.value) }
-        val nameToId = allUsers.flatMap { listOf(idRedisName(teamName = teamName, name = it.value), it.key) }
+        val idToName = allUsers.flatMap { listOf(userIdRedisKey(teamName = teamName, id = it.key), it.value) }
+        val nameToId = allUsers.flatMap { listOf(userNameRedisKey(teamName = teamName, name = it.value), it.key) }
         val allEntries = (idToName + nameToId).toTypedArray()
         jedis.mset(*allEntries)
         logger.info("Recovered and updated ${allUsers.size} users for $teamName")

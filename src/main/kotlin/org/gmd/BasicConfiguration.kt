@@ -32,7 +32,7 @@ open class BasicConfiguration(private val env: EnvProvider) : WebSecurityConfigu
     override fun configure(http: HttpSecurity) {
         http
                 .authorizeRequests()
-                .antMatchers("/slack/**", "/health/**")
+                .antMatchers("/slack/**", "/health/**", "/trigger/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

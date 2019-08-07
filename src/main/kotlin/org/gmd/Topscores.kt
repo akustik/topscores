@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.crypto.codec.Hex
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import java.lang.IllegalStateException
 import java.net.URLDecoder
 import java.nio.charset.Charset
 import java.time.Instant
@@ -167,6 +168,21 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
         return "OK"
     }
 
+    @RequestMapping("/trigger/{teamName}/{channelName}/summary", method = arrayOf(RequestMethod.GET))
+    @ResponseBody
+    internal fun triggerChannelSummary(
+            @PathVariable("teamName") teamName: String,
+            @PathVariable("channelName") channelName: String): String {
+
+        val channelId = slackService.getChannelIdByName(teamName = teamName, channelName = channelName)
+        if(channelId != null) {
+            logger.info("Triggering summary action for $teamName and $channelName ($channelId)")
+            return "OK"
+        } else {
+            throw IllegalStateException("Unable to trigger summary for $channelName in team $teamName")
+        }
+    }
+
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
     @ResponseBody
     internal fun slackCommand(
@@ -196,7 +212,6 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     private fun withSignatureValidation(teamDomain: String, slackSignature: String, slackTimestamp: String,
                                         responseUrl: String, body: String, block: (SlackResponseHelper) -> Unit): SlackResponseHelper {
-
         val responseHelper = SlackResponseHelper(slackExecutorProvider.asyncResponseExecutorFor(responseUrl))
 
         if (env.getEnv()["token:$teamDomain"] == null) {
@@ -232,6 +247,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     private fun executeSlackCommand(teamDomain: String, channelId: String, channelName: String, userName: String,
                                     triggerId: String?, text: String, responseHelper: SlackResponseHelper) {
+        slackService.registerChannelActivity(teamName = teamDomain, channelId = channelId, channelName = channelName)
+
         val cmd = Leaderboard().subcommands(
                 AddGame(responseHelper, env, gameService, asyncService, teamDomain, channelName),
                 PrintElo(responseHelper, asyncService, teamDomain, channelName),
@@ -289,20 +306,22 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     @RequestMapping("/slack/event", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun slackEvent(@RequestBody body: String): String {
-        logger.info("event: $body")
+    internal fun slackEvent(@RequestParam payload: String,
+                            @RequestBody body: String,
+                            @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
+                            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+
         val tree = readTree(body)
         return if (tree.get("challenge") != null) {
             tree.get("challenge").asText()
         } else {
-            //FIXME: Verify signature
-            // Do use payload parameter?
             val channelId = tree["event"]["channel"].asText()
             val teamId = tree["team_id"].asText()
+            val teamName = slackService.getTeamName(teamId)
 
-            // Register channel recent activity
-            // Find how to map a channel id to a channel name, using a command?
-            // Use this information to provide daily insights with an external call
+            val isValid = isSlackSignatureValid(slackSignature, slackTimestamp, body)
+
+            logger.info("channel $channelId event received, team $teamName ($teamId), signature validity: $isValid")
 
             "ok"
         }

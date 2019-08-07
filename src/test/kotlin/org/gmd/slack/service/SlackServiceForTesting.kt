@@ -16,6 +16,18 @@ class SlackServiceForTesting : SlackService {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    override fun registerChannelActivity(teamName: String, channelId: String, channelName: String) {
+        
+    }
+
+    override fun getChannelIdByName(teamName: String, channelName: String): String? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getTeamName(teamId: String): String {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     override fun getUserIdByName(teamName: String, name: String): String? {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
