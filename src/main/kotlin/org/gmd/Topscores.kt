@@ -325,10 +325,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
 
     @RequestMapping("/slack/event", method = arrayOf(RequestMethod.POST))
     @ResponseBody
-    internal fun slackEvent(@RequestParam payload: String,
-                            @RequestBody body: String,
-                            @RequestHeader(name = "X-Slack-Signature") slackSignature: String,
-                            @RequestHeader(name = "X-Slack-Request-Timestamp") slackTimestamp: String): String {
+    internal fun slackEvent(@RequestBody body: String): String {
 
         val tree = readTree(body)
         return if (tree.get("challenge") != null) {
@@ -338,9 +335,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
             val teamId = tree["team_id"].asText()
             val teamName = slackService.getTeamName(teamId)
 
-            val isValid = isSlackSignatureValid(slackSignature, slackTimestamp, body)
-
-            logger.info("channel $channelId event received, team $teamName ($teamId), signature validity: $isValid")
+            //Check slack signature
+            logger.info("channel $channelId event received, team $teamName ($teamId), signature validity: false")
 
             "ok"
         }
