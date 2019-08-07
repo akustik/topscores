@@ -14,6 +14,7 @@ import org.gmd.model.Game
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
+import java.sql.Timestamp
 import kotlin.concurrent.withLock
 
 class AddGame(
@@ -36,13 +37,22 @@ class AddGame(
             return if (value > 0) "+$value" else "$value"
         }
 
-        fun computeRatingChanges(evolution: List<Evolution>, numberOfGames: Int = 1): String {
+        fun computeRatingChangesForGames(evolution: List<Evolution>, numberOfGames: Int = 1): String {
             val eloUpdate = evolution
                     .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropLast(numberOfGames).last().first) }
                     .sortedByDescending { p -> p.third }
 
             return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
         }
+
+        fun computeRatingChangesForTime(evolution: List<Evolution>, minTimestamp: Long = 0L): String {
+            val eloUpdate = evolution
+                    .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropWhile {it.second > minTimestamp}.last().first) }
+                    .sortedByDescending { p -> p.third }
+
+            return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
+        }
+
 
         fun computePlayerOrder(game: Game): String {
             val storedPlayers = game.parties
@@ -69,7 +79,7 @@ class AddGame(
                     consumer = { simulation ->
                         run {
                             response.asyncMessage("Find the ELO simulation below, is it worth the risk?",
-                                    listOf(computeRatingChanges(simulation)),
+                                    listOf(computeRatingChangesForGames(simulation)),
                                     silent = silent)
                         }
                     }
@@ -112,7 +122,7 @@ class AddGame(
                 consumer = { evolution ->
                     run {
                         response.asyncMessage("Computed ELO changes after this game",
-                                listOf(computeRatingChanges(evolution)),
+                                listOf(computeRatingChangesForGames(evolution)),
                                 silent = false)
                     }
                 }
