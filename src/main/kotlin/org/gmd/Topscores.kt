@@ -187,8 +187,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                     tournament = tournament,
                     alg = Algorithm.ELO,
                     consumer = {
-                        val evolutionsToConsider = it.filter { e -> e.score.size > 3 }
-                        val evolution = AddGame.computeRatingChangesForTime(evolutionsToConsider,
+                        val evolution = AddGame.computeRatingChangesForTime(it,
                                 minTimestamp = env.getCurrentTimeInMillis() - hours * 3600 * 1000)
                         val message = SlackPostMessage(
                                 channelId = channelId,

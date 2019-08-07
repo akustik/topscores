@@ -14,7 +14,8 @@ import org.gmd.model.Game
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
-import java.sql.Timestamp
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.concurrent.withLock
 
 class AddGame(
@@ -33,6 +34,8 @@ class AddGame(
 
 
     companion object {
+        val logger: Logger = LoggerFactory.getLogger(AddGame::class.java)
+
         private fun variationToString(value: Int): String {
             return if (value > 0) "+$value" else "$value"
         }
@@ -46,6 +49,7 @@ class AddGame(
         }
 
         fun computeRatingChangesForTime(evolution: List<Evolution>, minTimestamp: Long = 0L): String {
+            logger.info("min is $minTimestamp, evolution is $evolution")
             val eloUpdate = evolution
                     .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropWhile {it.second > minTimestamp}.last().first) }
                     .sortedByDescending { p -> p.third }
