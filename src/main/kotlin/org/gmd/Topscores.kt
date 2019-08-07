@@ -189,12 +189,16 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                     consumer = {
                         val evolution = AddGame.computeRatingChangesForTime(it,
                                 minTimestamp = env.getCurrentTimeInMillis() - hours * 3600 * 1000)
-                        val message = SlackPostMessage(
-                                channelId = channelId,
-                                text = "Hey! These are the latest trends for the tournament",
-                                attachments = listOf(SlackAttachment(evolution))
-                        ).asJson()
-                        slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
+                        if(evolution.trim().isNotEmpty()) {
+                            val message = SlackPostMessage(
+                                    channelId = channelId,
+                                    text = "Hey! These are the latest trends for the tournament",
+                                    attachments = listOf(SlackAttachment(evolution))
+                            ).asJson()
+                            slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
+                        } else {
+                            logger.warn("No trends for $tournament with $hours hours")
+                        }
                     }
             )
 
