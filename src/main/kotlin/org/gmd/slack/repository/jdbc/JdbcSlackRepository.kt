@@ -28,7 +28,7 @@ open class JdbcSlackRepository : SlackRepository {
         return jdbcTemplate.query(
                 """
                     SELECT created_at, content from $tableName
-                    where team_name = ? order by created_at desc limit 1
+                    where team_id = ? order by created_at desc limit 1
                     """, arrayOf(teamId), SlackAuthRowMapper()).first()!!.second
     }
 
