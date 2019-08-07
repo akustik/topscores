@@ -9,6 +9,10 @@ import org.springframework.stereotype.Component
 @Component
 open class JdbcSlackRepository : SlackRepository {
 
+    companion object {
+        private const val MODEL_VERSION = 2
+    }
+
     @Autowired
     private lateinit var jdbcTemplate: JdbcTemplate
 
@@ -39,7 +43,7 @@ open class JdbcSlackRepository : SlackRepository {
     }
 
     private fun withTable(): String {
-        val tableName = "slack_auth"
+        val tableName = "slack_auth_$MODEL_VERSION"
         jdbcTemplate.execute("CREATE TABLE IF NOT EXISTS $tableName " +
                 "(team_id TEXT NOT NULL, team_name TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW(), content bytea NOT NULL, PRIMARY KEY (team_id, team_name, created_at))")
         return tableName
