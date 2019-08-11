@@ -140,13 +140,7 @@ class WebApi(private val env: EnvProvider) {
 
         return addedGames
     }
-
-    @RequestMapping("/health/check", method = arrayOf(RequestMethod.GET))
-    @ResponseBody
-    internal fun healthCheck(): String {
-        return "OK"
-    }
-
+    
     @RequestMapping("/web/slack/oauth", method = arrayOf(RequestMethod.GET))
     internal fun slackAuth(
             @RequestParam(name = "code") code: String,

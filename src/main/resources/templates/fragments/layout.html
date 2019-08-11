@@ -4,6 +4,8 @@
     <div th:fragment="css">
         <link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
         <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"/>
+        <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"/>
     </div>
 </head>
 <body>
@@ -16,11 +18,22 @@
             <li th:classappend="${#httpServletRequest.getRequestURI() == '/' ? 'active':''}">
                 <a href="/"><span class="glyphicon glyphicon-home"></span> <span th:text="${account}"></span></a>
             </li>
-            <li th:each="tournament : ${tournaments}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/status/' + tournament + '/elo' ? 'active':''}">
+            <li th:if="${tournament != null}" class="active">
                 <a th:href="@{'/web/status/' + ${tournament} + '/elo'}">
-                    <span class="glyphicon glyphicon-th-list"></span> 
+                    <span class="glyphicon glyphicon-th-list"></span>
                     <span th:text="${tournament}"></span>
                 </a>
+            </li>
+            <li class="dropdown" th:if="${tournament == null}">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Select tournament <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li th:each="tournament : ${tournaments}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/status/' + tournament + '/elo' ? 'active':''}">
+                        <a th:href="@{'/web/status/' + ${tournament} + '/elo'}">
+                            <span class="glyphicon glyphicon-th-list"></span>
+                            <span th:text="${tournament}"></span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li>
                 <a th:href="@{'/web/create'}" th:classappend="${#httpServletRequest.getRequestURI() == '/web/create' ? 'active':''}">
