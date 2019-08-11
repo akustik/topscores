@@ -8,10 +8,7 @@ import io.swagger.annotations.ApiParam
 import org.apache.commons.lang3.text.StrTokenizer
 import org.gmd.command.*
 import org.gmd.form.SimpleGame
-import org.gmd.model.Game
-import org.gmd.model.PlayerStatus
-import org.gmd.model.TournamentMetrics
-import org.gmd.model.TournamentStatus
+import org.gmd.model.*
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
@@ -187,7 +184,7 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                     tournament = tournament,
                     alg = Algorithm.ELO,
                     consumer = {
-                        val evolution = AddGame.computeRatingChangesForTime(it,
+                        val evolution = Evolution.computeRatingChangesForTime(it,
                                 minTimestamp = env.getCurrentTimeInMillis() - hours * 3600 * 1000)
                         if(evolution.trim().isNotEmpty()) {
                             val message = SlackPostMessage(

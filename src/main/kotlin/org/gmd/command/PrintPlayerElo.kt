@@ -7,7 +7,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
-import org.gmd.Algorithm
+import org.gmd.model.Evolution.Companion.computePlayerEvolution
 import org.gmd.service.AsyncGameService
 import org.gmd.slack.SlackResponseHelper
 
@@ -30,14 +30,11 @@ class PrintPlayerElo(
 
     private fun returnEvolution() {
         val algorithm = parseAlgorithm(alg)
-        service.consumeTournamentMemberScoreEvolution(account, tournament, listOf(player), algorithm, emptyList()) {
-            evolution ->
+        service.consumeTournamentMemberScoreEvolution(account, tournament, listOf(player), algorithm, emptyList()) { evolution ->
             run {
                 if (evolution.isNotEmpty()) {
-                    val leaderboard = evolution.first().score.mapIndexed { index, score -> "${index + 1}. $score" }
-                            .joinToString(separator = "\n")
-
-                    response.asyncMessage(text = "Current ${algorithm.name} evolution for $player", attachments = listOf(leaderboard), silent = silent)
+                    val playerEvolution = computePlayerEvolution(evolution.first())
+                    response.asyncMessage(text = "Current ${algorithm.name} evolution for $player", attachments = listOf(playerEvolution), silent = silent)
                 } else {
                     response.asyncMessage(text = "There are no registered games for $player yet. Add games to start the fun!", silent = silent)
                 }
