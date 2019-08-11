@@ -52,7 +52,7 @@ class SlackApi(private val env: EnvProvider, private val slackExecutorProvider: 
         val existingTournaments = gameService.listTournaments(account)
 
         val executions = existingTournaments.map { tournament ->
-            {
+            run {
                 val channelId = slackService.getChannelIdByName(teamName = account, channelName = tournament)
                 if (channelId != null) {
                     logger.info("Triggering slack summary action for $account and $tournament ($channelId)")
