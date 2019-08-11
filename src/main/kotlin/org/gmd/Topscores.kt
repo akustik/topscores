@@ -241,7 +241,8 @@ class Topscores(private val env: EnvProvider, private val slackExecutorProvider:
                 DeleteGame(responseHelper, gameService, teamDomain, channelName),
                 MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
                 Dialog(responseHelper, slackService, triggerId, teamDomain, channelName),
-                Taunt(responseHelper, slackService, teamDomain, channelId)
+                Taunt(responseHelper, slackService, teamDomain, channelId),
+                RecommendChallengers(responseHelper, gameService, teamDomain, channelId, userName)
         )
 
         try {
