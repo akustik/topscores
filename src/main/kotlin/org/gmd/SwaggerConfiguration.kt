@@ -32,4 +32,24 @@ open class SwaggerConfiguration {
                 .paths(PathSelectors.ant("/scores/**"))
                 .build()
     }
+
+    @Bean
+    open fun triggerApi(): Docket {
+        return Docket(DocumentationType.SWAGGER_2)
+                .groupName("Triggers")
+                .select()
+                .apis(RequestHandlerSelectors.any())
+                .paths(PathSelectors.ant("/trigger/**"))
+                .build()
+    }
+
+    @Bean
+    open fun healthApi(): Docket {
+        return Docket(DocumentationType.SWAGGER_2)
+                .groupName("Health")
+                .select()
+                .apis(RequestHandlerSelectors.any())
+                .paths(PathSelectors.ant("/health/**"))
+                .build()
+    }
 }

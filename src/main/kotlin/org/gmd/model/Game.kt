@@ -111,5 +111,14 @@ class Game() {
             game.timestamp = timestamp
             return game
         }
+
+        fun computePlayerOrder(game: Game): String {
+            val storedPlayers = game.parties
+                    .sortedByDescending { party -> party.score }
+                    .flatMap { p -> p.members.map { m -> m.name } }
+
+            return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
+        }
+        
     }
 }

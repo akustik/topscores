@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -9,13 +9,14 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import org.gmd.Algorithm
 import org.gmd.EnvProvider
-import org.gmd.model.Evolution
+import org.gmd.model.Evolution.Companion.computeRatingChangesForGames
 import org.gmd.model.Game
+import org.gmd.model.Game.Companion.computePlayerOrder
+import org.gmd.model.Game.Companion.playerOrderedListToGame
+import org.gmd.model.Game.Companion.withCollectionTimeIfTimestampIsNotPresent
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.concurrent.withLock
 
 class AddGame(
@@ -31,46 +32,11 @@ class AddGame(
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val force by option("--force", "-f", help = "Force the addition of the game and ignore collisions").flag()
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
-
-
-    companion object {
-        val logger: Logger = LoggerFactory.getLogger(AddGame::class.java)
-
-        private fun variationToString(value: Int): String {
-            return if (value > 0) "+$value" else "$value"
-        }
-
-        fun computeRatingChangesForGames(evolution: List<Evolution>, numberOfGames: Int = 1): String {
-            val eloUpdate = evolution
-                    .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropLast(numberOfGames).last().first) }
-                    .filter { t -> t.third != 0 }
-                    .sortedByDescending { p -> p.third }
-
-            return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
-        }
-
-        fun computeRatingChangesForTime(evolution: List<Evolution>, minTimestamp: Long = 0L): String {
-            val eloUpdate = evolution
-                    .map { e -> Triple(e.member, e.score.last().first, e.score.last().first - e.score.dropLastWhile {p -> p.second > minTimestamp}.last().first) }
-                    .filter { t -> t.third != 0 }
-                    .sortedByDescending { p -> p.third }
-
-            return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
-        }
-
-        fun computePlayerOrder(game: Game): String {
-            val storedPlayers = game.parties
-                    .sortedByDescending { party -> party.score }
-                    .flatMap { p -> p.members.map { m -> m.name } }
-
-            return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
-        }
-    }
-
+    
     override fun run() {
         val normalizedPlayers = normalizePlayers(players)
         val algorithm = parseAlgorithm(alg)
-        val gameToCreate = Game.playerOrderedListToGame(tournament, normalizedPlayers)
+        val gameToCreate = playerOrderedListToGame(tournament, normalizedPlayers)
 
         if (dryRun) {
             response.asyncDefaultResponse()
@@ -95,7 +61,7 @@ class AddGame(
                             "Check last game for duplicates and use the --force flag if you're sure that is OK",
                             listOf(), silent = true)
                 } else {
-                    val gameWithCollectionTime = Game.withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate)
+                    val gameWithCollectionTime = withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate)
                     val storedGame = service.addGame(account, gameWithCollectionTime)
                     response.publicMessage(
                             "Good game! A new game entry has been created!",

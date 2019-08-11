@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument

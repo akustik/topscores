@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.ajalt.clikt.core.CliktCommand
