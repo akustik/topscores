@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import org.gmd.TestData.Companion.dummy
 import org.gmd.TestData.Companion.player1

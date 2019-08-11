@@ -1,9 +1,6 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import org.gmd.Algorithm
 import org.gmd.service.AsyncGameService
 import org.gmd.slack.SlackResponseHelper
 

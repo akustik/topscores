@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import org.gmd.Algorithm
 import org.gmd.EnvProviderForTesting

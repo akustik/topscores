@@ -1,17 +1,16 @@
 package org.gmd
 
-import org.gmd.model.Game
 import org.gmd.repository.GameRepository
 import org.gmd.repository.GameRepositoryForTesting
-import org.gmd.service.*
+import org.gmd.service.AsyncGameService
+import org.gmd.service.AsyncGameServiceForTesting
+import org.gmd.service.GameService
+import org.gmd.service.GameServiceImpl
 import org.gmd.service.alg.AdderMemberRatingAlgorithm
 import org.gmd.service.alg.ELOMemberRatingAlgorithm
 import org.gmd.slack.executor.SlackExecutorProviderForTesting
 import org.gmd.slack.service.SlackService
 import org.gmd.slack.service.SlackServiceForTesting
-import org.gmd.util.JsonUtils
-import org.hamcrest.BaseMatcher
-import org.hamcrest.Description
 import org.junit.Assert
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,7 +20,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -31,9 +29,9 @@ import java.time.Instant
 import java.util.*
 
 
-@WebMvcTest(Topscores::class)
+@WebMvcTest(SlackApi::class)
 @RunWith(SpringRunner::class)
-class TopscoresTest {
+class SlackApiTest {
 
     companion object {
         val slackAsyncExecutorProviderForTesting = SlackExecutorProviderForTesting()
@@ -85,127 +83,13 @@ class TopscoresTest {
         }
 
         @Bean
-        open fun controller(): Topscores {
-            return Topscores(EnvProviderForTesting(mapOf(
+        open fun controller(): SlackApi {
+            return SlackApi(EnvProviderForTesting(mapOf(
                     "bypass_slack_secret" to "true",
                     "token:scopely" to "something",
                     "token:patxanga" to "something"
             ), 1234L), slackAsyncExecutorProviderForTesting)
         }
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun addGameShouldReturnTheSameJson() {
-        val request = post("/games/add")
-                .content(TestData.patxanga)
-                .contentType("application/json")
-                .header("Authorization", basicAuthHeader("user", "pwd"))
-
-        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().json(TestData.patxanga, true))
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun addGameShouldCreateTimestampForGame() {
-        val request = post("/games/add")
-                .content(TestData.patxanga_no_timestamp)
-                .contentType("application/json")
-                .header("Authorization", basicAuthHeader("user", "pwd"))
-
-        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().string(TimestampExists()))
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun addGameShouldSupportOptionalMetricsAndTags() {
-        val request = post("/games/add")
-                .content(TestData.mariokart)
-                .contentType("application/json")
-                .header("Authorization", basicAuthHeader("user", "pwd"))
-
-        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().json(TestData.mariokart, false))
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun scoresShouldReturnAggregatedDataByAccount() {
-        val expected = """
-        {
-            "availableMetrics": [
-                "gols",
-                "z.games",
-                "z.result.lose",
-                "z.result.win",
-                "z.team.blaus",
-                "z.team.grocs"
-            ],
-            "metrics": [
-                {
-                    "member": "arnau",
-                    "metrics": {
-                        "gols": 1,
-                        "z.games": 1,
-                        "z.result.win": 1,
-                        "z.team.grocs": 1
-                    }
-                },
-                {
-                    "member": "guillem",
-                    "metrics": {
-                        "gols": 2,
-                        "z.games": 1,
-                        "z.result.lose": 1,
-                        "z.team.blaus": 1
-                    }
-                },
-                {
-                    "member": "ramon",
-                    "metrics": {
-                        "gols": 2,
-                        "z.games": 1,
-                        "z.result.win": 1,
-                        "z.team.grocs": 1
-                    }
-                },
-                {
-                    "member": "uri",
-                    "metrics": {
-                        "z.games": 1,
-                        "z.result.lose": 1,
-                        "z.team.blaus": 1
-                    }
-                }
-            ],
-            "scores": [
-                {
-                    "member": "ramon",
-                    "score": 1
-                },
-                {
-                    "member": "arnau",
-                    "score": 1
-                },
-                {
-                    "member": "uri",
-                    "score": 0
-                },
-                {
-                    "member": "guillem",
-                    "score": 0
-                }
-            ]
-        }
-
-        """
-        val request = get("/scores/patxanga/players")
-                .header("Authorization", basicAuthHeader("user", "pwd"))
-
-        this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().json(expected))
     }
 
     @Test
@@ -249,24 +133,6 @@ class TopscoresTest {
 
         this.mockMvc!!.perform(request).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().string("""{"text":"Something went wrong!","attachments":[],"response_type":"ephemeral"}"""))
-    }
-
-    private fun basicAuthHeader(user: String, password: String): String {
-        return "Basic " + Base64.getEncoder().encodeToString("$user:$password".toByteArray(Charset.defaultCharset()))
-    }
-}
-
-class TimestampExists : BaseMatcher<String>() {
-    override fun describeTo(description: Description?) {
-        description!!.appendText("has a timestamp")
-    }
-
-    override fun matches(item: Any?): Boolean {
-        if (item is String) {
-            return JsonUtils.readValue(item, Game::class.java).timestamp!! > 0
-        }
-
-        return false
     }
 }
 
