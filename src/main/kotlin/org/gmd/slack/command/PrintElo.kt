@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -8,7 +8,7 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.int
-import org.gmd.Algorithm
+import org.gmd.model.Score
 import org.gmd.service.AsyncGameService
 import org.gmd.slack.SlackResponseHelper
 
@@ -39,11 +39,7 @@ class PrintElo(
             scores ->
             run {
                 if (scores.isNotEmpty()) {
-                    val leaderboard = scores
-                            .filter { s -> s.games >= minGames }
-                            .mapIndexed { index, score -> "${index + 1}. ${score.member} (${score.score})" }
-                            .joinToString(separator = "\n")
-                    
+                    val leaderboard = Score.computeLeaderboard(scores, minGames)
                     val kind = if(players.isEmpty()) "complete" else "filtered"
                     response.asyncMessage(text = "Current ${algorithm.name} leaderboard ($kind) for players with at least $minGames games", attachments = listOf(leaderboard), silent = silent)
                 } else {

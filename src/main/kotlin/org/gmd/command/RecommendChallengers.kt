@@ -12,6 +12,7 @@ import org.gmd.model.Team
 import org.gmd.service.GameService
 import org.gmd.service.alg.probabilityOfWinForBRating
 import org.gmd.slack.SlackResponseHelper
+import org.gmd.slack.command.SlackCommand
 import org.gmd.util.calculateWinRatio
 
 class RecommendChallengers(

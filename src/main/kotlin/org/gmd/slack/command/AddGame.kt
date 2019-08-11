@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -9,8 +9,11 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import org.gmd.Algorithm
 import org.gmd.EnvProvider
-import org.gmd.model.Evolution
+import org.gmd.model.Evolution.Companion.computeRatingChangesForGames
 import org.gmd.model.Game
+import org.gmd.model.Game.Companion.computePlayerOrder
+import org.gmd.model.Game.Companion.playerOrderedListToGame
+import org.gmd.model.Game.Companion.withCollectionTimeIfTimestampIsNotPresent
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
@@ -29,12 +32,11 @@ class AddGame(
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val force by option("--force", "-f", help = "Force the addition of the game and ignore collisions").flag()
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
-
-
+    
     override fun run() {
         val normalizedPlayers = normalizePlayers(players)
         val algorithm = parseAlgorithm(alg)
-        val gameToCreate = Game.playerOrderedListToGame(tournament, normalizedPlayers)
+        val gameToCreate = playerOrderedListToGame(tournament, normalizedPlayers)
 
         if (dryRun) {
             response.asyncDefaultResponse()
@@ -47,7 +49,7 @@ class AddGame(
                     consumer = { simulation ->
                         run {
                             response.asyncMessage("Find the ELO simulation below, is it worth the risk?",
-                                    listOf(computeRatingChanges(simulation)),
+                                    listOf(computeRatingChangesForGames(simulation)),
                                     silent = silent)
                         }
                     }
@@ -59,7 +61,7 @@ class AddGame(
                             "Check last game for duplicates and use the --force flag if you're sure that is OK",
                             listOf(), silent = true)
                 } else {
-                    val gameWithCollectionTime = Game.withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate)
+                    val gameWithCollectionTime = withCollectionTimeIfTimestampIsNotPresent(envProvider, gameToCreate)
                     val storedGame = service.addGame(account, gameWithCollectionTime)
                     response.publicMessage(
                             "Good game! A new game entry has been created!",
@@ -90,31 +92,11 @@ class AddGame(
                 consumer = { evolution ->
                     run {
                         response.asyncMessage("Computed ELO changes after this game",
-                                listOf(computeRatingChanges(evolution)),
+                                listOf(computeRatingChangesForGames(evolution)),
                                 silent = false)
                     }
                 }
         )
         return listOf(computePlayerOrder(storedGame))
-    }
-
-    private fun variationToString(value: Int): String {
-        return if (value > 0) "+$value" else "$value"
-    }
-
-    private fun computeRatingChanges(evolution: List<Evolution>): String {
-        val eloUpdate = evolution
-                .map { e -> Triple(e.member, e.score.last(), e.score.last() - e.score.dropLast(1).last()) }
-                .sortedByDescending { p -> p.third }
-
-        return eloUpdate.mapIndexed { index, s -> "${index + 1}. ${s.first} (${s.second}, ${variationToString(s.third)})" }.joinToString(separator = "\n")
-    }
-
-    private fun computePlayerOrder(game: Game): String {
-        val storedPlayers = game.parties
-                .sortedByDescending { party -> party.score }
-                .flatMap { p -> p.members.map { m -> m.name } }
-
-        return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
     }
 }

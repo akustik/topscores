@@ -16,7 +16,7 @@ interface AsyncGameService {
 
     fun consumeTournamentMemberScoreEvolution(account: String,
                                               tournament: String,
-                                              player: List<String>,
+                                              player: List<String> = emptyList(),
                                               alg: Algorithm = Algorithm.SUM,
                                               withGames: List<Game> = emptyList(),
                                               consumer: (List<Evolution>) -> Unit)
