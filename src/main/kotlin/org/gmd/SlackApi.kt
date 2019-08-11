@@ -4,11 +4,11 @@ import com.github.ajalt.clikt.core.*
 import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import org.apache.commons.lang3.text.StrTokenizer
-import org.gmd.slack.command.*
 import org.gmd.model.Evolution
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
 import org.gmd.slack.SlackResponseHelper
+import org.gmd.slack.command.*
 import org.gmd.slack.executor.SlackExecutorProvider
 import org.gmd.slack.model.SlackAttachment
 import org.gmd.slack.model.SlackPostMessage
@@ -41,43 +41,50 @@ class SlackApi(private val env: EnvProvider, private val slackExecutorProvider: 
 
     @Autowired
     private lateinit var asyncService: AsyncGameService
-    
-    @RequestMapping("/trigger/slack/{tournament}/summary/{hours}", method = arrayOf(RequestMethod.GET))
+
+    @RequestMapping("/trigger/slack/summary/{hours}", method = arrayOf(RequestMethod.GET))
     @ResponseBody
     internal fun triggerChannelSummary(
             authentication: Authentication,
-            @PathVariable("tournament") tournament: String,
             @PathVariable("hours") hours: Int): String {
 
         val account = authentication.name
-        val channelId = slackService.getChannelIdByName(teamName = account, channelName = tournament)
-        if(channelId != null) {
-            logger.info("Triggering slack summary action for $account and $tournament ($channelId)")
+        val existingTournaments = gameService.listTournaments(account)
 
-            asyncService.consumeTournamentMemberScoreEvolution(
-                    account = account,
-                    tournament = tournament,
-                    alg = Algorithm.ELO,
-                    consumer = {
-                        val evolution = Evolution.computeRatingChangesForTime(it,
-                                minTimestamp = env.getCurrentTimeInMillis() - hours * 3600 * 1000)
-                        if(evolution.trim().isNotEmpty()) {
-                            val message = SlackPostMessage(
-                                    channelId = channelId,
-                                    text = "Hey! These are the ELO changes for the last $hours hours",
-                                    attachments = listOf(SlackAttachment(evolution))
-                            ).asJson()
-                            slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
-                        } else {
-                            logger.warn("No trends for $tournament with $hours hours")
-                        }
-                    }
-            )
+        val executions = existingTournaments.map { tournament ->
+            {
+                val channelId = slackService.getChannelIdByName(teamName = account, channelName = tournament)
+                if (channelId != null) {
+                    logger.info("Triggering slack summary action for $account and $tournament ($channelId)")
 
-            return "OK"
-        } else {
-            throw IllegalStateException("Unable to trigger summary for $account in team $tournament")
+                    asyncService.consumeTournamentMemberScoreEvolution(
+                            account = account,
+                            tournament = tournament,
+                            alg = Algorithm.ELO,
+                            consumer = {
+                                val evolution = Evolution.computeRatingChangesForTime(it,
+                                        minTimestamp = env.getCurrentTimeInMillis() - hours * 3600 * 1000)
+                                if (evolution.trim().isNotEmpty()) {
+                                    val message = SlackPostMessage(
+                                            channelId = channelId,
+                                            text = "Hey! These are the ELO changes for the last $hours hours",
+                                            attachments = listOf(SlackAttachment(evolution))
+                                    ).asJson()
+                                    slackService.postWebApi(account, "chat.postMessage", message, useBotToken = true)
+                                } else {
+                                    logger.warn("No trends for $tournament with $hours hours")
+                                }
+                            }
+                    )
+
+                    "#$tournament: OK"
+                } else {
+                    "#$tournament: MISS"
+                }
+            }
         }
+
+        return executions.joinToString(separator = ", ")
     }
 
     @RequestMapping("/slack/command", method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
@@ -187,7 +194,7 @@ class SlackApi(private val env: EnvProvider, private val slackExecutorProvider: 
 
     }
 
-    
+
     @RequestMapping("/slack/event", method = arrayOf(RequestMethod.POST))
     @ResponseBody
     internal fun slackEvent(@RequestBody body: String): String {
@@ -224,7 +231,7 @@ class SlackApi(private val env: EnvProvider, private val slackExecutorProvider: 
         val callbackId = parsedPayload["callback_id"].asText()
         val submission = parsedPayload["submission"]
         val responseUrl = parsedPayload["response_url"].asText()
-        
+
         val players = Dialog.playerList(callbackId = callbackId, submission = submission)
                 .joinToString(separator = " ")
                 { slackService.getUserNameById(teamName = teamDomain, id = it) ?: "undefined" }
