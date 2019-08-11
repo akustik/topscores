@@ -13,7 +13,7 @@ open class LoggingConfiguration {
         filter.setIncludeQueryString(true)
         filter.setIncludePayload(true)
         filter.setMaxPayloadLength(10000)
-        //filter.setIncludeHeaders(true)
+        filter.isIncludeHeaders = true
         filter.setAfterMessagePrefix("Request data: ")
         return filter
     }

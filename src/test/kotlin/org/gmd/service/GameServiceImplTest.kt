@@ -76,7 +76,7 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOForASingleTeamMember() {
-        val expected = Evolution("ramon", listOf(1200, 1215))
+        val expected = Evolution("ramon", listOf(Pair(1200, 0L), Pair(1215, 1558211897715L)))
         val account = "test"
         val tournament = "patxanga"
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
@@ -89,7 +89,7 @@ class GameServiceImplTest {
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldRateELOEvolutionForASingleTeamMember() {
-        val expected = Evolution("ramon", listOf(1200, 1215, 1229))
+        val expected = Evolution("ramon", listOf(Pair(1200, 0L), Pair(1215, 1558211897715L), Pair(1229, 1558211897715L)))
         val account = "test"
         val tournament = "patxanga"
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))

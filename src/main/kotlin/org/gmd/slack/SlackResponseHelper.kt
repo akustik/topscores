@@ -1,9 +1,12 @@
 package org.gmd.slack
 
+import org.gmd.slack.model.SlackAttachment
+import org.gmd.slack.model.SlackResponse
+
 
 class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
 
-    var slackResponse = SlackResponse()
+    var slackResponse: SlackResponse? = SlackResponse()
 
     fun internalMessage(text: String) {
         message(text = text, silent = true)
@@ -17,16 +20,24 @@ class SlackResponseHelper(val asyncExecutor: (SlackResponse) -> Unit) {
         slackResponse = responseOf(text, attachments, silent)
     }
 
-    fun asJson(): String {
-        return slackResponse.asJson()
+    fun asJson(): String? {
+        return slackResponse?.asJson()
     }
 
     fun asyncDefaultResponse() {
         internalMessage("ACK! You will get the response in a few seconds.")
     }
 
+    fun emptyResponse() {
+        slackResponse = null
+    }
+
     fun asyncMessage(text: String, attachments: List<String> = emptyList(), silent: Boolean = true) {
         asyncExecutor(responseOf(text, attachments, silent))
+    }
+    
+    fun currentResponseAsyncMessage() {
+        asyncExecutor(slackResponse!!)
     }
 
     private fun responseOf(text: String, attachments: List<String>, silent: Boolean): SlackResponse {

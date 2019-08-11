@@ -33,7 +33,7 @@ open class GameServiceImpl(val repository: GameRepository,
 
     override fun computeTournamentMemberScoreEvolution(account: String, tournament: String, player: List<String>, alg: Algorithm, withGames: List<Game>): List<Evolution> {
         val games = repository.listGames(account = account, tournament = tournament, maxElements = MAX_HISTORY).map { e -> e.second }
-        return raterFor(alg).evolution(games + withGames).filter { s -> player.contains(s.member) }
+        return raterFor(alg).evolution(games + withGames).filter { s -> player.isEmpty() || player.contains(s.member) }
     }
 
     private fun filterForTeams(teams: List<String>): (Game) -> Game = { game ->

@@ -10,7 +10,7 @@
     google.charts.setOnLoadCallback(drawChart);
 
     function drawChart() {
-      var scores = [[${status.evolution.score}]];
+      var scores = [[${status.evolution}]];
       var indexed = scores.map(function(v, idx) {
         return [idx, v];
       });

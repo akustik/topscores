@@ -1,10 +1,10 @@
 package org.gmd.model
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.annotations.ApiModelProperty
 import org.gmd.EnvProvider
 import org.gmd.form.SimpleGame
-
+import org.gmd.util.JsonUtils.Companion.readValue
+import org.gmd.util.JsonUtils.Companion.writeValueAsBytes
 
 class Game() {
     @ApiModelProperty(notes = "Tournaments are used to have different scores and metrics per player.")
@@ -34,7 +34,7 @@ class Game() {
     fun partiesDescendingByScore(): List<Party> = parties.sortedByDescending { p -> p.score }
 
     fun toJsonBytes(): ByteArray {
-        return ObjectMapper().writeValueAsBytes(this)
+        return writeValueAsBytes(this)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -64,7 +64,7 @@ class Game() {
 
     companion object {
         fun fromJsonBytes(bytes: ByteArray): Game {
-            return ObjectMapper().readValue(bytes, Game::class.java)
+            return readValue(bytes, Game::class.java)
         }
 
         fun playerOrderedListToGame(tournament: String, players: List<String>): Game {
@@ -84,7 +84,7 @@ class Game() {
                     timestamp = null
             )
         }
-        
+
         fun simpleGame(game: SimpleGame): Game {
             val parties = game.teams.map { t ->
                 Party(
@@ -111,5 +111,14 @@ class Game() {
             game.timestamp = timestamp
             return game
         }
+
+        fun computePlayerOrder(game: Game): String {
+            val storedPlayers = game.parties
+                    .sortedByDescending { party -> party.score }
+                    .flatMap { p -> p.members.map { m -> m.name } }
+
+            return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
+        }
+        
     }
 }
