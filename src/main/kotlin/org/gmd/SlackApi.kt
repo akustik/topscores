@@ -164,7 +164,7 @@ class SlackApi(private val env: EnvProvider, private val slackExecutorProvider: 
                 MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
                 Dialog(responseHelper, slackService, triggerId, teamDomain, channelName),
                 Taunt(responseHelper, slackService, teamDomain, channelId),
-                RecommendChallengers(responseHelper, gameService, teamDomain, channelId, userName)
+                RecommendChallengers(responseHelper, gameService, teamDomain, channelName, userName)
         )
 
         try {
