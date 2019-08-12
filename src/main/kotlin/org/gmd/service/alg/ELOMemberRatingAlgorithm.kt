@@ -58,17 +58,23 @@ open class ELOMemberRatingAlgorithm : MemberRatingAlgorithm {
     }
 
     private fun eloRatingDeltaForA(a: RatedMember, b: RatedMember, k: Int = 30): Double {
-        return eloRatingDeltaForAScore(a.score.toDouble(), b.score.toDouble(), k)
+        return if (a.score > b.score) {
+            k * probabilityOfWinForB(a, b)
+        } else {
+            k * (probabilityOfWinForB(a, b) - 1)
+        }
+    }
+
+    private fun probabilityOfWinForB(a: RatedMember, b: RatedMember): Double {
+        val ratingA = a.rating.last().first
+        val ratingB = b.rating.last().first
+        return probabilityOfWinForBRating(ratingA, ratingB)
     }
 
 }
 
 fun eloRatingDeltaForAScore(a: Double, b: Double, k: Int = 30): Double {
-    return if (a > b) {
-        k * probabilityOfWinForBRating(a, b)
-    } else {
-        k * (probabilityOfWinForBRating(a, b) - 1)
-    }
+    return k * probabilityOfWinForBRating(a, b)
 }
 
 fun probabilityOfWinForBRating(ratingA: Double, ratingB: Double): Double {
