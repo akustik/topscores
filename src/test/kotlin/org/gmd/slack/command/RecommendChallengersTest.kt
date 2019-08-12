@@ -1,4 +1,4 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import org.gmd.Algorithm
 import org.gmd.TestData.Companion.mariokart
@@ -32,7 +32,7 @@ class RecommendChallengersTest {
         val completableFuture = CompletableFuture<SlackResponse>()
         val recommendChallengers = createTestRecommendChallenger(completableFuture)
 
-        recommendChallengers.parse(listOf("Villager"))
+        recommendChallengers.parse(listOf("Villager", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
         Assert.assertEquals("Best challenges for Villager", response.text)
@@ -45,7 +45,7 @@ class RecommendChallengersTest {
         val completableFuture = CompletableFuture<SlackResponse>()
         val recommendChallengers = createTestRecommendChallenger(completableFuture)
 
-        recommendChallengers.parse(listOf("Luigi"))
+        recommendChallengers.parse(listOf("Luigi", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
         Assert.assertEquals("1. Wario\n2. Player\n3. Villager", response.attachments.get(0).text)
@@ -57,7 +57,7 @@ class RecommendChallengersTest {
         val completableFuture = CompletableFuture<SlackResponse>()
         val recommendChallengers = createTestRecommendChallenger(completableFuture)
 
-        recommendChallengers.parse(listOf("Player"))
+        recommendChallengers.parse(listOf("Player", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
         Assert.assertEquals("1. Wario\n2. Luigi\n3. Villager", response.attachments.get(0).text)
@@ -70,7 +70,7 @@ class RecommendChallengersTest {
         val completableFuture = CompletableFuture<SlackResponse>()
         val recommendChallengers = createTestRecommendChallenger(completableFuture)
 
-        recommendChallengers.parse(listOf("sddgfhdsfg"))
+        recommendChallengers.parse(listOf("sddgfhdsfg", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
         Assert.assertEquals("Not found player sddgfhdsfg in list", response.text)
