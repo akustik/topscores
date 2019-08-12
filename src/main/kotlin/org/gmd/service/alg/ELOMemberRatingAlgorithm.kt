@@ -72,7 +72,15 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
     }
 
     private fun probabilityOfWinForB(a: RatedMember, b: RatedMember): Double {
-        return 1.0 * 1.0 / (1 + 1.0 *
-                Math.pow(10.0, 1.0 * (a.rating.last().first - b.rating.last().first) / 400))
+        val ratingA = a.rating.last().first
+        val ratingB = b.rating.last().first
+        return probabilityOfWinForBRating(ratingA, ratingB)
     }
+
+}
+
+
+fun probabilityOfWinForBRating(ratingA: Double, ratingB: Double): Double {
+    return 1.0 * 1.0 / (1 + 1.0 *
+            Math.pow(10.0, 1.0 * (ratingA - ratingB) / 400))
 }

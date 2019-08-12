@@ -32,7 +32,7 @@ open class AsyncGameServiceWrapper(val service: GameService) : AsyncGameService 
                                                        player: List<String>,
                                                        alg: Algorithm,
                                                        withGames: List<Game>,
-                                                       consumer: (List<Evolution>) -> Unit): Unit {
+                                                       consumer: (List<Evolution>) -> Unit) {
         consumer(service.computeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
