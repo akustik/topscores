@@ -40,7 +40,7 @@ class RecommendChallengersTest {
     }
 
     @Test
-    fun testSlackResponseOnLooser() {
+    fun testSlackResponseOnLuigii() {
 
         val completableFuture = CompletableFuture<SlackResponse>()
         val recommendChallengers = createTestRecommendChallenger(completableFuture)
@@ -48,8 +48,21 @@ class RecommendChallengersTest {
         recommendChallengers.parse(listOf("Luigi"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
-        Assert.assertEquals("1. Wario\n2. Player", response.attachments.get(0).text)
+        Assert.assertEquals("1. Wario\n2. Player\n3. Villager", response.attachments.get(0).text)
     }
+
+    @Test
+    fun testSlackResponseOnPlayer() {
+
+        val completableFuture = CompletableFuture<SlackResponse>()
+        val recommendChallengers = createTestRecommendChallenger(completableFuture)
+
+        recommendChallengers.parse(listOf("Player"))
+
+        val response = completableFuture.get(1, TimeUnit.MINUTES)
+        Assert.assertEquals("1. Wario\n2. Luigi\n3. Villager", response.attachments.get(0).text)
+    }
+
 
     @Test
     fun testPlayerNotFound() {

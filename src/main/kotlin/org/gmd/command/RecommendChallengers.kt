@@ -14,7 +14,6 @@ import org.gmd.service.alg.eloRatingDeltaForAScore
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.slack.command.SlackCommand
 import org.gmd.util.calculateWinRatio
-import java.lang.Math.abs
 
 class RecommendChallengers(
         val response: SlackResponseHelper,
@@ -41,11 +40,11 @@ class RecommendChallengers(
         val challengers = scores
                 .asSequence()
                 .filter { x -> x.member != player }
-                .filter { player -> haveEverWon(matchingGames, player, team) }
-                .sortedBy { player ->
-                    calculateWinRatio(directMatches(matchingGames, player), team, Team(player.member))
+                .filter { challenger -> directMatches(matchingGames, challenger.member).isNotEmpty() }
+                .sortedBy { challengerScore ->
+                    calculateWinRatio(directMatches(matchingGames, challengerScore.member), Team(challengerScore.member), team)
                             .second
-                            .map { z -> sortValue(playerScore, player, z) }
+                            .map { challengerWinRatio -> sortValue(playerScore, challengerScore, challengerWinRatio) }
                             .orElse(100.toDouble())
                 }
                 .mapIndexed { index, score -> "${index + 1}. ${score.member}" }
@@ -54,19 +53,14 @@ class RecommendChallengers(
 
     }
 
-    private fun haveEverWon(matchingGames: List<Game>, player: Score, team: Team): Boolean {
-        val matches = directMatches(matchingGames, player)
-        return matches.isNotEmpty() && calculateWinRatio(matches, team, Team(player.member)).second.map { ratio -> ratio > 0 }.orElse(false)
-    }
-
     private fun notFoundPlayer(scores: List<Score>) {
         val players = listOf(scores.joinToString(separator = "\n") { score -> score.member })
         response.asyncMessage(text = "Not found player $player in list", attachments = players, silent = silent)
     }
 
-    private fun directMatches(matchingGames: List<Game>, x: Score) =
-            matchingGames.filter { y -> y.contains(Team(x.member)) }
+    private fun directMatches(matchingGames: List<Game>, challenger: String) =
+            matchingGames.filter { game -> game.contains(Team(challenger)) }
 
     private fun sortValue(playerScore: Score, challengerScore: Score, winRatio: Int) =
-            (100.1  - winRatio) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble())
+            (winRatio + 1) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble())
 }
