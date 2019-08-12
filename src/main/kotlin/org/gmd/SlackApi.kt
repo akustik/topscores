@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.core.*
 import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import org.apache.commons.lang3.text.StrTokenizer
-import org.gmd.command.RecommendChallengers
+import org.gmd.slack.command.RecommendChallengers
 import org.gmd.model.Evolution
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService

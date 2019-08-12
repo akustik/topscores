@@ -1,10 +1,12 @@
-package org.gmd.command
+package org.gmd.slack.command
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.int
 import org.gmd.Algorithm
 import org.gmd.model.Game
 import org.gmd.model.Score
@@ -12,7 +14,6 @@ import org.gmd.model.Team
 import org.gmd.service.GameService
 import org.gmd.service.alg.eloRatingDeltaForAScore
 import org.gmd.slack.SlackResponseHelper
-import org.gmd.slack.command.SlackCommand
 import org.gmd.util.calculateWinRatio
 
 class RecommendChallengers(
@@ -25,6 +26,7 @@ class RecommendChallengers(
 
     val player by argument(help = "Player name").default(username)
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
+    val min by option("--min", help = "min matches to consider").int().default(3)
 
     override fun run() {
         returnEvolution()
@@ -40,7 +42,7 @@ class RecommendChallengers(
         val challengers = scores
                 .asSequence()
                 .filter { x -> x.member != player }
-                .filter { challenger -> directMatches(matchingGames, challenger.member).isNotEmpty() }
+                .filter { challenger -> directMatches(matchingGames, challenger.member).size >= min }
                 .sortedBy { challengerScore ->
                     calculateWinRatio(directMatches(matchingGames, challengerScore.member), Team(challengerScore.member), team)
                             .second
@@ -62,5 +64,5 @@ class RecommendChallengers(
             matchingGames.filter { game -> game.contains(Team(challenger)) }
 
     private fun sortValue(playerScore: Score, challengerScore: Score, winRatio: Int) =
-            (winRatio + 0.1) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble())
+            (winRatio + 0.01) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble())
 }
