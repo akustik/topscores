@@ -27,7 +27,7 @@ class RecommendChallengersTest {
     val addedGame = mariokart()
 
     @Test
-    fun testSlackResponse() {
+    fun testSlackResponseOnLowerElo() {
 
         val completableFuture = CompletableFuture<SlackResponse>()
         val recommendChallengers = createTestRecommendChallenger(completableFuture)
@@ -37,6 +37,31 @@ class RecommendChallengersTest {
         val response = completableFuture.get(1, TimeUnit.MINUTES)
         Assert.assertEquals("Best challenges for Villager", response.text)
         Assert.assertEquals("1. Wario\n2. Player\n3. Luigi", response.attachments.get(0).text)
+    }
+
+    @Test
+    fun testSlackResponseOnLooser() {
+
+        val completableFuture = CompletableFuture<SlackResponse>()
+        val recommendChallengers = createTestRecommendChallenger(completableFuture)
+
+        recommendChallengers.parse(listOf("Luigi"))
+
+        val response = completableFuture.get(1, TimeUnit.MINUTES)
+        Assert.assertEquals("1. Wario\n2. Player", response.attachments.get(0).text)
+    }
+
+    @Test
+    fun testPlayerNotFound() {
+
+        val completableFuture = CompletableFuture<SlackResponse>()
+        val recommendChallengers = createTestRecommendChallenger(completableFuture)
+
+        recommendChallengers.parse(listOf("sddgfhdsfg"))
+
+        val response = completableFuture.get(1, TimeUnit.MINUTES)
+        Assert.assertEquals("Not found player sddgfhdsfg in list", response.text)
+        Assert.assertEquals("Villager\nLuigi\nWario\nPlayer\nDarks", response.attachments.get(0).text)
     }
 
     private fun createTestRecommendChallenger(completableFuture: CompletableFuture<SlackResponse>, tournament: String = addedGame.tournament): RecommendChallengers {
