@@ -62,5 +62,5 @@ class RecommendChallengers(
             matchingGames.filter { game -> game.contains(Team(challenger)) }
 
     private fun sortValue(playerScore: Score, challengerScore: Score, winRatio: Int) =
-            (winRatio + 1) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble())
+            (winRatio + 0.1) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble())
 }
