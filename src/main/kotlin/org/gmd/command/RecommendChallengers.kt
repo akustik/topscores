@@ -14,6 +14,7 @@ import org.gmd.service.alg.probabilityOfWinForBRating
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.slack.command.SlackCommand
 import org.gmd.util.calculateWinRatio
+import java.lang.Math.abs
 
 class RecommendChallengers(
         val response: SlackResponseHelper,
@@ -36,11 +37,11 @@ class RecommendChallengers(
         val team = Team(player)
         val matchingGames = games.filter { game -> game.contains(team) }
         val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
-        val playerScore = scores.find { x -> x.member == player } ?: return
+        val playerScore = scores.find { x -> x.member == player } ?: return notFoundPlayer(scores)
         val challengers = scores
                 .asSequence()
                 .filter { x -> x.member != player }
-                .filter {player -> !directMatches(matchingGames, player).isEmpty()}
+                .filter { player -> haveEverWon(matchingGames, player, team) }
                 .sortedBy { player ->
                     calculateWinRatio(directMatches(matchingGames, player), team, Team(player.member))
                             .second
@@ -53,9 +54,19 @@ class RecommendChallengers(
 
     }
 
+    private fun haveEverWon(matchingGames: List<Game>, player: Score, team: Team): Boolean {
+        val matches = directMatches(matchingGames, player)
+        return matches.isNotEmpty() && calculateWinRatio(matches, team, Team(player.member)).second.map { ratio -> ratio > 0 }.orElse(false)
+    }
+
+    private fun notFoundPlayer(scores: List<Score>) {
+        val players = listOf(scores.joinToString(separator = "\n") { score -> score.member })
+        response.asyncMessage(text = "Not found player $player in list", attachments = players, silent = silent)
+    }
+
     private fun directMatches(matchingGames: List<Game>, x: Score) =
             matchingGames.filter { y -> y.contains(Team(x.member)) }
 
     private fun sortValue(playerScore: Score, challengerScore: Score, winRatio: Int) =
-            winRatio - probabilityOfWinForBRating(playerScore.score.toDouble(), challengerScore.score.toDouble()) * 100
+            abs(winRatio - probabilityOfWinForBRating(playerScore.score.toDouble(), challengerScore.score.toDouble()) * 100)
 }
