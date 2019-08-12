@@ -10,7 +10,7 @@ import org.gmd.model.Game
 import org.gmd.model.Score
 import org.gmd.model.Team
 import org.gmd.service.GameService
-import org.gmd.service.alg.probabilityOfWinForBRating
+import org.gmd.service.alg.eloRatingDeltaForAScore
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.slack.command.SlackCommand
 import org.gmd.util.calculateWinRatio
@@ -68,5 +68,5 @@ class RecommendChallengers(
             matchingGames.filter { y -> y.contains(Team(x.member)) }
 
     private fun sortValue(playerScore: Score, challengerScore: Score, winRatio: Int) =
-            abs(winRatio - probabilityOfWinForBRating(playerScore.score.toDouble(), challengerScore.score.toDouble()) * 100)
+            abs((1  - winRatio) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble()))
 }

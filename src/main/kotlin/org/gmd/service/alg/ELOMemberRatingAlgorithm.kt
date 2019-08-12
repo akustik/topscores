@@ -6,13 +6,12 @@ import org.gmd.model.Score
 import org.springframework.stereotype.Component
 
 @Component
-open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
-    
+open class ELOMemberRatingAlgorithm : MemberRatingAlgorithm {
+
     override fun rate(games: List<Game>): List<Score> {
         val ratedPlayers = mutableMapOf<String, List<Pair<Double, Long>>>()
         ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
-        return ratedPlayers.map {
-            rating ->
+        return ratedPlayers.map { rating ->
             Score(rating.key, Math.round(rating.value.last().first).toInt(), rating.value.size - 1)
         }
     }
@@ -20,9 +19,8 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
     override fun evolution(games: List<Game>): List<Evolution> {
         val ratedPlayers = mutableMapOf<String, List<Pair<Double, Long>>>()
         ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
-        return ratedPlayers.map {
-            rating ->
-            Evolution(rating.key, rating.value.map { v -> Pair(Math.round(v.first).toInt(), v.second)  } )
+        return ratedPlayers.map { rating ->
+            Evolution(rating.key, rating.value.map { v -> Pair(Math.round(v.first).toInt(), v.second) })
         }
     }
 
@@ -34,20 +32,16 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
             games.isNotEmpty() -> {
                 val firstGame = games.first()
                 val currentStatus = firstGame.parties.flatMap { party ->
-                    party.members.map {
-                        member ->
+                    party.members.map { member ->
                         RatedMember(member.name, party.score, ratings.getOrDefault(member.name, listOf(Pair(1200.0, 0L))))
                     }
                 }
 
-                currentStatus.forEach {
-                    member ->
+                currentStatus.forEach { member ->
                     run {
-                        val differentScoreDeltas = currentStatus.filter {
-                            m ->
+                        val differentScoreDeltas = currentStatus.filter { m ->
                             m.score != member.score
-                        }.map {
-                            m ->
+                        }.map { m ->
                             eloRatingDeltaForA(member, m)
                         }
 
@@ -64,21 +58,18 @@ open class ELOMemberRatingAlgorithm: MemberRatingAlgorithm {
     }
 
     private fun eloRatingDeltaForA(a: RatedMember, b: RatedMember, k: Int = 30): Double {
-        return if (a.score > b.score) {
-            k * probabilityOfWinForB(a, b)
-        } else {
-            k * (probabilityOfWinForB(a, b) - 1)
-        }
-    }
-
-    private fun probabilityOfWinForB(a: RatedMember, b: RatedMember): Double {
-        val ratingA = a.rating.last().first
-        val ratingB = b.rating.last().first
-        return probabilityOfWinForBRating(ratingA, ratingB)
+        return eloRatingDeltaForAScore(a.score.toDouble(), b.score.toDouble(), k)
     }
 
 }
 
+fun eloRatingDeltaForAScore(a: Double, b: Double, k: Int = 30): Double {
+    return if (a > b) {
+        k * probabilityOfWinForBRating(a, b)
+    } else {
+        k * (probabilityOfWinForBRating(a, b) - 1)
+    }
+}
 
 fun probabilityOfWinForBRating(ratingA: Double, ratingB: Double): Double {
     return 1.0 * 1.0 / (1 + 1.0 *
