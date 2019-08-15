@@ -15,7 +15,7 @@ import org.gmd.service.alg.ELOMemberRatingAlgorithm.Companion.probabilityOfWinFo
 import org.gmd.slack.SlackResponseHelper
 import org.gmd.util.calculateWinRatioForA
 
-class RecommendChallengers(
+class Recommend(
         val response: SlackResponseHelper,
         val service: GameService,
         val account: String,
@@ -28,11 +28,11 @@ class RecommendChallengers(
     val min by option("--min", help = "min matches to consider").int().default(3)
 
     override fun run() {
-        returnEvolution()
+        returnOrderedRecommendations()
         response.asyncDefaultResponse()
     }
 
-    private fun returnEvolution() {
+    private fun returnOrderedRecommendations() {
         val games = service.listGames(account, tournament, 1000)
         val team = Team(player)
         val matchingGames = games.filter { game -> game.contains(team) }
@@ -52,12 +52,12 @@ class RecommendChallengers(
                     }
                 }
 
-        val sortedChallengers = otherPlayersWithSortingValue
+        val sortedRecommendations = otherPlayersWithSortingValue
                 .sortedByDescending { it.second }
                 .mapIndexed { index, pair -> "${index + 1}. ${pair.first.member} (${pair.second})" }
                 .joinToString(separator = "\n")
 
-        response.asyncMessage(text = "Best challenges for $player", attachments = listOf(sortedChallengers), silent = silent)
+        response.asyncMessage(text = "Recommended rivals for $player (+100 the most recommended and -100 the least recommended)", attachments = listOf(sortedRecommendations), silent = silent)
     }
 
     private fun playerNotFound() {

@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(SpringRunner::class)
 @SpringBootTest
-class RecommendChallengersTest {
+class RecommendTest {
 
     @MockBean
     lateinit var gameService: GameService
@@ -30,7 +30,7 @@ class RecommendChallengersTest {
     fun testSlackResponseOnLowerElo() {
 
         val completableFuture = CompletableFuture<SlackResponse>()
-        val recommendChallengers = createTestRecommendChallenger(completableFuture)
+        val recommendChallengers = createTestRecommend(completableFuture)
 
         recommendChallengers.parse(listOf("Villager", "--min", "1"))
 
@@ -45,7 +45,7 @@ class RecommendChallengersTest {
     fun testSlackResponseOnLuigii() {
 
         val completableFuture = CompletableFuture<SlackResponse>()
-        val recommendChallengers = createTestRecommendChallenger(completableFuture)
+        val recommendChallengers = createTestRecommend(completableFuture)
 
         recommendChallengers.parse(listOf("Luigi", "--min", "1"))
 
@@ -59,7 +59,7 @@ class RecommendChallengersTest {
     fun testSlackResponseOnPlayer() {
 
         val completableFuture = CompletableFuture<SlackResponse>()
-        val recommendChallengers = createTestRecommendChallenger(completableFuture)
+        val recommendChallengers = createTestRecommend(completableFuture)
 
         recommendChallengers.parse(listOf("Player", "--min", "1"))
 
@@ -73,7 +73,7 @@ class RecommendChallengersTest {
     fun testPlayerNotFound() {
 
         val completableFuture = CompletableFuture<SlackResponse>()
-        val recommendChallengers = createTestRecommendChallenger(completableFuture)
+        val recommendChallengers = createTestRecommend(completableFuture)
 
         recommendChallengers.parse(listOf("sddgfhdsfg", "--min", "1"))
 
@@ -81,7 +81,7 @@ class RecommendChallengersTest {
         Assert.assertEquals("sddgfhdsfg does not have any match", response.text)
     }
 
-    private fun createTestRecommendChallenger(completableFuture: CompletableFuture<SlackResponse>, tournament: String = addedGame.tournament): RecommendChallengers {
+    private fun createTestRecommend(completableFuture: CompletableFuture<SlackResponse>, tournament: String = addedGame.tournament): Recommend {
         val helper = SlackResponseHelper { response -> completableFuture.complete(response) }
 
         Mockito.`when`(gameService.listGames(account, addedGame.tournament, 1000)).thenReturn(listOf(addedGame))
@@ -92,7 +92,7 @@ class RecommendChallengersTest {
                 Score("Player", 1248, 1),
                 Score("Darks", 1550, 1))
         Mockito.`when`(gameService.computeTournamentMemberScores(account, addedGame.tournament, Algorithm.ELO)).thenReturn(playerScores)
-        return RecommendChallengers(helper, gameService, account, tournament, "player")
+        return Recommend(helper, gameService, account, tournament, "player")
     }
 }
 

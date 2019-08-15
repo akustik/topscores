@@ -4,7 +4,7 @@ import com.github.ajalt.clikt.core.*
 import com.google.common.hash.Hashing
 import io.swagger.annotations.Api
 import org.apache.commons.lang3.text.StrTokenizer
-import org.gmd.slack.command.RecommendChallengers
+import org.gmd.slack.command.Recommend
 import org.gmd.model.Evolution
 import org.gmd.service.AsyncGameService
 import org.gmd.service.GameService
@@ -164,7 +164,7 @@ class SlackApi(private val env: EnvProvider, private val slackExecutorProvider: 
                 MatchUp(responseHelper, gameService, teamDomain, channelName, userName),
                 Dialog(responseHelper, slackService, triggerId, teamDomain, channelName),
                 Taunt(responseHelper, slackService, teamDomain, channelId),
-                RecommendChallengers(responseHelper, gameService, teamDomain, channelName, userName)
+                Recommend(responseHelper, gameService, teamDomain, channelName, userName)
         )
 
         try {
