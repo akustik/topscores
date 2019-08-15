@@ -35,7 +35,7 @@ class RecommendTest {
         recommendChallengers.parse(listOf("Villager", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
-        Assert.assertEquals("Best challenges for Villager", response.text)
+        Assert.assertEquals("Recommended rivals for Villager (+100 the most recommended and -100 the least recommended)", response.text)
         Assert.assertEquals("1. Wario (68)\n" +
                 "2. Player (60)\n" +
                 "3. Luigi (54)", response.attachments.get(0).text)
