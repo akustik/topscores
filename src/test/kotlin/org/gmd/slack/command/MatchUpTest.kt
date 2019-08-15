@@ -23,8 +23,8 @@ class MatchUpTest {
     @MockBean
     lateinit var gameService: GameService
 
-    val account = "test"
-    val addedGame = dummy()
+    private val account = "test"
+    private val addedGame = dummy()
 
     @Test
     fun testSlackResponse() {
@@ -35,7 +35,7 @@ class MatchUpTest {
         matchUp.parse(listOf(player1, player2))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
-        Assert.assertEquals("From 1 games player1 beats player2 a 100%.", response.text)
+        Assert.assertEquals("player1 beats player2 100% of the times (sample: 1 games)", response.text)
     }
 
     @Test

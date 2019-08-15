@@ -7,6 +7,13 @@ import org.springframework.stereotype.Component
 
 @Component
 open class ELOMemberRatingAlgorithm : MemberRatingAlgorithm {
+    
+    companion object {
+        fun probabilityOfWinForBRating(ratingA: Double, ratingB: Double): Double {
+            return 1.0 * 1.0 / (1 + 1.0 *
+                    Math.pow(10.0, 1.0 * (ratingA - ratingB) / 400))
+        }
+    }
 
     override fun rate(games: List<Game>): List<Score> {
         val ratedPlayers = mutableMapOf<String, List<Pair<Double, Long>>>()
@@ -71,13 +78,4 @@ open class ELOMemberRatingAlgorithm : MemberRatingAlgorithm {
         return probabilityOfWinForBRating(ratingA, ratingB)
     }
 
-}
-
-fun eloRatingDeltaForAScore(a: Double, b: Double, k: Int = 30): Double {
-    return k * probabilityOfWinForBRating(a, b)
-}
-
-fun probabilityOfWinForBRating(ratingA: Double, ratingB: Double): Double {
-    return 1.0 * 1.0 / (1 + 1.0 *
-            Math.pow(10.0, 1.0 * (ratingA - ratingB) / 400))
 }
