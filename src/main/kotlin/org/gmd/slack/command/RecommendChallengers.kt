@@ -9,12 +9,11 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
 import org.gmd.Algorithm
 import org.gmd.model.Game
-import org.gmd.model.Score
 import org.gmd.model.Team
 import org.gmd.service.GameService
-import org.gmd.service.alg.eloRatingDeltaForAScore
+import org.gmd.service.alg.ELOMemberRatingAlgorithm.Companion.probabilityOfWinForBRating
 import org.gmd.slack.SlackResponseHelper
-import org.gmd.util.calculateWinRatio
+import org.gmd.util.calculateWinRatioForA
 
 class RecommendChallengers(
         val response: SlackResponseHelper,
@@ -37,32 +36,34 @@ class RecommendChallengers(
         val games = service.listGames(account, tournament, 1000)
         val team = Team(player)
         val matchingGames = games.filter { game -> game.contains(team) }
-        val scores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
-        val playerScore = scores.find { x -> x.member == player } ?: return notFoundPlayer(scores)
-        val challengers = scores
-                .asSequence()
+        val allPlayersScores = service.computeTournamentMemberScores(account, tournament, Algorithm.ELO)
+        val playerScore = allPlayersScores.find { x -> x.member == player }
+                ?: return playerNotFound()
+        val otherPlayersWithAtLeastMinDirectMatches = allPlayersScores
                 .filter { x -> x.member != player }
-                .filter { challenger -> directMatches(matchingGames, challenger.member).size >= min }
-                .sortedBy { challengerScore ->
-                    calculateWinRatio(directMatches(matchingGames, challengerScore.member), Team(challengerScore.member), team)
-                            .second
-                            .map { challengerWinRatio -> sortValue(playerScore, challengerScore, challengerWinRatio) }
-                            .orElse(100.toDouble())
+                .filter { other -> directMatches(matchingGames, other.member).size >= min }
+        val otherPlayersWithSortingValue = otherPlayersWithAtLeastMinDirectMatches
+                .map { otherScore ->
+                    run {
+                        val playerWinProbability = calculateWinRatioForA(directMatches(matchingGames, otherScore.member), team, Team(otherScore.member))!!.second
+                        val playerRatingWinProbability = probabilityOfWinForBRating(otherScore.score.toDouble(), playerScore.score.toDouble())
+                        val probabilityDiff = Math.round((playerWinProbability - playerRatingWinProbability) * 100).toInt()
+                        Pair(otherScore, probabilityDiff)
+                    }
                 }
-                .mapIndexed { index, score -> "${index + 1}. ${score.member}" }
-                .joinToString(separator = "\n")
-        response.asyncMessage(text = "Best challenges for $player", attachments = listOf(challengers), silent = silent)
 
+        val sortedChallengers = otherPlayersWithSortingValue
+                .sortedByDescending { it.second }
+                .mapIndexed { index, pair -> "${index + 1}. ${pair.first.member} (${pair.second})" }
+                .joinToString(separator = "\n")
+
+        response.asyncMessage(text = "Best challenges for $player", attachments = listOf(sortedChallengers), silent = silent)
     }
 
-    private fun notFoundPlayer(scores: List<Score>) {
-        val players = listOf(scores.joinToString(separator = "\n") { score -> score.member })
-        response.asyncMessage(text = "Not found player $player in list", attachments = players, silent = silent)
+    private fun playerNotFound() {
+        response.asyncMessage(text = "$player does not have any match", silent = silent)
     }
 
     private fun directMatches(matchingGames: List<Game>, challenger: String) =
             matchingGames.filter { game -> game.contains(Team(challenger)) }
-
-    private fun sortValue(playerScore: Score, challengerScore: Score, winRatio: Int) =
-            (winRatio + 0.01) * eloRatingDeltaForAScore(challengerScore.score.toDouble(), playerScore.score.toDouble())
 }

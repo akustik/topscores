@@ -23,8 +23,8 @@ class RecommendChallengersTest {
     @MockBean
     lateinit var gameService: GameService
 
-    val account = "test"
-    val addedGame = mariokart()
+    private val account = "test"
+    private val addedGame = mariokart()
 
     @Test
     fun testSlackResponseOnLowerElo() {
@@ -36,7 +36,9 @@ class RecommendChallengersTest {
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
         Assert.assertEquals("Best challenges for Villager", response.text)
-        Assert.assertEquals("1. Wario\n2. Player\n3. Luigi", response.attachments.get(0).text)
+        Assert.assertEquals("1. Wario (68)\n" +
+                "2. Player (60)\n" +
+                "3. Luigi (54)", response.attachments.get(0).text)
     }
 
     @Test
@@ -48,7 +50,9 @@ class RecommendChallengersTest {
         recommendChallengers.parse(listOf("Luigi", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
-        Assert.assertEquals("1. Wario\n2. Player\n3. Villager", response.attachments.get(0).text)
+        Assert.assertEquals("1. Wario (65)\n" +
+                "2. Player (56)\n" +
+                "3. Villager (-54)", response.attachments.get(0).text)
     }
 
     @Test
@@ -60,10 +64,11 @@ class RecommendChallengersTest {
         recommendChallengers.parse(listOf("Player", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
-        Assert.assertEquals("1. Wario\n2. Luigi\n3. Villager", response.attachments.get(0).text)
+        Assert.assertEquals("1. Wario (59)\n" +
+                "2. Luigi (-56)\n" +
+                "3. Villager (-60)", response.attachments.get(0).text)
     }
-
-
+    
     @Test
     fun testPlayerNotFound() {
 
@@ -73,19 +78,19 @@ class RecommendChallengersTest {
         recommendChallengers.parse(listOf("sddgfhdsfg", "--min", "1"))
 
         val response = completableFuture.get(1, TimeUnit.MINUTES)
-        Assert.assertEquals("Not found player sddgfhdsfg in list", response.text)
-        Assert.assertEquals("Villager\nLuigi\nWario\nPlayer\nDarks", response.attachments.get(0).text)
+        Assert.assertEquals("sddgfhdsfg does not have any match", response.text)
     }
 
     private fun createTestRecommendChallenger(completableFuture: CompletableFuture<SlackResponse>, tournament: String = addedGame.tournament): RecommendChallengers {
         val helper = SlackResponseHelper { response -> completableFuture.complete(response) }
 
         Mockito.`when`(gameService.listGames(account, addedGame.tournament, 1000)).thenReturn(listOf(addedGame))
-        val playerScores = listOf(Score("Villager", 1177, 1)
-                , Score("Luigi", 1205, 1)
-                , Score("Wario", 1311, 1)
-                , Score("Player", 1248, 1)
-                , Score("Darks", 1550, 1))
+        val playerScores = listOf(
+                Score("Villager", 1177, 1),
+                Score("Luigi", 1205, 1),
+                Score("Wario", 1311, 1),
+                Score("Player", 1248, 1),
+                Score("Darks", 1550, 1))
         Mockito.`when`(gameService.computeTournamentMemberScores(account, addedGame.tournament, Algorithm.ELO)).thenReturn(playerScores)
         return RecommendChallengers(helper, gameService, account, tournament, "player")
     }
