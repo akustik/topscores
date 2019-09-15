@@ -10,11 +10,16 @@ class TestData {
 
     companion object {
         val patxanga = TestData::class.java.getResource("/samples/patxanga.json").readText()
+        val patxanga_tie = TestData::class.java.getResource("/samples/patxanga_tie.json").readText()
         val patxanga_no_timestamp = TestData::class.java.getResource("/samples/patxanga_no_timestamp.json").readText()
         val mariokart = TestData::class.java.getResource("/samples/mariokart.json").readText()
-        
+
         fun patxanga(): Game {
             return parse(patxanga)
+        }
+
+        fun patxangaTie(): Game {
+            return parse(patxanga_tie)
         }
 
         fun mariokart(): Game {
@@ -25,7 +30,7 @@ class TestData {
         const val player2 = "player2"
         val tournament = "patxanga"
         val timestamp = 12345L
-        
+
         fun dummy(): Game {
             return Game(
                     tournament = tournament,
