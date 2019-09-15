@@ -43,6 +43,7 @@ class GameServiceImplTest {
         Assert.assertEquals(expected, scores)
     }
 
+
     @Test
     @Throws(Exception::class)
     fun computeTournamentScoresShouldFilterByTeam() {
@@ -67,6 +68,19 @@ class GameServiceImplTest {
         val account = "test"
         val tournament = "patxanga"
         Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.patxanga())))
+
+        val scores = gameService.computeTournamentMemberScores(account = account, tournament = tournament, alg = Algorithm.ELO)
+
+        Assert.assertEquals(expected, scores)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun computeTournamentScoresShouldSkipTiesForELO() {
+        val expected = emptyList<Score>()
+        val account = "test"
+        val tournament = "patxanga"
+        Mockito.`when`(gameRepository.listGames(account = account, tournament = tournament, maxElements = 1000)).thenReturn(listOf(Pair(Instant.now(), TestData.patxangaTie())))
 
         val scores = gameService.computeTournamentMemberScores(account = account, tournament = tournament, alg = Algorithm.ELO)
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 
 @Component
 open class ELOMemberRatingAlgorithm : MemberRatingAlgorithm {
-    
+
     companion object {
         fun probabilityOfWinForBRating(ratingA: Double, ratingB: Double): Double {
             return 1.0 * 1.0 / (1 + 1.0 *
@@ -15,9 +15,14 @@ open class ELOMemberRatingAlgorithm : MemberRatingAlgorithm {
         }
     }
 
+    private fun removeGamesNotAffectingELO(games: List<Game>): List<Game> {
+        return games.filter { game -> game.parties.size > 1 && game.parties.map { p -> p.score }.distinct().count() > 1}
+    }
+
     override fun rate(games: List<Game>): List<Score> {
         val ratedPlayers = mutableMapOf<String, List<Pair<Double, Long>>>()
-        ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
+        val gamesToRate = removeGamesNotAffectingELO(games).sortedBy { game -> game.timestamp }
+        ratePlayersInGame(ratedPlayers, gamesToRate)
         return ratedPlayers.map { rating ->
             Score(rating.key, Math.round(rating.value.last().first).toInt(), rating.value.size - 1)
         }
@@ -25,7 +30,8 @@ open class ELOMemberRatingAlgorithm : MemberRatingAlgorithm {
 
     override fun evolution(games: List<Game>): List<Evolution> {
         val ratedPlayers = mutableMapOf<String, List<Pair<Double, Long>>>()
-        ratePlayersInGame(ratedPlayers, games.filter { game -> game.parties.size > 1 }.sortedBy { game -> game.timestamp })
+        val gamesToRate = removeGamesNotAffectingELO(games).sortedBy { game -> game.timestamp }
+        ratePlayersInGame(ratedPlayers, gamesToRate)
         return ratedPlayers.map { rating ->
             Evolution(rating.key, rating.value.map { v -> Pair(Math.round(v.first).toInt(), v.second) })
         }

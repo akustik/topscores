@@ -1,0 +1,62 @@
+{
+  "tournament": "patxanga",
+  "timestamp": 1558211897715,
+  "parties": [
+    {
+      "team": {
+        "name": "blaus"
+      },
+      "members": [
+        {
+          "name": "guillem"
+        },
+        {
+          "name": "uri"
+        }
+      ],
+      "metrics": [
+        {
+          "name": "gols:guillem",
+          "value": 2
+        }
+      ],
+      "tags": [
+        {
+          "name": "Targeta",
+          "value": "Vermella"
+        }
+      ],
+      "score": 1
+    },
+    {
+      "team": {
+        "name": "grocs"
+      },
+      "members": [
+        {
+          "name": "ramon"
+        },
+        {
+          "name": "arnau"
+        }
+      ],
+      "metrics": [
+        {
+          "name": "gols:ramon",
+          "value": 2
+        },
+        {
+          "name": "gols:arnau",
+          "value": 1
+        }
+      ],
+      "tags": [
+        {
+          "name": "Targeta",
+          "value": "Groga"
+        }
+      ],
+      "score": 1
+    }
+  ]
+}
