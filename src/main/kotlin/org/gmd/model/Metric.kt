@@ -6,12 +6,20 @@ class Metric() {
     @ApiModelProperty(notes = "Use format name:<player_name> to indicate an individual metric.")
     lateinit var name: String
     var value: Int = 0
-    
+
     constructor(
             name: String,
             value: Int): this() {
         this.name = name
         this.value = value
+    }
+
+    fun humanReadable(): String {
+        return if(name.contains(':')) {
+            "${name.substringAfter(':')} $value ${name.substringBefore(':')}"
+        } else {
+            "$name $value"
+        }
     }
 
     override fun toString(): String {
