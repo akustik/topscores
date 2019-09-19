@@ -12,12 +12,13 @@
   <div class="alert alert-info text-center" role="alert">
     Find below the most recent games. Click on the tournament to see the ranked players.
   </div>
-  <hr />
+  <hr/>
   <div class="col-xs-12 col-sm-12 col-md-12" th:each="game : ${games}">
     <h5>
       <a th:href="@{'/web/status/' + ${game.tournament} + '/elo'}">
         <span class="glyphicon glyphicon-triangle-right"></span>
-        <span class="text-uppercase" th:text="${game.tournament + ' // ' + #dates.format(game.timestamp, 'dd-MMM-yyyy HH:mm')}"></span>
+        <span class="text-uppercase"
+              th:text="${game.tournament + ' // ' + #dates.format(game.timestamp, 'dd-MMM-yyyy HH:mm')}"></span>
       </a>
     </h5>
     <div class="col-xs-6 col-sm-6 col-md-6" th:each="party : ${game.partiesDescendingByScore()}">
@@ -26,15 +27,18 @@
           <b th:text="${party.team.name + ' - ' + party.score}"></b>
         </div>
         <div class="panel-body" th:if="${party.members.size() > 1}">
-          <ul>
-            <li th:each="member : ${party.members}">
-              <span th:text="${member.name}"></span>
-            </li>
-          </ul>
-        </div>
+          <div class="col-xs-6 col-sm-6 col-md-6">
+            <h5>Players</h5>
+            <div th:each="member : ${party.members}" th:text="${member.name}"></div>
+          </div>
+          <div class="col-xs-6 col-sm-6 col-md-6">
+            <h5>Metrics</h5>
+            <div th:each="metric : ${party.metrics}" th:text="${metric.humanReadable()}"></div>
+          </div>
       </div>
     </div>
   </div>
+</div>
 </div>
 
 <div th:replace="fragments/layout :: footer"/>
