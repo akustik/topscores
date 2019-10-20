@@ -17,9 +17,9 @@ class Taunt(
     val players by argument(help = "List of players").multiple(required = true)
 
     override fun run() {
-        val normalizedPlayers = normalizePlayers(players)
+        val normalizedPlayers = normalizePlayers(players).flatten()
 
-        val text = normalizedPlayers.joinToString(" and ", "Hey ", ", what about a game?!") 
+        val text = normalizedPlayers.joinToString(" and ", "Hey ", ", what about a game?!")
             { createUserId(service.getUserIdByName(teamName = account, name = it), it) }
 
         val message = SlackPostMessage(channelId = channelId, text = text).asJson()

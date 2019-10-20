@@ -3,8 +3,10 @@ package org.gmd.slack.command
 import org.gmd.Algorithm
 import org.gmd.EnvProviderForTesting
 import org.gmd.TestData.Companion.dummy
+import org.gmd.TestData.Companion.dummy2
 import org.gmd.TestData.Companion.player1
 import org.gmd.TestData.Companion.player2
+import org.gmd.TestData.Companion.player3
 import org.gmd.model.Evolution
 import org.gmd.service.AsyncGameServiceForTesting
 import org.gmd.service.GameService
@@ -27,6 +29,7 @@ class AddGameTest {
 
     val account = "test"
     val addedGame = dummy()
+    val addedGame2 = dummy2()
 
     @Test
     @Throws(Exception::class)
@@ -43,6 +46,26 @@ class AddGameTest {
                 account = account,
                 tournament = addedGame.tournament)
                 .parse(listOf(player1, player2))
+
+        Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse!!.text)
+        Assert.assertEquals("1. player1\n2. player2", helper.slackResponse!!.attachments.first().text)
+        Assert.assertEquals("in_channel", helper.slackResponse!!.responseType)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun addGameShouldSupportAdhocParties() {
+        val helper = SlackResponseHelper({ _ -> run {} })
+
+        Mockito.`when`(gameService.addGame(account, addedGame2)).thenReturn(addedGame2)
+
+        AddGame(response = helper,
+                envProvider = EnvProviderForTesting(emptyMap(), addedGame2.timestamp!!),
+                service = gameService,
+                asyncService = AsyncGameServiceForTesting(gameService),
+                account = account,
+                tournament = addedGame2.tournament)
+                .parse(listOf(player1 + "," + player3, player2))
 
         Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse!!.text)
         Assert.assertEquals("1. player1\n2. player2", helper.slackResponse!!.attachments.first().text)

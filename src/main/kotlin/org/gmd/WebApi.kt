@@ -132,7 +132,7 @@ class WebApi(private val env: EnvProvider) {
         var addedGames = 0
         games.forEach { game ->
             run {
-                val gameToCreate = Game.playerOrderedListToGame(tournament, game.second)
+                val gameToCreate = Game.playerOrderedListToGame(tournament, game.second.map { p -> listOf(p) })
                 gameService.addGame(authentication.name, Game.withTimestamp(env.getCurrentTimeInMillis() + game.first, gameToCreate))
                 addedGames += 1
             }
@@ -140,7 +140,7 @@ class WebApi(private val env: EnvProvider) {
 
         return addedGames
     }
-    
+
     @RequestMapping("/web/slack/oauth", method = arrayOf(RequestMethod.GET))
     internal fun slackAuth(
             @RequestParam(name = "code") code: String,

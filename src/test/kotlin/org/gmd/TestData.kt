@@ -28,6 +28,7 @@ class TestData {
 
         const val player1 = "player1"
         const val player2 = "player2"
+        const val player3 = "player3"
         val tournament = "patxanga"
         val timestamp = 12345L
 
@@ -52,6 +53,29 @@ class TestData {
                     ),
                     timestamp = timestamp)
         }
+
+        fun dummy2(): Game {
+            return Game(
+                    tournament = tournament,
+                    parties = listOf(
+                            Party(
+                                    team = Team(player2),
+                                    members = listOf(TeamMember(player2)),
+                                    metrics = listOf(),
+                                    tags = listOf(),
+                                    score = 1
+                            ),
+                            Party(
+                                    team = Team("player1 et al"),
+                                    members = listOf(TeamMember(player1), TeamMember(player3)),
+                                    metrics = listOf(),
+                                    tags = listOf(),
+                                    score = 2
+                            )
+                    ),
+                    timestamp = timestamp)
+        }
+
 
         private fun parse(data: String): Game {
             return Game.fromJsonBytes(data.toByteArray(Charset.defaultCharset()))
