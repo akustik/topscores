@@ -27,12 +27,12 @@ class AddGame(
         val account: String,
         val tournament: String)
     : CliktCommand(help = "Add a new game", printHelpOnEmptyArgs = true), SlackCommand {
-    val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser").multiple(required = true)
+    val players by argument(help = "Ordered list of the scoring of the event, i.e: winner loser. Use comma-separated players to build a team with several players.").multiple(required = true)
     val dryRun by option(help = "Returns an updated ranking simulation without actually storing the game").flag()
     val silent by option("--silent", "-s", help = "Do not show the slack response to everyone").flag()
     val force by option("--force", "-f", help = "Force the addition of the game and ignore collisions").flag()
     val alg by option("--alg", "-a", help = "The algorithm to compute the ranking").choice("elo", "sum").default("elo")
-    
+
     override fun run() {
         val normalizedPlayers = normalizePlayers(players)
         val algorithm = parseAlgorithm(alg)
@@ -43,7 +43,7 @@ class AddGame(
             asyncService.consumeTournamentMemberScoreEvolution(
                     account = account,
                     tournament = tournament,
-                    player = normalizedPlayers,
+                    player = normalizedPlayers.flatten(),
                     alg = algorithm,
                     withGames = listOf(gameToCreate),
                     consumer = { simulation ->
@@ -82,11 +82,11 @@ class AddGame(
         return false
     }
 
-    private fun computeFeedbackAfterGameAdd(storedGame: Game, normalizedPlayers: List<String>, algorithm: Algorithm): List<String> {
+    private fun computeFeedbackAfterGameAdd(storedGame: Game, normalizedPlayers: List<List<String>>, algorithm: Algorithm): List<String> {
         asyncService.consumeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
-                player = normalizedPlayers,
+                player = normalizedPlayers.flatten(),
                 alg = algorithm,
                 withGames = emptyList(),
                 consumer = { evolution ->

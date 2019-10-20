@@ -67,11 +67,11 @@ class Game() {
             return readValue(bytes, Game::class.java)
         }
 
-        fun playerOrderedListToGame(tournament: String, players: List<String>): Game {
-            val parties = players.reversed().mapIndexed { index, player ->
+        fun playerOrderedListToGame(tournament: String, normalizedPlayers: List<List<String>>): Game {
+            val parties = normalizedPlayers.reversed().mapIndexed { index, player ->
                 Party(
-                        team = Team(player),
-                        members = listOf(TeamMember(player)),
+                        team = Team(if(player.size > 1) "${player.first()} et al" else player.first()),
+                        members = player.map { p -> TeamMember(p) },
                         score = index + 1,
                         metrics = emptyList(),
                         tags = emptyList()
@@ -115,10 +115,10 @@ class Game() {
         fun computePlayerOrder(game: Game): String {
             val storedPlayers = game.parties
                     .sortedByDescending { party -> party.score }
-                    .flatMap { p -> p.members.map { m -> m.name } }
+                    .map { p -> p.members.map { t -> t.name }.joinToString(separator = ",") }
 
             return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
         }
-        
+
     }
 }
