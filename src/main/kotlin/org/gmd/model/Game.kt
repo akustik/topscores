@@ -115,7 +115,7 @@ class Game() {
         fun computePlayerOrder(game: Game): String {
             val storedPlayers = game.parties
                     .sortedByDescending { party -> party.score }
-                    .flatMap { p -> p.members.map { m -> m.name } }
+                    .map { p -> p.members.map { t -> t.name }.joinToString(separator = ",") }
 
             return storedPlayers.mapIndexed { index, s -> "${index + 1}. $s" }.joinToString(separator = "\n")
         }

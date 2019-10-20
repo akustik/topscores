@@ -68,7 +68,7 @@ class AddGameTest {
                 .parse(listOf(player1 + "," + player3, player2))
 
         Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse!!.text)
-        Assert.assertEquals("1. player1\n2. player2", helper.slackResponse!!.attachments.first().text)
+        Assert.assertEquals("1. player1,player3\n2. player2", helper.slackResponse!!.attachments.first().text)
         Assert.assertEquals("in_channel", helper.slackResponse!!.responseType)
     }
 

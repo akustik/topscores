@@ -65,7 +65,7 @@ class AddGame(
                     val storedGame = service.addGame(account, gameWithCollectionTime)
                     response.publicMessage(
                             "Good game! A new game entry has been created!",
-                            computeFeedbackAfterGameAdd(storedGame, normalizedPlayers.flatten(), algorithm)
+                            computeFeedbackAfterGameAdd(storedGame, normalizedPlayers, algorithm)
                     )
                 }
             }
@@ -82,11 +82,11 @@ class AddGame(
         return false
     }
 
-    private fun computeFeedbackAfterGameAdd(storedGame: Game, normalizedPlayers: List<String>, algorithm: Algorithm): List<String> {
+    private fun computeFeedbackAfterGameAdd(storedGame: Game, normalizedPlayers: List<List<String>>, algorithm: Algorithm): List<String> {
         asyncService.consumeTournamentMemberScoreEvolution(
                 account = account,
                 tournament = tournament,
-                player = normalizedPlayers,
+                player = normalizedPlayers.flatten(),
                 alg = algorithm,
                 withGames = emptyList(),
                 consumer = { evolution ->
