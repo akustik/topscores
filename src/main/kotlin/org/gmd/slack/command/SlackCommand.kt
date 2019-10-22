@@ -5,7 +5,7 @@ import org.gmd.Algorithm
 interface SlackCommand {
 
     fun normalizePlayers(players: List<String>): List<List<String>> {
-        return players.map { it.toLowerCase().split(",") }
+        return players.map { it.toLowerCase().split("_") }
     }
 
     fun parseAlgorithm(alg: String): Algorithm {

@@ -65,7 +65,7 @@ class AddGameTest {
                 asyncService = AsyncGameServiceForTesting(gameService),
                 account = account,
                 tournament = addedGame2.tournament)
-                .parse(listOf(player1 + "," + player3, player2))
+                .parse(listOf(player1 + "_" + player3, player2))
 
         Assert.assertEquals("Good game! A new game entry has been created!", helper.slackResponse!!.text)
         Assert.assertEquals("1. player1,player3\n2. player2", helper.slackResponse!!.attachments.first().text)
