@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
 
-  topscores:
+  web:
     build: 
       context: .
       dockerfile: Dockerfile
@@ -10,11 +10,14 @@ services:
     environment:
       JDBC_DATABASE_URL: jdbc:postgresql://db:5432/topscores?user=top&password=secret
       REDIS_URL: redis://redis:6379
+      # Set up account for patxanga
       token:patxanga: secret
-      bypass_slack_secret: 'true'
-      slack_client_id: notset
-      slack_client_secret: notset
-      slack_signing_secret: notset
+      # Enable bypass to avoid slack secret check
+      # bypass_slack_secret: 'true'
+      # Set up variables below in .env file with format var=value
+      slack_client_id: ${slack_client_id}
+      slack_client_secret: ${slack_client_secret}
+      slack_signing_secret: ${slack_signing_secret}
     ports:
       - 8081:5000
   
@@ -28,6 +31,8 @@ services:
       POSTGRES_USER: top
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: topscores
+    volumes:
+      - ./docker/postgres:/docker-entrypoint-initdb.d
 
   adminer:
     image: adminer
