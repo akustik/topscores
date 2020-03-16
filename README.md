@@ -38,7 +38,9 @@ The slack integration makes sure that the commands are issued by the slack appli
 Only teams with a configured token are allowed.
 ```
 token:patxanga=<required for the patxanga slack team>
-slack_secret=<application secret>
+slack_client_id=<something>
+slack_client_secret=<something>
+slack_signing_secret=<something>
 ```
 
 For development environments the signature validation can be bypassed by adding an environment flag
@@ -53,30 +55,12 @@ https://something-nice-34567.herokuapp.com/slack/command
 
 ## Running Locally
 
-Make sure you have Java and Maven installed.  Also, install the [Heroku CLI](https://cli.heroku.com/).
+Use docker-compose to run the application locally,
 
 ```sh
-$ git clone https://github.com/heroku/kotlin-getting-started.git
-$ cd kotlin-getting-started
-$ mvn install
-$ heroku local:start
-```
-
-Your app should now be running on [localhost:5000](http://localhost:5000/).
-
-If you're going to use a database, ensure you have a local `.env` file that reads something like this:
-
-```
-JDBC_DATABASE_URL=jdbc:postgresql://localhost:5432/java_database_name
-token:patxanga=secret
-bypass_slack_secret=true
-slack_secret=notset
+$ docker-compose up --build
 ```
 
 ## Deploying to Heroku
 
-```sh
-$ heroku create
-$ git push heroku master
-$ heroku open
-```
+Master branch is integrated with Heroku and it is deployed automatically.
