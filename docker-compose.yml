@@ -12,8 +12,8 @@ services:
       REDIS_URL: redis://redis:6379
       # Set up account for patxanga
       token:patxanga: secret
-      # Enable bypass to avoid slack secret check
-      # bypass_slack_secret: 'true'
+      # Comment to prevent bypassing slack secret check
+      bypass_slack_secret: 'true'
       # Set up variables below in .env file with format var=value
       slack_client_id: ${slack_client_id}
       slack_client_secret: ${slack_client_secret}
