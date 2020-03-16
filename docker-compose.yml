@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+
+  topscores:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      JDBC_DATABASE_URL: jdbc:postgresql://db:5432/topscores?user=top&password=secret
+      REDIS_URL: redis://redis:6379
+      token:patxanga: secret
+      bypass_slack_secret: 'true'
+      slack_client_id: notset
+      slack_client_secret: notset
+      slack_signing_secret: notset
+    ports:
+      - 8081:5000
+  
+  redis: 
+    image: redis:4.0.14-alpine
+
+  db:
+    image: postgres:11.7-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: top
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: topscores
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
